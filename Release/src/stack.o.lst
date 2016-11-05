@@ -1,0 +1,45 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 2
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"stack.cpp"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.global	sp
+  20              		.global	data_stack
+  21              		.section	.data.sp,"aw",%progbits
+  22              		.align	2
+  25              	sp:
+  26 0000 00000000 		.word	data_stack
+  27              		.section	.bss.data_stack,"aw",%nobits
+  28              		.align	2
+  31              	data_stack:
+  32 0000 00000000 		.space	4096
+  32      00000000 
+  32      00000000 
+  32      00000000 
+  32      00000000 
+  33              		.text
+  34              	.Letext0:
+  35              		.file 1 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\mach
+  36              		.file 2 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\sys\
+  37              		.file 3 "../src/stack.cpp"
+DEFINED SYMBOLS
+                            *ABS*:00000000 stack.cpp
+C:\Users\Robert\AppData\Local\Temp\ccWV7j70.s:25     .data.sp:00000000 sp
+C:\Users\Robert\AppData\Local\Temp\ccWV7j70.s:31     .bss.data_stack:00000000 data_stack
+C:\Users\Robert\AppData\Local\Temp\ccWV7j70.s:22     .data.sp:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccWV7j70.s:28     .bss.data_stack:00000000 $d
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,2564 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"mk20dx128.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.systick_default_isr,"ax",%progbits
+  20              		.align	1
+  21              		.global	systick_default_isr
+  22              		.thumb
+  23              		.thumb_func
+  25              	systick_default_isr:
+  26              	.LFB11:
+  27              		.file 1 "../src/mk20dx128.c"
+   1:../src/mk20dx128.c **** /* Teensyduino Core Library
+   2:../src/mk20dx128.c ****  * http://www.pjrc.com/teensy/
+   3:../src/mk20dx128.c ****  * Copyright (c) 2013 PJRC.COM, LLC.
+   4:../src/mk20dx128.c ****  *
+   5:../src/mk20dx128.c ****  * Permission is hereby granted, free of charge, to any person obtaining
+   6:../src/mk20dx128.c ****  * a copy of this software and associated documentation files (the
+   7:../src/mk20dx128.c ****  * "Software"), to deal in the Software without restriction, including
+   8:../src/mk20dx128.c ****  * without limitation the rights to use, copy, modify, merge, publish,
+   9:../src/mk20dx128.c ****  * distribute, sublicense, and/or sell copies of the Software, and to
+  10:../src/mk20dx128.c ****  * permit persons to whom the Software is furnished to do so, subject to
+  11:../src/mk20dx128.c ****  * the following conditions:
+  12:../src/mk20dx128.c ****  *
+  13:../src/mk20dx128.c ****  * 1. The above copyright notice and this permission notice shall be 
+  14:../src/mk20dx128.c ****  * included in all copies or substantial portions of the Software.
+  15:../src/mk20dx128.c ****  *
+  16:../src/mk20dx128.c ****  * 2. If the Software is incorporated into a build system that allows 
+  17:../src/mk20dx128.c ****  * selection among a list of target devices, then similar target
+  18:../src/mk20dx128.c ****  * devices manufactured by PJRC.COM must be included in the list of
+  19:../src/mk20dx128.c ****  * target devices and selectable in the same manner.
+  20:../src/mk20dx128.c ****  *
+  21:../src/mk20dx128.c ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  22:../src/mk20dx128.c ****  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  23:../src/mk20dx128.c ****  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  24:../src/mk20dx128.c ****  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+  25:../src/mk20dx128.c ****  * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  26:../src/mk20dx128.c ****  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  27:../src/mk20dx128.c ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  28:../src/mk20dx128.c ****  * SOFTWARE.
+  29:../src/mk20dx128.c ****  */
+  30:../src/mk20dx128.c **** 
+  31:../src/mk20dx128.c **** #include "kinetis.h"
+  32:../src/mk20dx128.c **** #include "core_pins.h" // testing only
+  33:../src/mk20dx128.c **** #include "ser_print.h" // testing only
+  34:../src/mk20dx128.c **** 
+  35:../src/mk20dx128.c **** 
+  36:../src/mk20dx128.c **** // Flash Security Setting. On Teensy 3.2, you can lock the MK20 chip to prevent
+  37:../src/mk20dx128.c **** // anyone from reading your code.  You CAN still reprogram your Teensy while
+  38:../src/mk20dx128.c **** // security is set, but the bootloader will be unable to respond to auto-reboot
+  39:../src/mk20dx128.c **** // requests from Arduino. Pressing the program button will cause a full chip
+  40:../src/mk20dx128.c **** // erase to gain access, because the bootloader chip is locked out.  Normally,
+  41:../src/mk20dx128.c **** // erase occurs when uploading begins, so if you press the Program button
+  42:../src/mk20dx128.c **** // accidentally, simply power cycling will run your program again.  When
+  43:../src/mk20dx128.c **** // security is locked, any Program button press causes immediate full erase.
+  44:../src/mk20dx128.c **** // Special care must be used with the Program button, because it must be made
+  45:../src/mk20dx128.c **** // accessible to initiate reprogramming, but it must not be accidentally
+  46:../src/mk20dx128.c **** // pressed when Teensy Loader is not being used to reprogram.  To set lock the
+  47:../src/mk20dx128.c **** // security change this to 0xDC.  Teensy 3.0 and 3.1 do not support security lock.
+  48:../src/mk20dx128.c **** #define FSEC 0xDE
+  49:../src/mk20dx128.c **** 
+  50:../src/mk20dx128.c **** // Flash Options
+  51:../src/mk20dx128.c **** #define FOPT 0xF9
+  52:../src/mk20dx128.c **** 
+  53:../src/mk20dx128.c **** 
+  54:../src/mk20dx128.c **** extern unsigned long _stext;
+  55:../src/mk20dx128.c **** extern unsigned long _etext;
+  56:../src/mk20dx128.c **** extern unsigned long _sdata;
+  57:../src/mk20dx128.c **** extern unsigned long _edata;
+  58:../src/mk20dx128.c **** extern unsigned long _sbss;
+  59:../src/mk20dx128.c **** extern unsigned long _ebss;
+  60:../src/mk20dx128.c **** extern unsigned long _estack;
+  61:../src/mk20dx128.c **** //extern void __init_array_start(void);
+  62:../src/mk20dx128.c **** //extern void __init_array_end(void);
+  63:../src/mk20dx128.c **** 
+  64:../src/mk20dx128.c **** 
+  65:../src/mk20dx128.c **** 
+  66:../src/mk20dx128.c **** extern int main (void);
+  67:../src/mk20dx128.c **** void ResetHandler(void);
+  68:../src/mk20dx128.c **** void _init_Teensyduino_internal_(void);
+  69:../src/mk20dx128.c **** void __libc_init_array(void);
+  70:../src/mk20dx128.c **** 
+  71:../src/mk20dx128.c **** 
+  72:../src/mk20dx128.c **** void fault_isr(void)
+  73:../src/mk20dx128.c **** {
+  74:../src/mk20dx128.c **** #if 0
+  75:../src/mk20dx128.c **** 	uint32_t addr;
+  76:../src/mk20dx128.c **** 
+  77:../src/mk20dx128.c **** 	SIM_SCGC4 |= 0x00000400;
+  78:../src/mk20dx128.c **** 	UART0_BDH = 0;
+  79:../src/mk20dx128.c **** 	UART0_BDL = 26; // 115200 at 48 MHz
+  80:../src/mk20dx128.c **** 	UART0_C2 = UART_C2_TE;
+  81:../src/mk20dx128.c **** 	PORTB_PCR17 = PORT_PCR_MUX(3);
+  82:../src/mk20dx128.c **** 	ser_print("\nfault: \n??: ");
+  83:../src/mk20dx128.c ****         asm("ldr %0, [sp, #52]" : "=r" (addr) ::);
+  84:../src/mk20dx128.c ****         ser_print_hex32(addr);
+  85:../src/mk20dx128.c ****         ser_print("\n??: ");
+  86:../src/mk20dx128.c ****         asm("ldr %0, [sp, #48]" : "=r" (addr) ::);
+  87:../src/mk20dx128.c ****         ser_print_hex32(addr);
+  88:../src/mk20dx128.c ****         ser_print("\n??: ");
+  89:../src/mk20dx128.c ****         asm("ldr %0, [sp, #44]" : "=r" (addr) ::);
+  90:../src/mk20dx128.c ****         ser_print_hex32(addr);
+  91:../src/mk20dx128.c ****         ser_print("\npsr:");
+  92:../src/mk20dx128.c ****         asm("ldr %0, [sp, #40]" : "=r" (addr) ::);
+  93:../src/mk20dx128.c ****         ser_print_hex32(addr);
+  94:../src/mk20dx128.c ****         ser_print("\nadr:");
+  95:../src/mk20dx128.c ****         asm("ldr %0, [sp, #36]" : "=r" (addr) ::);
+  96:../src/mk20dx128.c ****         ser_print_hex32(addr);
+  97:../src/mk20dx128.c ****         ser_print("\nlr: ");
+  98:../src/mk20dx128.c ****         asm("ldr %0, [sp, #32]" : "=r" (addr) ::);
+  99:../src/mk20dx128.c ****         ser_print_hex32(addr);
+ 100:../src/mk20dx128.c ****         ser_print("\nr12:");
+ 101:../src/mk20dx128.c ****         asm("ldr %0, [sp, #28]" : "=r" (addr) ::);
+ 102:../src/mk20dx128.c ****         ser_print_hex32(addr);
+ 103:../src/mk20dx128.c ****         ser_print("\nr3: ");
+ 104:../src/mk20dx128.c ****         asm("ldr %0, [sp, #24]" : "=r" (addr) ::);
+ 105:../src/mk20dx128.c ****         ser_print_hex32(addr);
+ 106:../src/mk20dx128.c ****         ser_print("\nr2: ");
+ 107:../src/mk20dx128.c ****         asm("ldr %0, [sp, #20]" : "=r" (addr) ::);
+ 108:../src/mk20dx128.c ****         ser_print_hex32(addr);
+ 109:../src/mk20dx128.c ****         ser_print("\nr1: ");
+ 110:../src/mk20dx128.c ****         asm("ldr %0, [sp, #16]" : "=r" (addr) ::);
+ 111:../src/mk20dx128.c ****         ser_print_hex32(addr);
+ 112:../src/mk20dx128.c ****         ser_print("\nr0: ");
+ 113:../src/mk20dx128.c ****         asm("ldr %0, [sp, #12]" : "=r" (addr) ::);
+ 114:../src/mk20dx128.c ****         ser_print_hex32(addr);
+ 115:../src/mk20dx128.c ****         ser_print("\nr4: ");
+ 116:../src/mk20dx128.c ****         asm("ldr %0, [sp, #8]" : "=r" (addr) ::);
+ 117:../src/mk20dx128.c ****         ser_print_hex32(addr);
+ 118:../src/mk20dx128.c ****         ser_print("\nlr: ");
+ 119:../src/mk20dx128.c ****         asm("ldr %0, [sp, #4]" : "=r" (addr) ::);
+ 120:../src/mk20dx128.c ****         ser_print_hex32(addr);
+ 121:../src/mk20dx128.c ****         ser_print("\n");
+ 122:../src/mk20dx128.c ****         asm("ldr %0, [sp, #0]" : "=r" (addr) ::);
+ 123:../src/mk20dx128.c **** #endif
+ 124:../src/mk20dx128.c **** 	while (1) {
+ 125:../src/mk20dx128.c **** 		// keep polling some communication while in fault
+ 126:../src/mk20dx128.c **** 		// mode, so we don't completely die.
+ 127:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_USBOTG) usb_isr();
+ 128:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_UART0) uart0_status_isr();
+ 129:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_UART1) uart1_status_isr();
+ 130:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_UART2) uart2_status_isr();
+ 131:../src/mk20dx128.c **** 	}
+ 132:../src/mk20dx128.c **** }
+ 133:../src/mk20dx128.c **** 
+ 134:../src/mk20dx128.c **** void unused_isr(void)
+ 135:../src/mk20dx128.c **** {
+ 136:../src/mk20dx128.c **** 	fault_isr();
+ 137:../src/mk20dx128.c **** }
+ 138:../src/mk20dx128.c **** 
+ 139:../src/mk20dx128.c **** extern volatile uint32_t systick_millis_count;
+ 140:../src/mk20dx128.c **** void systick_default_isr(void)
+ 141:../src/mk20dx128.c **** {
+  28              		.loc 1 141 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+ 142:../src/mk20dx128.c **** 	systick_millis_count++;
+  33              		.loc 1 142 0
+  34 0000 024A     		ldr	r2, .L2
+  35 0002 1368     		ldr	r3, [r2]
+  36 0004 0133     		adds	r3, r3, #1
+  37 0006 1360     		str	r3, [r2]
+  38 0008 7047     		bx	lr
+  39              	.L3:
+  40 000a 00BF     		.align	2
+  41              	.L2:
+  42 000c 00000000 		.word	systick_millis_count
+  43              		.cfi_endproc
+  44              	.LFE11:
+  46              		.weak	systick_isr
+  47              		.thumb_set systick_isr,systick_default_isr
+  48              		.section	.text.fault_isr,"ax",%progbits
+  49              		.align	1
+  50              		.global	fault_isr
+  51              		.thumb
+  52              		.thumb_func
+  54              	fault_isr:
+  55              	.LFB9:
+  73:../src/mk20dx128.c **** #if 0
+  56              		.loc 1 73 0
+  57              		.cfi_startproc
+  58              		@ Volatile: function does not return.
+  59              		@ args = 0, pretend = 0, frame = 0
+  60              		@ frame_needed = 0, uses_anonymous_args = 0
+  61 0000 08B5     		push	{r3, lr}
+  62              		.cfi_def_cfa_offset 8
+  63              		.cfi_offset 3, -8
+  64              		.cfi_offset 14, -4
+ 127:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_UART0) uart0_status_isr();
+  65              		.loc 1 127 0
+  66 0002 0B4D     		ldr	r5, .L22
+  67 0004 2C46     		mov	r4, r5
+  68              	.L8:
+  69 0006 2B68     		ldr	r3, [r5]
+  70 0008 5803     		lsls	r0, r3, #13
+  71 000a 01D5     		bpl	.L5
+ 127:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_UART0) uart0_status_isr();
+  72              		.loc 1 127 0 is_stmt 0 discriminator 1
+  73 000c FFF7FEFF 		bl	usb_isr
+  74              	.LVL0:
+  75              	.L5:
+ 128:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_UART1) uart1_status_isr();
+  76              		.loc 1 128 0 is_stmt 1
+  77 0010 2368     		ldr	r3, [r4]
+  78 0012 5905     		lsls	r1, r3, #21
+  79 0014 01D5     		bpl	.L6
+ 128:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_UART1) uart1_status_isr();
+  80              		.loc 1 128 0 is_stmt 0 discriminator 1
+  81 0016 FFF7FEFF 		bl	uart0_status_isr
+  82              	.LVL1:
+  83              	.L6:
+ 129:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_UART2) uart2_status_isr();
+  84              		.loc 1 129 0 is_stmt 1
+  85 001a 2368     		ldr	r3, [r4]
+  86 001c 1A05     		lsls	r2, r3, #20
+  87 001e 01D5     		bpl	.L7
+ 129:../src/mk20dx128.c **** 		if (SIM_SCGC4 & SIM_SCGC4_UART2) uart2_status_isr();
+  88              		.loc 1 129 0 is_stmt 0 discriminator 1
+  89 0020 FFF7FEFF 		bl	uart1_status_isr
+  90              	.LVL2:
+  91              	.L7:
+ 130:../src/mk20dx128.c **** 	}
+  92              		.loc 1 130 0 is_stmt 1
+  93 0024 2368     		ldr	r3, [r4]
+  94 0026 DB04     		lsls	r3, r3, #19
+  95 0028 EDD5     		bpl	.L8
+ 130:../src/mk20dx128.c **** 	}
+  96              		.loc 1 130 0 is_stmt 0 discriminator 1
+  97 002a FFF7FEFF 		bl	uart2_status_isr
+  98              	.LVL3:
+  99 002e EAE7     		b	.L8
+ 100              	.L23:
+ 101              		.align	2
+ 102              	.L22:
+ 103 0030 34800440 		.word	1074036788
+ 104              		.cfi_endproc
+ 105              	.LFE9:
+ 107              		.weak	usage_fault_isr
+ 108              		.thumb_set usage_fault_isr,fault_isr
+ 109              		.weak	bus_fault_isr
+ 110              		.thumb_set bus_fault_isr,fault_isr
+ 111              		.weak	memmanage_fault_isr
+ 112              		.thumb_set memmanage_fault_isr,fault_isr
+ 113              		.weak	hard_fault_isr
+ 114              		.thumb_set hard_fault_isr,fault_isr
+ 115              		.section	.text.unused_isr,"ax",%progbits
+ 116              		.align	1
+ 117              		.global	unused_isr
+ 118              		.thumb
+ 119              		.thumb_func
+ 121              	unused_isr:
+ 122              	.LFB10:
+ 135:../src/mk20dx128.c **** 	fault_isr();
+ 123              		.loc 1 135 0 is_stmt 1
+ 124              		.cfi_startproc
+ 125              		@ Volatile: function does not return.
+ 126              		@ args = 0, pretend = 0, frame = 0
+ 127              		@ frame_needed = 0, uses_anonymous_args = 0
+ 128 0000 08B5     		push	{r3, lr}
+ 129              		.cfi_def_cfa_offset 8
+ 130              		.cfi_offset 3, -8
+ 131              		.cfi_offset 14, -4
+ 136:../src/mk20dx128.c **** }
+ 132              		.loc 1 136 0
+ 133 0002 FFF7FEFF 		bl	fault_isr
+ 134              	.LVL4:
+ 135              		.cfi_endproc
+ 136              	.LFE10:
+ 138              		.weak	software_isr
+ 139              		.thumb_set software_isr,unused_isr
+ 140              		.weak	portcd_isr
+ 141              		.thumb_set portcd_isr,unused_isr
+ 142              		.weak	porte_isr
+ 143              		.thumb_set porte_isr,unused_isr
+ 144              		.weak	portd_isr
+ 145              		.thumb_set portd_isr,unused_isr
+ 146              		.weak	portc_isr
+ 147              		.thumb_set portc_isr,unused_isr
+ 148              		.weak	portb_isr
+ 149              		.thumb_set portb_isr,unused_isr
+ 150              		.weak	porta_isr
+ 151              		.thumb_set porta_isr,unused_isr
+ 152              		.weak	lptmr_isr
+ 153              		.thumb_set lptmr_isr,unused_isr
+ 154              		.weak	mcg_isr
+ 155              		.thumb_set mcg_isr,unused_isr
+ 156              		.weak	tsi0_isr
+ 157              		.thumb_set tsi0_isr,unused_isr
+ 158              		.weak	dac1_isr
+ 159              		.thumb_set dac1_isr,unused_isr
+ 160              		.weak	dac0_isr
+ 161              		.thumb_set dac0_isr,unused_isr
+ 162              		.weak	usbhs_phy_isr
+ 163              		.thumb_set usbhs_phy_isr,unused_isr
+ 164              		.weak	usbhs_isr
+ 165              		.thumb_set usbhs_isr,unused_isr
+ 166              		.weak	usb_charge_isr
+ 167              		.thumb_set usb_charge_isr,unused_isr
+ 168              		.weak	usb_isr
+ 169              		.thumb_set usb_isr,unused_isr
+ 170              		.weak	pdb_isr
+ 171              		.thumb_set pdb_isr,unused_isr
+ 172              		.weak	pit3_isr
+ 173              		.thumb_set pit3_isr,unused_isr
+ 174              		.weak	pit2_isr
+ 175              		.thumb_set pit2_isr,unused_isr
+ 176              		.weak	pit1_isr
+ 177              		.thumb_set pit1_isr,unused_isr
+ 178              		.weak	pit0_isr
+ 179              		.thumb_set pit0_isr,unused_isr
+ 180              		.weak	pit_isr
+ 181              		.thumb_set pit_isr,unused_isr
+ 182              		.weak	rtc_seconds_isr
+ 183              		.thumb_set rtc_seconds_isr,unused_isr
+ 184              		.weak	rtc_alarm_isr
+ 185              		.thumb_set rtc_alarm_isr,unused_isr
+ 186              		.weak	cmt_isr
+ 187              		.thumb_set cmt_isr,unused_isr
+ 188              		.weak	tpm2_isr
+ 189              		.thumb_set tpm2_isr,unused_isr
+ 190              		.weak	tpm1_isr
+ 191              		.thumb_set tpm1_isr,unused_isr
+ 192              		.weak	tpm0_isr
+ 193              		.thumb_set tpm0_isr,unused_isr
+ 194              		.weak	ftm3_isr
+ 195              		.thumb_set ftm3_isr,unused_isr
+ 196              		.weak	ftm2_isr
+ 197              		.thumb_set ftm2_isr,unused_isr
+ 198              		.weak	ftm1_isr
+ 199              		.thumb_set ftm1_isr,unused_isr
+ 200              		.weak	ftm0_isr
+ 201              		.thumb_set ftm0_isr,unused_isr
+ 202              		.weak	cmp3_isr
+ 203              		.thumb_set cmp3_isr,unused_isr
+ 204              		.weak	cmp2_isr
+ 205              		.thumb_set cmp2_isr,unused_isr
+ 206              		.weak	cmp1_isr
+ 207              		.thumb_set cmp1_isr,unused_isr
+ 208              		.weak	cmp0_isr
+ 209              		.thumb_set cmp0_isr,unused_isr
+ 210              		.weak	adc1_isr
+ 211              		.thumb_set adc1_isr,unused_isr
+ 212              		.weak	adc0_isr
+ 213              		.thumb_set adc0_isr,unused_isr
+ 214              		.weak	lpuart0_status_isr
+ 215              		.thumb_set lpuart0_status_isr,unused_isr
+ 216              		.weak	uart5_error_isr
+ 217              		.thumb_set uart5_error_isr,unused_isr
+ 218              		.weak	uart5_status_isr
+ 219              		.thumb_set uart5_status_isr,unused_isr
+ 220              		.weak	uart4_error_isr
+ 221              		.thumb_set uart4_error_isr,unused_isr
+ 222              		.weak	uart4_status_isr
+ 223              		.thumb_set uart4_status_isr,unused_isr
+ 224              		.weak	uart3_error_isr
+ 225              		.thumb_set uart3_error_isr,unused_isr
+ 226              		.weak	uart3_status_isr
+ 227              		.thumb_set uart3_status_isr,unused_isr
+ 228              		.weak	uart2_error_isr
+ 229              		.thumb_set uart2_error_isr,unused_isr
+ 230              		.weak	uart2_status_isr
+ 231              		.thumb_set uart2_status_isr,unused_isr
+ 232              		.weak	uart1_error_isr
+ 233              		.thumb_set uart1_error_isr,unused_isr
+ 234              		.weak	uart1_status_isr
+ 235              		.thumb_set uart1_status_isr,unused_isr
+ 236              		.weak	uart0_error_isr
+ 237              		.thumb_set uart0_error_isr,unused_isr
+ 238              		.weak	uart0_status_isr
+ 239              		.thumb_set uart0_status_isr,unused_isr
+ 240              		.weak	uart0_lon_isr
+ 241              		.thumb_set uart0_lon_isr,unused_isr
+ 242              		.weak	i2s0_isr
+ 243              		.thumb_set i2s0_isr,unused_isr
+ 244              		.weak	i2s0_rx_isr
+ 245              		.thumb_set i2s0_rx_isr,unused_isr
+ 246              		.weak	i2s0_tx_isr
+ 247              		.thumb_set i2s0_tx_isr,unused_isr
+ 248              		.weak	can1_wakeup_isr
+ 249              		.thumb_set can1_wakeup_isr,unused_isr
+ 250              		.weak	can1_rx_warn_isr
+ 251              		.thumb_set can1_rx_warn_isr,unused_isr
+ 252              		.weak	can1_tx_warn_isr
+ 253              		.thumb_set can1_tx_warn_isr,unused_isr
+ 254              		.weak	can1_error_isr
+ 255              		.thumb_set can1_error_isr,unused_isr
+ 256              		.weak	can1_bus_off_isr
+ 257              		.thumb_set can1_bus_off_isr,unused_isr
+ 258              		.weak	can1_message_isr
+ 259              		.thumb_set can1_message_isr,unused_isr
+ 260              		.weak	can0_wakeup_isr
+ 261              		.thumb_set can0_wakeup_isr,unused_isr
+ 262              		.weak	can0_rx_warn_isr
+ 263              		.thumb_set can0_rx_warn_isr,unused_isr
+ 264              		.weak	can0_tx_warn_isr
+ 265              		.thumb_set can0_tx_warn_isr,unused_isr
+ 266              		.weak	can0_error_isr
+ 267              		.thumb_set can0_error_isr,unused_isr
+ 268              		.weak	can0_bus_off_isr
+ 269              		.thumb_set can0_bus_off_isr,unused_isr
+ 270              		.weak	can0_message_isr
+ 271              		.thumb_set can0_message_isr,unused_isr
+ 272              		.weak	enet_error_isr
+ 273              		.thumb_set enet_error_isr,unused_isr
+ 274              		.weak	enet_rx_isr
+ 275              		.thumb_set enet_rx_isr,unused_isr
+ 276              		.weak	enet_tx_isr
+ 277              		.thumb_set enet_tx_isr,unused_isr
+ 278              		.weak	enet_timer_isr
+ 279              		.thumb_set enet_timer_isr,unused_isr
+ 280              		.weak	sdhc_isr
+ 281              		.thumb_set sdhc_isr,unused_isr
+ 282              		.weak	spi2_isr
+ 283              		.thumb_set spi2_isr,unused_isr
+ 284              		.weak	spi1_isr
+ 285              		.thumb_set spi1_isr,unused_isr
+ 286              		.weak	spi0_isr
+ 287              		.thumb_set spi0_isr,unused_isr
+ 288              		.weak	i2c3_isr
+ 289              		.thumb_set i2c3_isr,unused_isr
+ 290              		.weak	i2c2_isr
+ 291              		.thumb_set i2c2_isr,unused_isr
+ 292              		.weak	i2c1_isr
+ 293              		.thumb_set i2c1_isr,unused_isr
+ 294              		.weak	i2c0_isr
+ 295              		.thumb_set i2c0_isr,unused_isr
+ 296              		.weak	watchdog_isr
+ 297              		.thumb_set watchdog_isr,unused_isr
+ 298              		.weak	wakeup_isr
+ 299              		.thumb_set wakeup_isr,unused_isr
+ 300              		.weak	low_voltage_isr
+ 301              		.thumb_set low_voltage_isr,unused_isr
+ 302              		.weak	flash_error_isr
+ 303              		.thumb_set flash_error_isr,unused_isr
+ 304              		.weak	flash_cmd_isr
+ 305              		.thumb_set flash_cmd_isr,unused_isr
+ 306              		.weak	randnum_isr
+ 307              		.thumb_set randnum_isr,unused_isr
+ 308              		.weak	mcm_isr
+ 309              		.thumb_set mcm_isr,unused_isr
+ 310              		.weak	dma_error_isr
+ 311              		.thumb_set dma_error_isr,unused_isr
+ 312              		.weak	dma_ch15_isr
+ 313              		.thumb_set dma_ch15_isr,unused_isr
+ 314              		.weak	dma_ch14_isr
+ 315              		.thumb_set dma_ch14_isr,unused_isr
+ 316              		.weak	dma_ch13_isr
+ 317              		.thumb_set dma_ch13_isr,unused_isr
+ 318              		.weak	dma_ch12_isr
+ 319              		.thumb_set dma_ch12_isr,unused_isr
+ 320              		.weak	dma_ch11_isr
+ 321              		.thumb_set dma_ch11_isr,unused_isr
+ 322              		.weak	dma_ch10_isr
+ 323              		.thumb_set dma_ch10_isr,unused_isr
+ 324              		.weak	dma_ch9_isr
+ 325              		.thumb_set dma_ch9_isr,unused_isr
+ 326              		.weak	dma_ch8_isr
+ 327              		.thumb_set dma_ch8_isr,unused_isr
+ 328              		.weak	dma_ch7_isr
+ 329              		.thumb_set dma_ch7_isr,unused_isr
+ 330              		.weak	dma_ch6_isr
+ 331              		.thumb_set dma_ch6_isr,unused_isr
+ 332              		.weak	dma_ch5_isr
+ 333              		.thumb_set dma_ch5_isr,unused_isr
+ 334              		.weak	dma_ch4_isr
+ 335              		.thumb_set dma_ch4_isr,unused_isr
+ 336              		.weak	dma_ch3_isr
+ 337              		.thumb_set dma_ch3_isr,unused_isr
+ 338              		.weak	dma_ch2_isr
+ 339              		.thumb_set dma_ch2_isr,unused_isr
+ 340              		.weak	dma_ch1_isr
+ 341              		.thumb_set dma_ch1_isr,unused_isr
+ 342              		.weak	dma_ch0_isr
+ 343              		.thumb_set dma_ch0_isr,unused_isr
+ 344              		.weak	pendablesrvreq_isr
+ 345              		.thumb_set pendablesrvreq_isr,unused_isr
+ 346              		.weak	debugmonitor_isr
+ 347              		.thumb_set debugmonitor_isr,unused_isr
+ 348              		.weak	svcall_isr
+ 349              		.thumb_set svcall_isr,unused_isr
+ 350              		.weak	nmi_isr
+ 351              		.thumb_set nmi_isr,unused_isr
+ 352              		.section	.text.startup_default_early_hook,"ax",%progbits
+ 353              		.align	1
+ 354              		.thumb
+ 355              		.thumb_func
+ 357              	startup_default_early_hook:
+ 358              	.LFB12:
+ 143:../src/mk20dx128.c **** }
+ 144:../src/mk20dx128.c **** 
+ 145:../src/mk20dx128.c **** void nmi_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 146:../src/mk20dx128.c **** void hard_fault_isr(void)	__attribute__ ((weak, alias("fault_isr")));
+ 147:../src/mk20dx128.c **** void memmanage_fault_isr(void)	__attribute__ ((weak, alias("fault_isr")));
+ 148:../src/mk20dx128.c **** void bus_fault_isr(void)	__attribute__ ((weak, alias("fault_isr")));
+ 149:../src/mk20dx128.c **** void usage_fault_isr(void)	__attribute__ ((weak, alias("fault_isr")));
+ 150:../src/mk20dx128.c **** void svcall_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 151:../src/mk20dx128.c **** void debugmonitor_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 152:../src/mk20dx128.c **** void pendablesrvreq_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 153:../src/mk20dx128.c **** void systick_isr(void)		__attribute__ ((weak, alias("systick_default_isr")));
+ 154:../src/mk20dx128.c **** 
+ 155:../src/mk20dx128.c **** void dma_ch0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 156:../src/mk20dx128.c **** void dma_ch1_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 157:../src/mk20dx128.c **** void dma_ch2_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 158:../src/mk20dx128.c **** void dma_ch3_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 159:../src/mk20dx128.c **** void dma_ch4_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 160:../src/mk20dx128.c **** void dma_ch5_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 161:../src/mk20dx128.c **** void dma_ch6_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 162:../src/mk20dx128.c **** void dma_ch7_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 163:../src/mk20dx128.c **** void dma_ch8_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 164:../src/mk20dx128.c **** void dma_ch9_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 165:../src/mk20dx128.c **** void dma_ch10_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 166:../src/mk20dx128.c **** void dma_ch11_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 167:../src/mk20dx128.c **** void dma_ch12_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 168:../src/mk20dx128.c **** void dma_ch13_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 169:../src/mk20dx128.c **** void dma_ch14_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 170:../src/mk20dx128.c **** void dma_ch15_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 171:../src/mk20dx128.c **** void dma_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 172:../src/mk20dx128.c **** void mcm_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 173:../src/mk20dx128.c **** void randnum_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 174:../src/mk20dx128.c **** void flash_cmd_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 175:../src/mk20dx128.c **** void flash_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 176:../src/mk20dx128.c **** void low_voltage_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 177:../src/mk20dx128.c **** void wakeup_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 178:../src/mk20dx128.c **** void watchdog_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 179:../src/mk20dx128.c **** void i2c0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 180:../src/mk20dx128.c **** void i2c1_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 181:../src/mk20dx128.c **** void i2c2_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 182:../src/mk20dx128.c **** void i2c3_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 183:../src/mk20dx128.c **** void spi0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 184:../src/mk20dx128.c **** void spi1_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 185:../src/mk20dx128.c **** void spi2_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 186:../src/mk20dx128.c **** void sdhc_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 187:../src/mk20dx128.c **** void enet_timer_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 188:../src/mk20dx128.c **** void enet_tx_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 189:../src/mk20dx128.c **** void enet_rx_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 190:../src/mk20dx128.c **** void enet_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 191:../src/mk20dx128.c **** void can0_message_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 192:../src/mk20dx128.c **** void can0_bus_off_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 193:../src/mk20dx128.c **** void can0_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 194:../src/mk20dx128.c **** void can0_tx_warn_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 195:../src/mk20dx128.c **** void can0_rx_warn_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 196:../src/mk20dx128.c **** void can0_wakeup_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 197:../src/mk20dx128.c **** void can1_message_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 198:../src/mk20dx128.c **** void can1_bus_off_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 199:../src/mk20dx128.c **** void can1_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 200:../src/mk20dx128.c **** void can1_tx_warn_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 201:../src/mk20dx128.c **** void can1_rx_warn_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 202:../src/mk20dx128.c **** void can1_wakeup_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 203:../src/mk20dx128.c **** void i2s0_tx_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 204:../src/mk20dx128.c **** void i2s0_rx_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 205:../src/mk20dx128.c **** void i2s0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 206:../src/mk20dx128.c **** void uart0_lon_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 207:../src/mk20dx128.c **** void uart0_status_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 208:../src/mk20dx128.c **** void uart0_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 209:../src/mk20dx128.c **** void uart1_status_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 210:../src/mk20dx128.c **** void uart1_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 211:../src/mk20dx128.c **** void uart2_status_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 212:../src/mk20dx128.c **** void uart2_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 213:../src/mk20dx128.c **** void uart3_status_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 214:../src/mk20dx128.c **** void uart3_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 215:../src/mk20dx128.c **** void uart4_status_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 216:../src/mk20dx128.c **** void uart4_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 217:../src/mk20dx128.c **** void uart5_status_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 218:../src/mk20dx128.c **** void uart5_error_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 219:../src/mk20dx128.c **** void lpuart0_status_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 220:../src/mk20dx128.c **** void adc0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 221:../src/mk20dx128.c **** void adc1_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 222:../src/mk20dx128.c **** void cmp0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 223:../src/mk20dx128.c **** void cmp1_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 224:../src/mk20dx128.c **** void cmp2_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 225:../src/mk20dx128.c **** void cmp3_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 226:../src/mk20dx128.c **** void ftm0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 227:../src/mk20dx128.c **** void ftm1_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 228:../src/mk20dx128.c **** void ftm2_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 229:../src/mk20dx128.c **** void ftm3_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 230:../src/mk20dx128.c **** void tpm0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 231:../src/mk20dx128.c **** void tpm1_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 232:../src/mk20dx128.c **** void tpm2_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 233:../src/mk20dx128.c **** void cmt_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 234:../src/mk20dx128.c **** void rtc_alarm_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 235:../src/mk20dx128.c **** void rtc_seconds_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 236:../src/mk20dx128.c **** void pit_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 237:../src/mk20dx128.c **** void pit0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 238:../src/mk20dx128.c **** void pit1_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 239:../src/mk20dx128.c **** void pit2_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 240:../src/mk20dx128.c **** void pit3_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 241:../src/mk20dx128.c **** void pdb_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 242:../src/mk20dx128.c **** void usb_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 243:../src/mk20dx128.c **** void usb_charge_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 244:../src/mk20dx128.c **** void usbhs_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 245:../src/mk20dx128.c **** void usbhs_phy_isr(void)	__attribute__ ((weak, alias("unused_isr")));
+ 246:../src/mk20dx128.c **** void dac0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 247:../src/mk20dx128.c **** void dac1_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 248:../src/mk20dx128.c **** void tsi0_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 249:../src/mk20dx128.c **** void mcg_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 250:../src/mk20dx128.c **** void lptmr_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 251:../src/mk20dx128.c **** void porta_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 252:../src/mk20dx128.c **** void portb_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 253:../src/mk20dx128.c **** void portc_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 254:../src/mk20dx128.c **** void portd_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 255:../src/mk20dx128.c **** void porte_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 256:../src/mk20dx128.c **** void portcd_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 257:../src/mk20dx128.c **** void software_isr(void)		__attribute__ ((weak, alias("unused_isr")));
+ 258:../src/mk20dx128.c **** 
+ 259:../src/mk20dx128.c **** #if defined(__MK20DX128__)
+ 260:../src/mk20dx128.c **** __attribute__ ((section(".dmabuffers"), used, aligned(256)))
+ 261:../src/mk20dx128.c **** #elif defined(__MK20DX256__)
+ 262:../src/mk20dx128.c **** __attribute__ ((section(".dmabuffers"), used, aligned(512)))
+ 263:../src/mk20dx128.c **** #elif defined(__MKL26Z64__)
+ 264:../src/mk20dx128.c **** __attribute__ ((section(".dmabuffers"), used, aligned(256)))
+ 265:../src/mk20dx128.c **** #elif defined(__MK64FX512__)
+ 266:../src/mk20dx128.c **** __attribute__ ((section(".dmabuffers"), used, aligned(512)))
+ 267:../src/mk20dx128.c **** #elif defined(__MK66FX1M0__)
+ 268:../src/mk20dx128.c **** __attribute__ ((section(".dmabuffers"), used, aligned(512)))
+ 269:../src/mk20dx128.c **** #endif
+ 270:../src/mk20dx128.c **** void (* _VectorsRam[NVIC_NUM_INTERRUPTS+16])(void);
+ 271:../src/mk20dx128.c **** 
+ 272:../src/mk20dx128.c **** __attribute__ ((section(".vectors"), used))
+ 273:../src/mk20dx128.c **** void (* const _VectorsFlash[NVIC_NUM_INTERRUPTS+16])(void) =
+ 274:../src/mk20dx128.c **** {
+ 275:../src/mk20dx128.c **** 	(void (*)(void))((unsigned long)&_estack),	//  0 ARM: Initial Stack Pointer
+ 276:../src/mk20dx128.c **** 	ResetHandler,					//  1 ARM: Initial Program Counter
+ 277:../src/mk20dx128.c **** 	nmi_isr,					//  2 ARM: Non-maskable Interrupt (NMI)
+ 278:../src/mk20dx128.c **** 	hard_fault_isr,					//  3 ARM: Hard Fault
+ 279:../src/mk20dx128.c **** 	memmanage_fault_isr,				//  4 ARM: MemManage Fault
+ 280:../src/mk20dx128.c **** 	bus_fault_isr,					//  5 ARM: Bus Fault
+ 281:../src/mk20dx128.c **** 	usage_fault_isr,				//  6 ARM: Usage Fault
+ 282:../src/mk20dx128.c **** 	fault_isr,					//  7 --
+ 283:../src/mk20dx128.c **** 	fault_isr,					//  8 --
+ 284:../src/mk20dx128.c **** 	fault_isr,					//  9 --
+ 285:../src/mk20dx128.c **** 	fault_isr,					// 10 --
+ 286:../src/mk20dx128.c **** 	svcall_isr,					// 11 ARM: Supervisor call (SVCall)
+ 287:../src/mk20dx128.c **** 	debugmonitor_isr,				// 12 ARM: Debug Monitor
+ 288:../src/mk20dx128.c **** 	fault_isr,					// 13 --
+ 289:../src/mk20dx128.c **** 	pendablesrvreq_isr,				// 14 ARM: Pendable req serv(PendableSrvReq)
+ 290:../src/mk20dx128.c **** 	systick_isr,					// 15 ARM: System tick timer (SysTick)
+ 291:../src/mk20dx128.c **** #if defined(__MK20DX128__)
+ 292:../src/mk20dx128.c **** 	dma_ch0_isr,					// 16 DMA channel 0 transfer complete
+ 293:../src/mk20dx128.c **** 	dma_ch1_isr,					// 17 DMA channel 1 transfer complete
+ 294:../src/mk20dx128.c **** 	dma_ch2_isr,					// 18 DMA channel 2 transfer complete
+ 295:../src/mk20dx128.c **** 	dma_ch3_isr,					// 19 DMA channel 3 transfer complete
+ 296:../src/mk20dx128.c **** 	dma_error_isr,					// 20 DMA error interrupt channel
+ 297:../src/mk20dx128.c **** 	unused_isr,					// 21 DMA --
+ 298:../src/mk20dx128.c **** 	flash_cmd_isr,					// 22 Flash Memory Command complete
+ 299:../src/mk20dx128.c **** 	flash_error_isr,				// 23 Flash Read collision
+ 300:../src/mk20dx128.c **** 	low_voltage_isr,				// 24 Low-voltage detect/warning
+ 301:../src/mk20dx128.c **** 	wakeup_isr,					// 25 Low Leakage Wakeup
+ 302:../src/mk20dx128.c **** 	watchdog_isr,					// 26 Both EWM and WDOG interrupt
+ 303:../src/mk20dx128.c **** 	i2c0_isr,					// 27 I2C0
+ 304:../src/mk20dx128.c **** 	spi0_isr,					// 28 SPI0
+ 305:../src/mk20dx128.c **** 	i2s0_tx_isr,					// 29 I2S0 Transmit
+ 306:../src/mk20dx128.c **** 	i2s0_rx_isr,					// 30 I2S0 Receive
+ 307:../src/mk20dx128.c **** 	uart0_lon_isr,					// 31 UART0 CEA709.1-B (LON) status
+ 308:../src/mk20dx128.c **** 	uart0_status_isr,				// 32 UART0 status
+ 309:../src/mk20dx128.c **** 	uart0_error_isr,				// 33 UART0 error
+ 310:../src/mk20dx128.c **** 	uart1_status_isr,				// 34 UART1 status
+ 311:../src/mk20dx128.c **** 	uart1_error_isr,				// 35 UART1 error
+ 312:../src/mk20dx128.c **** 	uart2_status_isr,				// 36 UART2 status
+ 313:../src/mk20dx128.c **** 	uart2_error_isr,				// 37 UART2 error
+ 314:../src/mk20dx128.c **** 	adc0_isr,					// 38 ADC0
+ 315:../src/mk20dx128.c **** 	cmp0_isr,					// 39 CMP0
+ 316:../src/mk20dx128.c **** 	cmp1_isr,					// 40 CMP1
+ 317:../src/mk20dx128.c **** 	ftm0_isr,					// 41 FTM0
+ 318:../src/mk20dx128.c **** 	ftm1_isr,					// 42 FTM1
+ 319:../src/mk20dx128.c **** 	cmt_isr,					// 43 CMT
+ 320:../src/mk20dx128.c **** 	rtc_alarm_isr,					// 44 RTC Alarm interrupt
+ 321:../src/mk20dx128.c **** 	rtc_seconds_isr,				// 45 RTC Seconds interrupt
+ 322:../src/mk20dx128.c **** 	pit0_isr,					// 46 PIT Channel 0
+ 323:../src/mk20dx128.c **** 	pit1_isr,					// 47 PIT Channel 1
+ 324:../src/mk20dx128.c **** 	pit2_isr,					// 48 PIT Channel 2
+ 325:../src/mk20dx128.c **** 	pit3_isr,					// 49 PIT Channel 3
+ 326:../src/mk20dx128.c **** 	pdb_isr,					// 50 PDB Programmable Delay Block
+ 327:../src/mk20dx128.c **** 	usb_isr,					// 51 USB OTG
+ 328:../src/mk20dx128.c **** 	usb_charge_isr,					// 52 USB Charger Detect
+ 329:../src/mk20dx128.c **** 	tsi0_isr,					// 53 TSI0
+ 330:../src/mk20dx128.c **** 	mcg_isr,					// 54 MCG
+ 331:../src/mk20dx128.c **** 	lptmr_isr,					// 55 Low Power Timer
+ 332:../src/mk20dx128.c **** 	porta_isr,					// 56 Pin detect (Port A)
+ 333:../src/mk20dx128.c **** 	portb_isr,					// 57 Pin detect (Port B)
+ 334:../src/mk20dx128.c **** 	portc_isr,					// 58 Pin detect (Port C)
+ 335:../src/mk20dx128.c **** 	portd_isr,					// 59 Pin detect (Port D)
+ 336:../src/mk20dx128.c **** 	porte_isr,					// 60 Pin detect (Port E)
+ 337:../src/mk20dx128.c **** 	software_isr,					// 61 Software interrupt
+ 338:../src/mk20dx128.c **** #elif defined(__MK20DX256__)
+ 339:../src/mk20dx128.c **** 	dma_ch0_isr,					// 16 DMA channel 0 transfer complete
+ 340:../src/mk20dx128.c **** 	dma_ch1_isr,					// 17 DMA channel 1 transfer complete
+ 341:../src/mk20dx128.c **** 	dma_ch2_isr,					// 18 DMA channel 2 transfer complete
+ 342:../src/mk20dx128.c **** 	dma_ch3_isr,					// 19 DMA channel 3 transfer complete
+ 343:../src/mk20dx128.c **** 	dma_ch4_isr,					// 20 DMA channel 4 transfer complete
+ 344:../src/mk20dx128.c **** 	dma_ch5_isr,					// 21 DMA channel 5 transfer complete
+ 345:../src/mk20dx128.c **** 	dma_ch6_isr,					// 22 DMA channel 6 transfer complete
+ 346:../src/mk20dx128.c **** 	dma_ch7_isr,					// 23 DMA channel 7 transfer complete
+ 347:../src/mk20dx128.c **** 	dma_ch8_isr,					// 24 DMA channel 8 transfer complete
+ 348:../src/mk20dx128.c **** 	dma_ch9_isr,					// 25 DMA channel 9 transfer complete
+ 349:../src/mk20dx128.c **** 	dma_ch10_isr,					// 26 DMA channel 10 transfer complete
+ 350:../src/mk20dx128.c **** 	dma_ch11_isr,					// 27 DMA channel 11 transfer complete
+ 351:../src/mk20dx128.c **** 	dma_ch12_isr,					// 28 DMA channel 12 transfer complete
+ 352:../src/mk20dx128.c **** 	dma_ch13_isr,					// 29 DMA channel 13 transfer complete
+ 353:../src/mk20dx128.c **** 	dma_ch14_isr,					// 30 DMA channel 14 transfer complete
+ 354:../src/mk20dx128.c **** 	dma_ch15_isr,					// 31 DMA channel 15 transfer complete
+ 355:../src/mk20dx128.c **** 	dma_error_isr,					// 32 DMA error interrupt channel
+ 356:../src/mk20dx128.c **** 	unused_isr,					// 33 --
+ 357:../src/mk20dx128.c **** 	flash_cmd_isr,					// 34 Flash Memory Command complete
+ 358:../src/mk20dx128.c **** 	flash_error_isr,				// 35 Flash Read collision
+ 359:../src/mk20dx128.c **** 	low_voltage_isr,				// 36 Low-voltage detect/warning
+ 360:../src/mk20dx128.c **** 	wakeup_isr,					// 37 Low Leakage Wakeup
+ 361:../src/mk20dx128.c **** 	watchdog_isr,					// 38 Both EWM and WDOG interrupt
+ 362:../src/mk20dx128.c **** 	unused_isr,					// 39 --
+ 363:../src/mk20dx128.c **** 	i2c0_isr,					// 40 I2C0
+ 364:../src/mk20dx128.c **** 	i2c1_isr,					// 41 I2C1
+ 365:../src/mk20dx128.c **** 	spi0_isr,					// 42 SPI0
+ 366:../src/mk20dx128.c **** 	spi1_isr,					// 43 SPI1
+ 367:../src/mk20dx128.c **** 	unused_isr,					// 44 --
+ 368:../src/mk20dx128.c **** 	can0_message_isr,				// 45 CAN OR'ed Message buffer (0-15)
+ 369:../src/mk20dx128.c **** 	can0_bus_off_isr,				// 46 CAN Bus Off
+ 370:../src/mk20dx128.c **** 	can0_error_isr,					// 47 CAN Error
+ 371:../src/mk20dx128.c **** 	can0_tx_warn_isr,				// 48 CAN Transmit Warning
+ 372:../src/mk20dx128.c **** 	can0_rx_warn_isr,				// 49 CAN Receive Warning
+ 373:../src/mk20dx128.c **** 	can0_wakeup_isr,				// 50 CAN Wake Up
+ 374:../src/mk20dx128.c **** 	i2s0_tx_isr,					// 51 I2S0 Transmit
+ 375:../src/mk20dx128.c **** 	i2s0_rx_isr,					// 52 I2S0 Receive
+ 376:../src/mk20dx128.c **** 	unused_isr,					// 53 --
+ 377:../src/mk20dx128.c **** 	unused_isr,					// 54 --
+ 378:../src/mk20dx128.c **** 	unused_isr,					// 55 --
+ 379:../src/mk20dx128.c **** 	unused_isr,					// 56 --
+ 380:../src/mk20dx128.c **** 	unused_isr,					// 57 --
+ 381:../src/mk20dx128.c **** 	unused_isr,					// 58 --
+ 382:../src/mk20dx128.c **** 	unused_isr,					// 59 --
+ 383:../src/mk20dx128.c **** 	uart0_lon_isr,					// 60 UART0 CEA709.1-B (LON) status
+ 384:../src/mk20dx128.c **** 	uart0_status_isr,				// 61 UART0 status
+ 385:../src/mk20dx128.c **** 	uart0_error_isr,				// 62 UART0 error
+ 386:../src/mk20dx128.c **** 	uart1_status_isr,				// 63 UART1 status
+ 387:../src/mk20dx128.c **** 	uart1_error_isr,				// 64 UART1 error
+ 388:../src/mk20dx128.c **** 	uart2_status_isr,				// 65 UART2 status
+ 389:../src/mk20dx128.c **** 	uart2_error_isr,				// 66 UART2 error
+ 390:../src/mk20dx128.c **** 	unused_isr,					// 67 --
+ 391:../src/mk20dx128.c **** 	unused_isr,					// 68 --
+ 392:../src/mk20dx128.c **** 	unused_isr,					// 69 --
+ 393:../src/mk20dx128.c **** 	unused_isr,					// 70 --
+ 394:../src/mk20dx128.c **** 	unused_isr,					// 71 --
+ 395:../src/mk20dx128.c **** 	unused_isr,					// 72 --
+ 396:../src/mk20dx128.c **** 	adc0_isr,					// 73 ADC0
+ 397:../src/mk20dx128.c **** 	adc1_isr,					// 74 ADC1
+ 398:../src/mk20dx128.c **** 	cmp0_isr,					// 75 CMP0
+ 399:../src/mk20dx128.c **** 	cmp1_isr,					// 76 CMP1
+ 400:../src/mk20dx128.c **** 	cmp2_isr,					// 77 CMP2
+ 401:../src/mk20dx128.c **** 	ftm0_isr,					// 78 FTM0
+ 402:../src/mk20dx128.c **** 	ftm1_isr,					// 79 FTM1
+ 403:../src/mk20dx128.c **** 	ftm2_isr,					// 80 FTM2
+ 404:../src/mk20dx128.c **** 	cmt_isr,					// 81 CMT
+ 405:../src/mk20dx128.c **** 	rtc_alarm_isr,					// 82 RTC Alarm interrupt
+ 406:../src/mk20dx128.c **** 	rtc_seconds_isr,				// 83 RTC Seconds interrupt
+ 407:../src/mk20dx128.c **** 	pit0_isr,					// 84 PIT Channel 0
+ 408:../src/mk20dx128.c **** 	pit1_isr,					// 85 PIT Channel 1
+ 409:../src/mk20dx128.c **** 	pit2_isr,					// 86 PIT Channel 2
+ 410:../src/mk20dx128.c **** 	pit3_isr,					// 87 PIT Channel 3
+ 411:../src/mk20dx128.c **** 	pdb_isr,					// 88 PDB Programmable Delay Block
+ 412:../src/mk20dx128.c **** 	usb_isr,					// 89 USB OTG
+ 413:../src/mk20dx128.c **** 	usb_charge_isr,					// 90 USB Charger Detect
+ 414:../src/mk20dx128.c **** 	unused_isr,					// 91 --
+ 415:../src/mk20dx128.c **** 	unused_isr,					// 92 --
+ 416:../src/mk20dx128.c **** 	unused_isr,					// 93 --
+ 417:../src/mk20dx128.c **** 	unused_isr,					// 94 --
+ 418:../src/mk20dx128.c **** 	unused_isr,					// 95 --
+ 419:../src/mk20dx128.c **** 	unused_isr,					// 96 --
+ 420:../src/mk20dx128.c **** 	dac0_isr,					// 97 DAC0
+ 421:../src/mk20dx128.c **** 	unused_isr,					// 98 --
+ 422:../src/mk20dx128.c **** 	tsi0_isr,					// 99 TSI0
+ 423:../src/mk20dx128.c **** 	mcg_isr,					// 100 MCG
+ 424:../src/mk20dx128.c **** 	lptmr_isr,					// 101 Low Power Timer
+ 425:../src/mk20dx128.c **** 	unused_isr,					// 102 --
+ 426:../src/mk20dx128.c **** 	porta_isr,					// 103 Pin detect (Port A)
+ 427:../src/mk20dx128.c **** 	portb_isr,					// 104 Pin detect (Port B)
+ 428:../src/mk20dx128.c **** 	portc_isr,					// 105 Pin detect (Port C)
+ 429:../src/mk20dx128.c **** 	portd_isr,					// 106 Pin detect (Port D)
+ 430:../src/mk20dx128.c **** 	porte_isr,					// 107 Pin detect (Port E)
+ 431:../src/mk20dx128.c **** 	unused_isr,					// 108 --
+ 432:../src/mk20dx128.c **** 	unused_isr,					// 109 --
+ 433:../src/mk20dx128.c **** 	software_isr,					// 110 Software interrupt
+ 434:../src/mk20dx128.c **** #elif defined(__MKL26Z64__)
+ 435:../src/mk20dx128.c **** 	dma_ch0_isr,					// 16 DMA channel 0 transfer complete
+ 436:../src/mk20dx128.c **** 	dma_ch1_isr,					// 17 DMA channel 1 transfer complete
+ 437:../src/mk20dx128.c **** 	dma_ch2_isr,					// 18 DMA channel 2 transfer complete
+ 438:../src/mk20dx128.c **** 	dma_ch3_isr,					// 19 DMA channel 3 transfer complete
+ 439:../src/mk20dx128.c **** 	unused_isr,					// 20 --
+ 440:../src/mk20dx128.c **** 	flash_cmd_isr,					// 21 Flash Memory Command complete
+ 441:../src/mk20dx128.c **** 	low_voltage_isr,				// 22 Low-voltage detect/warning
+ 442:../src/mk20dx128.c **** 	wakeup_isr,					// 23 Low Leakage Wakeup
+ 443:../src/mk20dx128.c **** 	i2c0_isr,					// 24 I2C0
+ 444:../src/mk20dx128.c **** 	i2c1_isr,					// 25 I2C1
+ 445:../src/mk20dx128.c **** 	spi0_isr,					// 26 SPI0
+ 446:../src/mk20dx128.c **** 	spi1_isr,					// 27 SPI1
+ 447:../src/mk20dx128.c **** 	uart0_status_isr,				// 28 UART0 status & error
+ 448:../src/mk20dx128.c **** 	uart1_status_isr,				// 29 UART1 status & error
+ 449:../src/mk20dx128.c **** 	uart2_status_isr,				// 30 UART2 status & error
+ 450:../src/mk20dx128.c **** 	adc0_isr,					// 31 ADC0
+ 451:../src/mk20dx128.c **** 	cmp0_isr,					// 32 CMP0
+ 452:../src/mk20dx128.c **** 	ftm0_isr,					// 33 FTM0
+ 453:../src/mk20dx128.c **** 	ftm1_isr,					// 34 FTM1
+ 454:../src/mk20dx128.c **** 	ftm2_isr,					// 35 FTM2
+ 455:../src/mk20dx128.c **** 	rtc_alarm_isr,					// 36 RTC Alarm interrupt
+ 456:../src/mk20dx128.c **** 	rtc_seconds_isr,				// 37 RTC Seconds interrupt
+ 457:../src/mk20dx128.c **** 	pit_isr,					// 38 PIT Both Channels
+ 458:../src/mk20dx128.c **** 	i2s0_isr,					// 39 I2S0 Transmit & Receive
+ 459:../src/mk20dx128.c **** 	usb_isr,					// 40 USB OTG
+ 460:../src/mk20dx128.c **** 	dac0_isr,					// 41 DAC0
+ 461:../src/mk20dx128.c **** 	tsi0_isr,					// 42 TSI0
+ 462:../src/mk20dx128.c **** 	mcg_isr,					// 43 MCG
+ 463:../src/mk20dx128.c **** 	lptmr_isr,					// 44 Low Power Timer
+ 464:../src/mk20dx128.c **** 	software_isr,					// 45 Software interrupt
+ 465:../src/mk20dx128.c **** 	porta_isr,					// 46 Pin detect (Port A)
+ 466:../src/mk20dx128.c **** 	portcd_isr,					// 47 Pin detect (Port C and D)
+ 467:../src/mk20dx128.c **** #elif defined(__MK64FX512__)
+ 468:../src/mk20dx128.c **** 	dma_ch0_isr,					// 16 DMA channel 0 transfer complete
+ 469:../src/mk20dx128.c **** 	dma_ch1_isr,					// 17 DMA channel 1 transfer complete
+ 470:../src/mk20dx128.c **** 	dma_ch2_isr,					// 18 DMA channel 2 transfer complete
+ 471:../src/mk20dx128.c **** 	dma_ch3_isr,					// 19 DMA channel 3 transfer complete
+ 472:../src/mk20dx128.c **** 	dma_ch4_isr,					// 20 DMA channel 4 transfer complete
+ 473:../src/mk20dx128.c **** 	dma_ch5_isr,					// 21 DMA channel 5 transfer complete
+ 474:../src/mk20dx128.c **** 	dma_ch6_isr,					// 22 DMA channel 6 transfer complete
+ 475:../src/mk20dx128.c **** 	dma_ch7_isr,					// 23 DMA channel 7 transfer complete
+ 476:../src/mk20dx128.c **** 	dma_ch8_isr,					// 24 DMA channel 8 transfer complete
+ 477:../src/mk20dx128.c **** 	dma_ch9_isr,					// 25 DMA channel 9 transfer complete
+ 478:../src/mk20dx128.c **** 	dma_ch10_isr,					// 26 DMA channel 10 transfer complete
+ 479:../src/mk20dx128.c **** 	dma_ch11_isr,					// 27 DMA channel 11 transfer complete
+ 480:../src/mk20dx128.c **** 	dma_ch12_isr,					// 28 DMA channel 12 transfer complete
+ 481:../src/mk20dx128.c **** 	dma_ch13_isr,					// 29 DMA channel 13 transfer complete
+ 482:../src/mk20dx128.c **** 	dma_ch14_isr,					// 30 DMA channel 14 transfer complete
+ 483:../src/mk20dx128.c **** 	dma_ch15_isr,					// 31 DMA channel 15 transfer complete
+ 484:../src/mk20dx128.c **** 	dma_error_isr,					// 32 DMA error interrupt channel
+ 485:../src/mk20dx128.c **** 	mcm_isr,					// 33 MCM
+ 486:../src/mk20dx128.c **** 	flash_cmd_isr,					// 34 Flash Memory Command complete
+ 487:../src/mk20dx128.c **** 	flash_error_isr,				// 35 Flash Read collision
+ 488:../src/mk20dx128.c **** 	low_voltage_isr,				// 36 Low-voltage detect/warning
+ 489:../src/mk20dx128.c **** 	wakeup_isr,					// 37 Low Leakage Wakeup
+ 490:../src/mk20dx128.c **** 	watchdog_isr,					// 38 Both EWM and WDOG interrupt
+ 491:../src/mk20dx128.c **** 	randnum_isr,					// 39 Random Number Generator
+ 492:../src/mk20dx128.c **** 	i2c0_isr,					// 40 I2C0
+ 493:../src/mk20dx128.c **** 	i2c1_isr,					// 41 I2C1
+ 494:../src/mk20dx128.c **** 	spi0_isr,					// 42 SPI0
+ 495:../src/mk20dx128.c **** 	spi1_isr,					// 43 SPI1
+ 496:../src/mk20dx128.c **** 	i2s0_tx_isr,					// 44 I2S0 Transmit
+ 497:../src/mk20dx128.c **** 	i2s0_rx_isr,					// 45 I2S0 Receive
+ 498:../src/mk20dx128.c **** 	unused_isr,					// 46 --
+ 499:../src/mk20dx128.c **** 	uart0_status_isr,				// 47 UART0 status
+ 500:../src/mk20dx128.c **** 	uart0_error_isr,				// 48 UART0 error
+ 501:../src/mk20dx128.c **** 	uart1_status_isr,				// 49 UART1 status
+ 502:../src/mk20dx128.c **** 	uart1_error_isr,				// 50 UART1 error
+ 503:../src/mk20dx128.c **** 	uart2_status_isr,				// 51 UART2 status
+ 504:../src/mk20dx128.c **** 	uart2_error_isr,				// 52 UART2 error
+ 505:../src/mk20dx128.c **** 	uart3_status_isr,				// 53 UART3 status
+ 506:../src/mk20dx128.c **** 	uart3_error_isr,				// 54 UART3 error
+ 507:../src/mk20dx128.c **** 	adc0_isr,					// 55 ADC0
+ 508:../src/mk20dx128.c **** 	cmp0_isr,					// 56 CMP0
+ 509:../src/mk20dx128.c **** 	cmp1_isr,					// 57 CMP1
+ 510:../src/mk20dx128.c **** 	ftm0_isr,					// 58 FTM0
+ 511:../src/mk20dx128.c **** 	ftm1_isr,					// 59 FTM1
+ 512:../src/mk20dx128.c **** 	ftm2_isr,					// 60 FTM2
+ 513:../src/mk20dx128.c **** 	cmt_isr,					// 61 CMT
+ 514:../src/mk20dx128.c **** 	rtc_alarm_isr,					// 62 RTC Alarm interrupt
+ 515:../src/mk20dx128.c **** 	rtc_seconds_isr,				// 63 RTC Seconds interrupt
+ 516:../src/mk20dx128.c **** 	pit0_isr,					// 64 PIT Channel 0
+ 517:../src/mk20dx128.c **** 	pit1_isr,					// 65 PIT Channel 1
+ 518:../src/mk20dx128.c **** 	pit2_isr,					// 66 PIT Channel 2
+ 519:../src/mk20dx128.c **** 	pit3_isr,					// 67 PIT Channel 3
+ 520:../src/mk20dx128.c **** 	pdb_isr,					// 68 PDB Programmable Delay Block
+ 521:../src/mk20dx128.c **** 	usb_isr,					// 69 USB OTG
+ 522:../src/mk20dx128.c **** 	usb_charge_isr,					// 70 USB Charger Detect
+ 523:../src/mk20dx128.c **** 	unused_isr,					// 71 --
+ 524:../src/mk20dx128.c **** 	dac0_isr,					// 72 DAC0
+ 525:../src/mk20dx128.c **** 	mcg_isr,					// 73 MCG
+ 526:../src/mk20dx128.c **** 	lptmr_isr,					// 74 Low Power Timer
+ 527:../src/mk20dx128.c **** 	porta_isr,					// 75 Pin detect (Port A)
+ 528:../src/mk20dx128.c **** 	portb_isr,					// 76 Pin detect (Port B)
+ 529:../src/mk20dx128.c **** 	portc_isr,					// 77 Pin detect (Port C)
+ 530:../src/mk20dx128.c **** 	portd_isr,					// 78 Pin detect (Port D)
+ 531:../src/mk20dx128.c **** 	porte_isr,					// 79 Pin detect (Port E)
+ 532:../src/mk20dx128.c **** 	software_isr,					// 80 Software interrupt
+ 533:../src/mk20dx128.c **** 	spi2_isr,					// 81 SPI2
+ 534:../src/mk20dx128.c **** 	uart4_status_isr,				// 82 UART4 status
+ 535:../src/mk20dx128.c **** 	uart4_error_isr,				// 83 UART4 error
+ 536:../src/mk20dx128.c **** 	uart5_status_isr,				// 84 UART4 status
+ 537:../src/mk20dx128.c **** 	uart5_error_isr,				// 85 UART4 error
+ 538:../src/mk20dx128.c **** 	cmp2_isr,					// 86 CMP2
+ 539:../src/mk20dx128.c **** 	ftm3_isr,					// 87 FTM3
+ 540:../src/mk20dx128.c **** 	dac1_isr,					// 88 DAC1
+ 541:../src/mk20dx128.c **** 	adc1_isr,					// 89 ADC1
+ 542:../src/mk20dx128.c **** 	i2c2_isr,					// 90 I2C2
+ 543:../src/mk20dx128.c **** 	can0_message_isr,				// 91 CAN OR'ed Message buffer (0-15)
+ 544:../src/mk20dx128.c **** 	can0_bus_off_isr,				// 92 CAN Bus Off
+ 545:../src/mk20dx128.c **** 	can0_error_isr,					// 93 CAN Error
+ 546:../src/mk20dx128.c **** 	can0_tx_warn_isr,				// 94 CAN Transmit Warning
+ 547:../src/mk20dx128.c **** 	can0_rx_warn_isr,				// 95 CAN Receive Warning
+ 548:../src/mk20dx128.c **** 	can0_wakeup_isr,				// 96 CAN Wake Up
+ 549:../src/mk20dx128.c **** 	sdhc_isr,					// 97 SDHC
+ 550:../src/mk20dx128.c **** 	enet_timer_isr,					// 98 Ethernet IEEE1588 Timers
+ 551:../src/mk20dx128.c **** 	enet_tx_isr,					// 99 Ethernet Transmit
+ 552:../src/mk20dx128.c **** 	enet_rx_isr,					// 100 Ethernet Receive
+ 553:../src/mk20dx128.c **** 	enet_error_isr,					// 101 Ethernet Error
+ 554:../src/mk20dx128.c **** #elif defined(__MK66FX1M0__)
+ 555:../src/mk20dx128.c **** 	dma_ch0_isr,					// 16 DMA channel 0 transfer complete
+ 556:../src/mk20dx128.c **** 	dma_ch1_isr,					// 17 DMA channel 1 transfer complete
+ 557:../src/mk20dx128.c **** 	dma_ch2_isr,					// 18 DMA channel 2 transfer complete
+ 558:../src/mk20dx128.c **** 	dma_ch3_isr,					// 19 DMA channel 3 transfer complete
+ 559:../src/mk20dx128.c **** 	dma_ch4_isr,					// 20 DMA channel 4 transfer complete
+ 560:../src/mk20dx128.c **** 	dma_ch5_isr,					// 21 DMA channel 5 transfer complete
+ 561:../src/mk20dx128.c **** 	dma_ch6_isr,					// 22 DMA channel 6 transfer complete
+ 562:../src/mk20dx128.c **** 	dma_ch7_isr,					// 23 DMA channel 7 transfer complete
+ 563:../src/mk20dx128.c **** 	dma_ch8_isr,					// 24 DMA channel 8 transfer complete
+ 564:../src/mk20dx128.c **** 	dma_ch9_isr,					// 25 DMA channel 9 transfer complete
+ 565:../src/mk20dx128.c **** 	dma_ch10_isr,					// 26 DMA channel 10 transfer complete
+ 566:../src/mk20dx128.c **** 	dma_ch11_isr,					// 27 DMA channel 11 transfer complete
+ 567:../src/mk20dx128.c **** 	dma_ch12_isr,					// 28 DMA channel 12 transfer complete
+ 568:../src/mk20dx128.c **** 	dma_ch13_isr,					// 29 DMA channel 13 transfer complete
+ 569:../src/mk20dx128.c **** 	dma_ch14_isr,					// 30 DMA channel 14 transfer complete
+ 570:../src/mk20dx128.c **** 	dma_ch15_isr,					// 31 DMA channel 15 transfer complete
+ 571:../src/mk20dx128.c **** 	dma_error_isr,					// 32 DMA error interrupt channel
+ 572:../src/mk20dx128.c **** 	mcm_isr,					// 33 MCM
+ 573:../src/mk20dx128.c **** 	flash_cmd_isr,					// 34 Flash Memory Command complete
+ 574:../src/mk20dx128.c **** 	flash_error_isr,				// 35 Flash Read collision
+ 575:../src/mk20dx128.c **** 	low_voltage_isr,				// 36 Low-voltage detect/warning
+ 576:../src/mk20dx128.c **** 	wakeup_isr,					// 37 Low Leakage Wakeup
+ 577:../src/mk20dx128.c **** 	watchdog_isr,					// 38 Both EWM and WDOG interrupt
+ 578:../src/mk20dx128.c **** 	randnum_isr,					// 39 Random Number Generator
+ 579:../src/mk20dx128.c **** 	i2c0_isr,					// 40 I2C0
+ 580:../src/mk20dx128.c **** 	i2c1_isr,					// 41 I2C1
+ 581:../src/mk20dx128.c **** 	spi0_isr,					// 42 SPI0
+ 582:../src/mk20dx128.c **** 	spi1_isr,					// 43 SPI1
+ 583:../src/mk20dx128.c **** 	i2s0_tx_isr,					// 44 I2S0 Transmit
+ 584:../src/mk20dx128.c **** 	i2s0_rx_isr,					// 45 I2S0 Receive
+ 585:../src/mk20dx128.c **** 	unused_isr,					// 46 --
+ 586:../src/mk20dx128.c **** 	uart0_status_isr,				// 47 UART0 status
+ 587:../src/mk20dx128.c **** 	uart0_error_isr,				// 48 UART0 error
+ 588:../src/mk20dx128.c **** 	uart1_status_isr,				// 49 UART1 status
+ 589:../src/mk20dx128.c **** 	uart1_error_isr,				// 50 UART1 error
+ 590:../src/mk20dx128.c **** 	uart2_status_isr,				// 51 UART2 status
+ 591:../src/mk20dx128.c **** 	uart2_error_isr,				// 52 UART2 error
+ 592:../src/mk20dx128.c **** 	uart3_status_isr,				// 53 UART3 status
+ 593:../src/mk20dx128.c **** 	uart3_error_isr,				// 54 UART3 error
+ 594:../src/mk20dx128.c **** 	adc0_isr,					// 55 ADC0
+ 595:../src/mk20dx128.c **** 	cmp0_isr,					// 56 CMP0
+ 596:../src/mk20dx128.c **** 	cmp1_isr,					// 57 CMP1
+ 597:../src/mk20dx128.c **** 	ftm0_isr,					// 58 FTM0
+ 598:../src/mk20dx128.c **** 	ftm1_isr,					// 59 FTM1
+ 599:../src/mk20dx128.c **** 	ftm2_isr,					// 60 FTM2
+ 600:../src/mk20dx128.c **** 	cmt_isr,					// 61 CMT
+ 601:../src/mk20dx128.c **** 	rtc_alarm_isr,					// 62 RTC Alarm interrupt
+ 602:../src/mk20dx128.c **** 	rtc_seconds_isr,				// 63 RTC Seconds interrupt
+ 603:../src/mk20dx128.c **** 	pit0_isr,					// 64 PIT Channel 0
+ 604:../src/mk20dx128.c **** 	pit1_isr,					// 65 PIT Channel 1
+ 605:../src/mk20dx128.c **** 	pit2_isr,					// 66 PIT Channel 2
+ 606:../src/mk20dx128.c **** 	pit3_isr,					// 67 PIT Channel 3
+ 607:../src/mk20dx128.c **** 	pdb_isr,					// 68 PDB Programmable Delay Block
+ 608:../src/mk20dx128.c **** 	usb_isr,					// 69 USB OTG
+ 609:../src/mk20dx128.c **** 	usb_charge_isr,					// 70 USB Charger Detect
+ 610:../src/mk20dx128.c **** 	unused_isr,					// 71 --
+ 611:../src/mk20dx128.c **** 	dac0_isr,					// 72 DAC0
+ 612:../src/mk20dx128.c **** 	mcg_isr,					// 73 MCG
+ 613:../src/mk20dx128.c **** 	lptmr_isr,					// 74 Low Power Timer
+ 614:../src/mk20dx128.c **** 	porta_isr,					// 75 Pin detect (Port A)
+ 615:../src/mk20dx128.c **** 	portb_isr,					// 76 Pin detect (Port B)
+ 616:../src/mk20dx128.c **** 	portc_isr,					// 77 Pin detect (Port C)
+ 617:../src/mk20dx128.c **** 	portd_isr,					// 78 Pin detect (Port D)
+ 618:../src/mk20dx128.c **** 	porte_isr,					// 79 Pin detect (Port E)
+ 619:../src/mk20dx128.c **** 	software_isr,					// 80 Software interrupt
+ 620:../src/mk20dx128.c **** 	spi2_isr,					// 81 SPI2
+ 621:../src/mk20dx128.c **** 	uart4_status_isr,				// 82 UART4 status
+ 622:../src/mk20dx128.c **** 	uart4_error_isr,				// 83 UART4 error
+ 623:../src/mk20dx128.c **** 	unused_isr,					// 84 --
+ 624:../src/mk20dx128.c **** 	unused_isr,					// 85 --
+ 625:../src/mk20dx128.c **** 	cmp2_isr,					// 86 CMP2
+ 626:../src/mk20dx128.c **** 	ftm3_isr,					// 87 FTM3
+ 627:../src/mk20dx128.c **** 	dac1_isr,					// 88 DAC1
+ 628:../src/mk20dx128.c **** 	adc1_isr,					// 89 ADC1
+ 629:../src/mk20dx128.c **** 	i2c2_isr,					// 90 I2C2
+ 630:../src/mk20dx128.c **** 	can0_message_isr,				// 91 CAN OR'ed Message buffer (0-15)
+ 631:../src/mk20dx128.c **** 	can0_bus_off_isr,				// 92 CAN Bus Off
+ 632:../src/mk20dx128.c **** 	can0_error_isr,					// 93 CAN Error
+ 633:../src/mk20dx128.c **** 	can0_tx_warn_isr,				// 94 CAN Transmit Warning
+ 634:../src/mk20dx128.c **** 	can0_rx_warn_isr,				// 95 CAN Receive Warning
+ 635:../src/mk20dx128.c **** 	can0_wakeup_isr,				// 96 CAN Wake Up
+ 636:../src/mk20dx128.c **** 	sdhc_isr,					// 97 SDHC
+ 637:../src/mk20dx128.c **** 	enet_timer_isr,					// 98 Ethernet IEEE1588 Timers
+ 638:../src/mk20dx128.c **** 	enet_tx_isr,					// 99 Ethernet Transmit
+ 639:../src/mk20dx128.c **** 	enet_rx_isr,					// 100 Ethernet Receive
+ 640:../src/mk20dx128.c **** 	enet_error_isr,					// 101 Ethernet Error
+ 641:../src/mk20dx128.c **** 	lpuart0_status_isr,				// 102 LPUART
+ 642:../src/mk20dx128.c **** 	tsi0_isr,					// 103 TSI0
+ 643:../src/mk20dx128.c **** 	tpm1_isr,					// 104 FTM1
+ 644:../src/mk20dx128.c **** 	tpm2_isr,					// 105 FTM2
+ 645:../src/mk20dx128.c **** 	usbhs_phy_isr,					// 106 USB-HS Phy
+ 646:../src/mk20dx128.c **** 	i2c3_isr,					// 107 I2C3
+ 647:../src/mk20dx128.c **** 	cmp3_isr,					// 108 CMP3
+ 648:../src/mk20dx128.c **** 	usbhs_isr,					// 109 USB-HS
+ 649:../src/mk20dx128.c **** 	can1_message_isr,				// 110 CAN OR'ed Message buffer (0-15)
+ 650:../src/mk20dx128.c **** 	can1_bus_off_isr,				// 111 CAN Bus Off
+ 651:../src/mk20dx128.c **** 	can1_error_isr,					// 112 CAN Error
+ 652:../src/mk20dx128.c **** 	can1_tx_warn_isr,				// 113 CAN Transmit Warning
+ 653:../src/mk20dx128.c **** 	can1_rx_warn_isr,				// 114 CAN Receive Warning
+ 654:../src/mk20dx128.c **** 	can1_wakeup_isr,				// 115 CAN Wake Up
+ 655:../src/mk20dx128.c **** #endif
+ 656:../src/mk20dx128.c **** };
+ 657:../src/mk20dx128.c **** 
+ 658:../src/mk20dx128.c **** 
+ 659:../src/mk20dx128.c **** __attribute__ ((section(".flashconfig"), used))
+ 660:../src/mk20dx128.c **** const uint8_t flashconfigbytes[16] = {
+ 661:../src/mk20dx128.c **** 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+ 662:../src/mk20dx128.c **** 	0xFF, 0xFF, 0xFF, 0xFF, FSEC, FOPT, 0xFF, 0xFF
+ 663:../src/mk20dx128.c **** };
+ 664:../src/mk20dx128.c **** 
+ 665:../src/mk20dx128.c **** 
+ 666:../src/mk20dx128.c **** // Automatically initialize the RTC.  When the build defines the compile
+ 667:../src/mk20dx128.c **** // time, and the user has added a crystal, the RTC will automatically
+ 668:../src/mk20dx128.c **** // begin at the time of the first upload.
+ 669:../src/mk20dx128.c **** #ifndef TIME_T
+ 670:../src/mk20dx128.c **** #define TIME_T 1349049600 // default 1 Oct 2012 (never used, Arduino sets this)
+ 671:../src/mk20dx128.c **** #endif
+ 672:../src/mk20dx128.c **** extern void *__rtc_localtime; // Arduino build process sets this
+ 673:../src/mk20dx128.c **** extern void rtc_set(unsigned long t);
+ 674:../src/mk20dx128.c **** 
+ 675:../src/mk20dx128.c **** 
+ 676:../src/mk20dx128.c **** static void startup_default_early_hook(void) {
+ 359              		.loc 1 676 0
+ 360              		.cfi_startproc
+ 361              		@ args = 0, pretend = 0, frame = 0
+ 362              		@ frame_needed = 0, uses_anonymous_args = 0
+ 363              		@ link register save eliminated.
+ 677:../src/mk20dx128.c **** #if defined(KINETISK)
+ 678:../src/mk20dx128.c **** 	WDOG_STCTRLH = WDOG_STCTRLH_ALLOWUPDATE;
+ 364              		.loc 1 678 0
+ 365 0000 014B     		ldr	r3, .L26
+ 366 0002 1022     		movs	r2, #16
+ 367 0004 1A80     		strh	r2, [r3]	@ movhi
+ 368 0006 7047     		bx	lr
+ 369              	.L27:
+ 370              		.align	2
+ 371              	.L26:
+ 372 0008 00200540 		.word	1074077696
+ 373              		.cfi_endproc
+ 374              	.LFE12:
+ 376              		.weak	startup_early_hook
+ 377              		.thumb_set startup_early_hook,startup_default_early_hook
+ 378              		.section	.text.startup_default_late_hook,"ax",%progbits
+ 379              		.align	1
+ 380              		.thumb
+ 381              		.thumb_func
+ 383              	startup_default_late_hook:
+ 384              	.LFB13:
+ 679:../src/mk20dx128.c **** #elif defined(KINETISL)
+ 680:../src/mk20dx128.c **** 	SIM_COPC = 0;  // disable the watchdog
+ 681:../src/mk20dx128.c **** #endif
+ 682:../src/mk20dx128.c **** }
+ 683:../src/mk20dx128.c **** static void startup_default_late_hook(void) {}
+ 385              		.loc 1 683 0
+ 386              		.cfi_startproc
+ 387              		@ args = 0, pretend = 0, frame = 0
+ 388              		@ frame_needed = 0, uses_anonymous_args = 0
+ 389              		@ link register save eliminated.
+ 390 0000 7047     		bx	lr
+ 391              		.cfi_endproc
+ 392              	.LFE13:
+ 394              		.weak	startup_late_hook
+ 395              		.thumb_set startup_late_hook,startup_default_late_hook
+ 396              		.section	.startup,"ax",%progbits
+ 397              		.align	1
+ 398              		.global	ResetHandler
+ 399              		.thumb
+ 400              		.thumb_func
+ 402              	ResetHandler:
+ 403              	.LFB14:
+ 684:../src/mk20dx128.c **** void startup_early_hook(void)		__attribute__ ((weak, alias("startup_default_early_hook")));
+ 685:../src/mk20dx128.c **** void startup_late_hook(void)		__attribute__ ((weak, alias("startup_default_late_hook")));
+ 686:../src/mk20dx128.c **** 
+ 687:../src/mk20dx128.c **** 
+ 688:../src/mk20dx128.c **** #ifdef __clang__
+ 689:../src/mk20dx128.c **** // Clang seems to generate slightly larger code with Os than gcc
+ 690:../src/mk20dx128.c **** __attribute__ ((optimize("-Os")))
+ 691:../src/mk20dx128.c **** #else
+ 692:../src/mk20dx128.c **** __attribute__ ((section(".startup"),optimize("-Os")))
+ 693:../src/mk20dx128.c **** #endif
+ 694:../src/mk20dx128.c **** void ResetHandler(void)
+ 695:../src/mk20dx128.c **** {
+ 404              		.loc 1 695 0
+ 405              		.cfi_startproc
+ 406              		@ args = 0, pretend = 0, frame = 0
+ 407              		@ frame_needed = 0, uses_anonymous_args = 0
+ 408              	.LVL5:
+ 696:../src/mk20dx128.c **** 	uint32_t *src = &_etext;
+ 697:../src/mk20dx128.c **** 	uint32_t *dest = &_sdata;
+ 698:../src/mk20dx128.c **** 	unsigned int i;
+ 699:../src/mk20dx128.c **** #if F_CPU <= 2000000
+ 700:../src/mk20dx128.c **** 	volatile int n;
+ 701:../src/mk20dx128.c **** #endif
+ 702:../src/mk20dx128.c **** 	//volatile int count;
+ 703:../src/mk20dx128.c **** 
+ 704:../src/mk20dx128.c **** #ifdef KINETISK
+ 705:../src/mk20dx128.c **** 	WDOG_UNLOCK = WDOG_UNLOCK_SEQ1;
+ 409              		.loc 1 705 0
+ 410 0000 564B     		ldr	r3, .L72
+ 411 0002 4CF22052 		movw	r2, #50464
+ 695:../src/mk20dx128.c **** 	uint32_t *src = &_etext;
+ 412              		.loc 1 695 0
+ 413 0006 10B5     		push	{r4, lr}
+ 414              		.cfi_def_cfa_offset 8
+ 415              		.cfi_offset 4, -8
+ 416              		.cfi_offset 14, -4
+ 417              		.loc 1 705 0
+ 418 0008 1A80     		strh	r2, [r3]	@ movhi
+ 706:../src/mk20dx128.c **** 	WDOG_UNLOCK = WDOG_UNLOCK_SEQ2;
+ 419              		.loc 1 706 0
+ 420 000a 4DF62812 		movw	r2, #55592
+ 421 000e 1A80     		strh	r2, [r3]	@ movhi
+ 707:../src/mk20dx128.c **** 	__asm__ volatile ("nop");
+ 422              		.loc 1 707 0
+ 423              		.syntax unified
+ 424              	@ 707 "../src/mk20dx128.c" 1
+ 425 0010 00BF     		nop
+ 426              	@ 0 "" 2
+ 708:../src/mk20dx128.c **** 	__asm__ volatile ("nop");
+ 427              		.loc 1 708 0
+ 428              	@ 708 "../src/mk20dx128.c" 1
+ 429 0012 00BF     		nop
+ 430              	@ 0 "" 2
+ 709:../src/mk20dx128.c **** #endif
+ 710:../src/mk20dx128.c **** 	// programs using the watchdog timer or needing to initialize hardware as
+ 711:../src/mk20dx128.c **** 	// early as possible can implement startup_early_hook()
+ 712:../src/mk20dx128.c **** 	startup_early_hook();
+ 431              		.loc 1 712 0
+ 432              		.thumb
+ 433              		.syntax unified
+ 434 0014 FFF7FEFF 		bl	startup_early_hook
+ 435              	.LVL6:
+ 713:../src/mk20dx128.c **** 
+ 714:../src/mk20dx128.c **** 	// enable clocks to always-used peripherals
+ 715:../src/mk20dx128.c **** #if defined(__MK20DX128__)
+ 716:../src/mk20dx128.c **** 	SIM_SCGC5 = 0x00043F82;		// clocks active to all GPIO
+ 717:../src/mk20dx128.c **** 	SIM_SCGC6 = SIM_SCGC6_RTC | SIM_SCGC6_FTM0 | SIM_SCGC6_FTM1 | SIM_SCGC6_ADC0 | SIM_SCGC6_FTFL;
+ 718:../src/mk20dx128.c **** #elif defined(__MK20DX256__)
+ 719:../src/mk20dx128.c **** 	SIM_SCGC3 = SIM_SCGC3_ADC1 | SIM_SCGC3_FTM2;
+ 436              		.loc 1 719 0
+ 437 0018 514B     		ldr	r3, .L72+4
+ 438 001a 4FF01062 		mov	r2, #150994944
+ 439 001e 1A60     		str	r2, [r3]
+ 720:../src/mk20dx128.c **** 	SIM_SCGC5 = 0x00043F82;		// clocks active to all GPIO
+ 440              		.loc 1 720 0
+ 441 0020 504A     		ldr	r2, .L72+8
+ 442 0022 9A60     		str	r2, [r3, #8]
+ 721:../src/mk20dx128.c **** 	SIM_SCGC6 = SIM_SCGC6_RTC | SIM_SCGC6_FTM0 | SIM_SCGC6_FTM1 | SIM_SCGC6_ADC0 | SIM_SCGC6_FTFL;
+ 443              		.loc 1 721 0
+ 444 0024 504A     		ldr	r2, .L72+12
+ 445 0026 DA60     		str	r2, [r3, #12]
+ 722:../src/mk20dx128.c **** #elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+ 723:../src/mk20dx128.c **** 	SIM_SCGC3 = SIM_SCGC3_ADC1 | SIM_SCGC3_FTM2 | SIM_SCGC3_FTM3;
+ 724:../src/mk20dx128.c **** 	SIM_SCGC5 = 0x00043F82;		// clocks active to all GPIO
+ 725:../src/mk20dx128.c **** 	SIM_SCGC6 = SIM_SCGC6_RTC | SIM_SCGC6_FTM0 | SIM_SCGC6_FTM1 | SIM_SCGC6_ADC0 | SIM_SCGC6_FTFL;
+ 726:../src/mk20dx128.c **** 	//PORTC_PCR5 = PORT_PCR_MUX(1) | PORT_PCR_DSE | PORT_PCR_SRE;
+ 727:../src/mk20dx128.c **** 	//GPIOC_PDDR |= (1<<5);
+ 728:../src/mk20dx128.c **** 	//GPIOC_PSOR = (1<<5);
+ 729:../src/mk20dx128.c **** 	//while (1);
+ 730:../src/mk20dx128.c **** #elif defined(__MKL26Z64__)
+ 731:../src/mk20dx128.c **** 	SIM_SCGC4 = SIM_SCGC4_USBOTG | 0xF0000030;
+ 732:../src/mk20dx128.c **** 	SIM_SCGC5 = 0x00003F82;		// clocks active to all GPIO
+ 733:../src/mk20dx128.c **** 	SIM_SCGC6 = SIM_SCGC6_ADC0 | SIM_SCGC6_TPM0 | SIM_SCGC6_TPM1 | SIM_SCGC6_TPM2 | SIM_SCGC6_FTFL;
+ 734:../src/mk20dx128.c **** #endif
+ 735:../src/mk20dx128.c **** #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
+ 736:../src/mk20dx128.c **** 	SCB_CPACR = 0x00F00000;
+ 737:../src/mk20dx128.c **** #endif
+ 738:../src/mk20dx128.c **** #if defined(__MK66FX1M0__)
+ 739:../src/mk20dx128.c **** 	LMEM_PCCCR = 0x85000003;
+ 740:../src/mk20dx128.c **** #endif
+ 741:../src/mk20dx128.c **** #if 0
+ 742:../src/mk20dx128.c **** 	// testing only, enable ser_print
+ 743:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV4(1);
+ 744:../src/mk20dx128.c **** 	MCG_C4 |= MCG_C4_DMX32 | MCG_C4_DRST_DRS(1);
+ 745:../src/mk20dx128.c **** 	SIM_SOPT2 = SIM_SOPT2_UART0SRC(1) | SIM_SOPT2_TPMSRC(1);
+ 746:../src/mk20dx128.c **** 	SIM_SCGC4 |= 0x00000400;
+ 747:../src/mk20dx128.c **** 	UART0_BDH = 0;
+ 748:../src/mk20dx128.c **** 	UART0_BDL = 26; // 115200 at 48 MHz
+ 749:../src/mk20dx128.c **** 	UART0_C2 = UART_C2_TE;
+ 750:../src/mk20dx128.c **** 	PORTB_PCR17 = PORT_PCR_MUX(3);
+ 751:../src/mk20dx128.c **** #endif
+ 752:../src/mk20dx128.c **** #ifdef KINETISK
+ 753:../src/mk20dx128.c **** 	// if the RTC oscillator isn't enabled, get it started early
+ 754:../src/mk20dx128.c **** 	if (!(RTC_CR & RTC_CR_OSCE)) {
+ 446              		.loc 1 754 0
+ 447 0028 504A     		ldr	r2, .L72+16
+ 448 002a 1368     		ldr	r3, [r2]
+ 449 002c 13F48073 		ands	r3, r3, #256
+ 755:../src/mk20dx128.c **** 		RTC_SR = 0;
+ 450              		.loc 1 755 0
+ 451 0030 01BF     		itttt	eq
+ 452 0032 4F49     		ldreq	r1, .L72+20
+ 453 0034 0B60     		streq	r3, [r1]
+ 756:../src/mk20dx128.c **** 		RTC_CR = RTC_CR_SC16P | RTC_CR_SC4P | RTC_CR_OSCE;
+ 454              		.loc 1 756 0
+ 455 0036 4FF4A853 		moveq	r3, #5376
+ 456 003a 1360     		streq	r3, [r2]
+ 757:../src/mk20dx128.c **** 	}
+ 758:../src/mk20dx128.c **** #endif
+ 759:../src/mk20dx128.c **** 	// release I/O pins hold, if we woke up from VLLS mode
+ 760:../src/mk20dx128.c **** 	if (PMC_REGSC & PMC_REGSC_ACKISO) PMC_REGSC |= PMC_REGSC_ACKISO;
+ 457              		.loc 1 760 0
+ 458 003c 4D4B     		ldr	r3, .L72+24
+ 761:../src/mk20dx128.c **** 
+ 762:../src/mk20dx128.c ****     // since this is a write once register, make it visible to all F_CPU's
+ 763:../src/mk20dx128.c ****     // so we can into other sleep modes in the future at any speed
+ 764:../src/mk20dx128.c **** #if defined(__MK66FX1M0__)
+ 765:../src/mk20dx128.c **** 	SMC_PMPROT = SMC_PMPROT_AHSRUN | SMC_PMPROT_AVLP | SMC_PMPROT_ALLS | SMC_PMPROT_AVLLS;
+ 766:../src/mk20dx128.c **** #else
+ 767:../src/mk20dx128.c **** 	SMC_PMPROT = SMC_PMPROT_AVLP | SMC_PMPROT_ALLS | SMC_PMPROT_AVLLS;
+ 768:../src/mk20dx128.c **** #endif
+ 769:../src/mk20dx128.c ****     
+ 770:../src/mk20dx128.c **** 	// TODO: do this while the PLL is waiting to lock....
+ 771:../src/mk20dx128.c **** 	while (dest < &_edata) *dest++ = *src++;
+ 459              		.loc 1 771 0
+ 460 003e 4E49     		ldr	r1, .L72+28
+ 760:../src/mk20dx128.c **** 
+ 461              		.loc 1 760 0
+ 462 0040 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 463 0042 1007     		lsls	r0, r2, #28
+ 464 0044 42BF     		ittt	mi
+ 465 0046 1A78     		ldrbmi	r2, [r3]	@ zero_extendqisi2
+ 466 0048 42F00802 		orrmi	r2, r2, #8
+ 467 004c 1A70     		strbmi	r2, [r3]
+ 767:../src/mk20dx128.c **** #endif
+ 468              		.loc 1 767 0
+ 469 004e 4B4B     		ldr	r3, .L72+32
+ 470 0050 2A22     		movs	r2, #42
+ 471 0052 1A70     		strb	r2, [r3]
+ 472 0054 4A4A     		ldr	r2, .L72+36
+ 473 0056 4B4B     		ldr	r3, .L72+40
+ 474              	.LVL7:
+ 475              	.L32:
+ 476              		.loc 1 771 0 discriminator 1
+ 477 0058 8B42     		cmp	r3, r1
+ 478 005a 04D2     		bcs	.L70
+ 479              	.LVL8:
+ 480              		.loc 1 771 0 is_stmt 0 discriminator 2
+ 481 005c 52F8040F 		ldr	r0, [r2, #4]!
+ 482 0060 43F8040B 		str	r0, [r3], #4
+ 483              	.LVL9:
+ 484 0064 F8E7     		b	.L32
+ 485              	.L70:
+ 486 0066 484B     		ldr	r3, .L72+44
+ 487              	.LVL10:
+ 772:../src/mk20dx128.c **** 	dest = &_sbss;
+ 773:../src/mk20dx128.c **** 	while (dest < &_ebss) *dest++ = 0;
+ 488              		.loc 1 773 0 is_stmt 1 discriminator 1
+ 489 0068 484A     		ldr	r2, .L72+48
+ 490 006a 0021     		movs	r1, #0
+ 491              	.L34:
+ 492              	.LVL11:
+ 493 006c 9342     		cmp	r3, r2
+ 494 006e 02D2     		bcs	.L71
+ 495              		.loc 1 773 0 is_stmt 0 discriminator 2
+ 496 0070 43F8041B 		str	r1, [r3], #4
+ 497              	.LVL12:
+ 498 0074 FAE7     		b	.L34
+ 499              	.LVL13:
+ 500              	.L71:
+ 774:../src/mk20dx128.c **** 
+ 775:../src/mk20dx128.c **** 	// default all interrupts to medium priority level
+ 776:../src/mk20dx128.c **** 	for (i=0; i < NVIC_NUM_INTERRUPTS + 16; i++) _VectorsRam[i] = _VectorsFlash[i];
+ 501              		.loc 1 776 0 is_stmt 1 discriminator 3
+ 502 0076 464A     		ldr	r2, .L72+52
+ 503 0078 4648     		ldr	r0, .L72+56
+ 504 007a 0023     		movs	r3, #0
+ 505              	.LVL14:
+ 506              	.L36:
+ 507 007c 50F82310 		ldr	r1, [r0, r3, lsl #2]
+ 508 0080 42F82310 		str	r1, [r2, r3, lsl #2]
+ 509 0084 0133     		adds	r3, r3, #1
+ 510              	.LVL15:
+ 511 0086 6F2B     		cmp	r3, #111
+ 512 0088 F8D1     		bne	.L36
+ 513 008a 434B     		ldr	r3, .L72+60
+ 514              	.LVL16:
+ 777:../src/mk20dx128.c **** 	for (i=0; i < NVIC_NUM_INTERRUPTS; i++) NVIC_SET_PRIORITY(i, 128);
+ 515              		.loc 1 777 0 discriminator 3
+ 516 008c 434A     		ldr	r2, .L72+64
+ 517 008e 8021     		movs	r1, #128
+ 518              	.L37:
+ 519              	.LVL17:
+ 520 0090 03F8011B 		strb	r1, [r3], #1
+ 521              	.LVL18:
+ 522 0094 9342     		cmp	r3, r2
+ 523 0096 FBD1     		bne	.L37
+ 778:../src/mk20dx128.c **** 	SCB_VTOR = (uint32_t)_VectorsRam;	// use vector table in RAM
+ 524              		.loc 1 778 0
+ 525 0098 414B     		ldr	r3, .L72+68
+ 526              	.LVL19:
+ 527 009a 3D4A     		ldr	r2, .L72+52
+ 528 009c 1A60     		str	r2, [r3]
+ 779:../src/mk20dx128.c **** 
+ 780:../src/mk20dx128.c **** 	// hardware always starts in FEI mode
+ 781:../src/mk20dx128.c **** 	//  C1[CLKS] bits are written to 00
+ 782:../src/mk20dx128.c **** 	//  C1[IREFS] bit is written to 1
+ 783:../src/mk20dx128.c **** 	//  C6[PLLS] bit is written to 0
+ 784:../src/mk20dx128.c **** // MCG_SC[FCDIV] defaults to divide by two for internal ref clock
+ 785:../src/mk20dx128.c **** // I tried changing MSG_SC to divide by 1, it didn't work for me
+ 786:../src/mk20dx128.c **** #if F_CPU <= 2000000
+ 787:../src/mk20dx128.c ****     #if defined(KINETISK)
+ 788:../src/mk20dx128.c ****     MCG_C1 = MCG_C1_CLKS(1) | MCG_C1_IREFS;
+ 789:../src/mk20dx128.c ****     #elif defined(KINETISL)
+ 790:../src/mk20dx128.c **** 	// use the internal oscillator
+ 791:../src/mk20dx128.c **** 	MCG_C1 = MCG_C1_CLKS(1) | MCG_C1_IREFS | MCG_C1_IRCLKEN;
+ 792:../src/mk20dx128.c ****     #endif
+ 793:../src/mk20dx128.c **** 	// wait for MCGOUT to use oscillator
+ 794:../src/mk20dx128.c **** 	while ((MCG_S & MCG_S_CLKST_MASK) != MCG_S_CLKST(1)) ;
+ 795:../src/mk20dx128.c **** 	for (n=0; n<10; n++) ; // TODO: why do we get 2 mA extra without this delay?
+ 796:../src/mk20dx128.c **** 	MCG_C2 = MCG_C2_IRCS;
+ 797:../src/mk20dx128.c **** 	while (!(MCG_S & MCG_S_IRCST)) ;
+ 798:../src/mk20dx128.c **** 	// now in FBI mode:
+ 799:../src/mk20dx128.c **** 	//  C1[CLKS] bits are written to 01
+ 800:../src/mk20dx128.c **** 	//  C1[IREFS] bit is written to 1
+ 801:../src/mk20dx128.c **** 	//  C6[PLLS] is written to 0
+ 802:../src/mk20dx128.c **** 	//  C2[LP] is written to 0
+ 803:../src/mk20dx128.c **** 	MCG_C2 = MCG_C2_IRCS | MCG_C2_LP;
+ 804:../src/mk20dx128.c **** 	// now in BLPI mode:
+ 805:../src/mk20dx128.c **** 	//  C1[CLKS] bits are written to 01
+ 806:../src/mk20dx128.c **** 	//  C1[IREFS] bit is written to 1
+ 807:../src/mk20dx128.c **** 	//  C6[PLLS] bit is written to 0
+ 808:../src/mk20dx128.c **** 	//  C2[LP] bit is written to 1
+ 809:../src/mk20dx128.c **** #else
+ 810:../src/mk20dx128.c ****     #if defined(KINETISK)
+ 811:../src/mk20dx128.c ****     // enable capacitors for crystal
+ 812:../src/mk20dx128.c ****     OSC0_CR = OSC_SC8P | OSC_SC2P | OSC_ERCLKEN;
+ 529              		.loc 1 812 0
+ 530 009e 414B     		ldr	r3, .L72+72
+ 531 00a0 8A22     		movs	r2, #138
+ 532 00a2 1A70     		strb	r2, [r3]
+ 813:../src/mk20dx128.c ****     #elif defined(KINETISL)
+ 814:../src/mk20dx128.c ****     // enable capacitors for crystal
+ 815:../src/mk20dx128.c ****     OSC0_CR = OSC_SC8P | OSC_SC2P | OSC_ERCLKEN;
+ 816:../src/mk20dx128.c ****     #endif
+ 817:../src/mk20dx128.c **** 	// enable osc, 8-32 MHz range, low power mode
+ 818:../src/mk20dx128.c **** 	MCG_C2 = MCG_C2_RANGE0(2) | MCG_C2_EREFS;
+ 533              		.loc 1 818 0
+ 534 00a4 A3F58053 		sub	r3, r3, #4096
+ 535 00a8 2422     		movs	r2, #36
+ 536 00aa 5A70     		strb	r2, [r3, #1]
+ 819:../src/mk20dx128.c **** 	// switch to crystal as clock source, FLL input = 16 MHz / 512
+ 820:../src/mk20dx128.c **** 	MCG_C1 =  MCG_C1_CLKS(2) | MCG_C1_FRDIV(4);
+ 537              		.loc 1 820 0
+ 538 00ac A022     		movs	r2, #160
+ 539 00ae 1A70     		strb	r2, [r3]
+ 540              	.L38:
+ 821:../src/mk20dx128.c **** 	// wait for crystal oscillator to begin
+ 822:../src/mk20dx128.c **** 	while ((MCG_S & MCG_S_OSCINIT0) == 0) ;
+ 541              		.loc 1 822 0 discriminator 1
+ 542 00b0 9A79     		ldrb	r2, [r3, #6]	@ zero_extendqisi2
+ 543 00b2 9107     		lsls	r1, r2, #30
+ 544 00b4 FCD5     		bpl	.L38
+ 545              	.L56:
+ 823:../src/mk20dx128.c **** 	// wait for FLL to use oscillator
+ 824:../src/mk20dx128.c **** 	while ((MCG_S & MCG_S_IREFST) != 0) ;
+ 546              		.loc 1 824 0 discriminator 1
+ 547 00b6 9A79     		ldrb	r2, [r3, #6]	@ zero_extendqisi2
+ 548 00b8 D206     		lsls	r2, r2, #27
+ 549 00ba FCD4     		bmi	.L56
+ 825:../src/mk20dx128.c **** 	// wait for MCGOUT to use oscillator
+ 826:../src/mk20dx128.c **** 	while ((MCG_S & MCG_S_CLKST_MASK) != MCG_S_CLKST(2)) ;
+ 550              		.loc 1 826 0
+ 551 00bc 3A4A     		ldr	r2, .L72+76
+ 552              	.L40:
+ 553              		.loc 1 826 0 is_stmt 0 discriminator 1
+ 554 00be 9379     		ldrb	r3, [r2, #6]	@ zero_extendqisi2
+ 555 00c0 03F00C03 		and	r3, r3, #12
+ 556 00c4 082B     		cmp	r3, #8
+ 557 00c6 384B     		ldr	r3, .L72+76
+ 558 00c8 F9D1     		bne	.L40
+ 827:../src/mk20dx128.c **** 
+ 828:../src/mk20dx128.c **** 	// now in FBE mode
+ 829:../src/mk20dx128.c **** 	//  C1[CLKS] bits are written to 10
+ 830:../src/mk20dx128.c **** 	//  C1[IREFS] bit is written to 0
+ 831:../src/mk20dx128.c **** 	//  C1[FRDIV] must be written to divide xtal to 31.25-39 kHz
+ 832:../src/mk20dx128.c **** 	//  C6[PLLS] bit is written to 0
+ 833:../src/mk20dx128.c **** 	//  C2[LP] is written to 0
+ 834:../src/mk20dx128.c ****   #if F_CPU <= 16000000
+ 835:../src/mk20dx128.c **** 	// if the crystal is fast enough, use it directly (no FLL or PLL)
+ 836:../src/mk20dx128.c **** 	MCG_C2 = MCG_C2_RANGE0(2) | MCG_C2_EREFS | MCG_C2_LP;
+ 837:../src/mk20dx128.c **** 	// BLPE mode:
+ 838:../src/mk20dx128.c **** 	//   C1[CLKS] bits are written to 10
+ 839:../src/mk20dx128.c **** 	//   C1[IREFS] bit is written to 0
+ 840:../src/mk20dx128.c **** 	//   C2[LP] bit is written to 1
+ 841:../src/mk20dx128.c ****   #else
+ 842:../src/mk20dx128.c **** 	// if we need faster than the crystal, turn on the PLL
+ 843:../src/mk20dx128.c ****    #if defined(__MK66FX1M0__)
+ 844:../src/mk20dx128.c ****     #if F_CPU > 120000000
+ 845:../src/mk20dx128.c **** 	SMC_PMCTRL = SMC_PMCTRL_RUNM(3); // enter HSRUN mode
+ 846:../src/mk20dx128.c **** 	while (SMC_PMSTAT != SMC_PMSTAT_HSRUN) ; // wait for HSRUN
+ 847:../src/mk20dx128.c ****     #endif
+ 848:../src/mk20dx128.c ****     #if F_CPU == 240000000
+ 849:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(0);
+ 850:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(14);
+ 851:../src/mk20dx128.c ****     #elif F_CPU == 216000000
+ 852:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(0);
+ 853:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(11);
+ 854:../src/mk20dx128.c ****     #elif F_CPU == 192000000
+ 855:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(0);
+ 856:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(8);
+ 857:../src/mk20dx128.c ****     #elif F_CPU == 180000000
+ 858:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(1);
+ 859:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(29);
+ 860:../src/mk20dx128.c ****     #elif F_CPU == 168000000
+ 861:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(0);
+ 862:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(5);
+ 863:../src/mk20dx128.c ****     #elif F_CPU == 144000000
+ 864:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(0);
+ 865:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(2);
+ 866:../src/mk20dx128.c ****     #elif F_CPU == 120000000
+ 867:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(1);
+ 868:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(14);
+ 869:../src/mk20dx128.c ****     #elif F_CPU == 96000000 || F_CPU == 48000000 || F_CPU == 24000000
+ 870:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(1);
+ 871:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(8);
+ 872:../src/mk20dx128.c ****     #elif F_CPU == 72000000
+ 873:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(1);
+ 874:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(2);
+ 875:../src/mk20dx128.c ****     #elif F_CPU > 16000000
+ 876:../src/mk20dx128.c ****     #error "MK66FX1M0 does not support this clock speed yet...."
+ 877:../src/mk20dx128.c ****     #endif
+ 878:../src/mk20dx128.c ****    #else
+ 879:../src/mk20dx128.c ****     #if F_CPU == 72000000
+ 880:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(5);		 // config PLL input for 16 MHz Crystal / 6 = 2.667 Hz
+ 881:../src/mk20dx128.c ****     #else
+ 882:../src/mk20dx128.c **** 	MCG_C5 = MCG_C5_PRDIV0(3);		 // config PLL input for 16 MHz Crystal / 4 = 4 MHz
+ 559              		.loc 1 882 0 is_stmt 1
+ 560 00ca 0322     		movs	r2, #3
+ 561 00cc 1A71     		strb	r2, [r3, #4]
+ 883:../src/mk20dx128.c ****     #endif
+ 884:../src/mk20dx128.c ****     #if F_CPU == 168000000
+ 885:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(18); // config PLL for 168 MHz output
+ 886:../src/mk20dx128.c ****     #elif F_CPU == 144000000
+ 887:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(12); // config PLL for 144 MHz output
+ 888:../src/mk20dx128.c ****     #elif F_CPU == 120000000
+ 889:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(6); // config PLL for 120 MHz output
+ 890:../src/mk20dx128.c ****     #elif F_CPU == 72000000
+ 891:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(3); // config PLL for 72 MHz output
+ 892:../src/mk20dx128.c ****     #elif F_CPU == 96000000 || F_CPU == 48000000 || F_CPU == 24000000
+ 893:../src/mk20dx128.c **** 	MCG_C6 = MCG_C6_PLLS | MCG_C6_VDIV0(0); // config PLL for 96 MHz output
+ 562              		.loc 1 893 0
+ 563 00ce 4022     		movs	r2, #64
+ 564 00d0 5A71     		strb	r2, [r3, #5]
+ 565              	.L41:
+ 894:../src/mk20dx128.c ****     #elif F_CPU > 16000000
+ 895:../src/mk20dx128.c ****     #error "This clock speed isn't supported..."
+ 896:../src/mk20dx128.c ****     #endif
+ 897:../src/mk20dx128.c ****    #endif
+ 898:../src/mk20dx128.c **** 
+ 899:../src/mk20dx128.c **** 	// wait for PLL to start using xtal as its input
+ 900:../src/mk20dx128.c **** 	while (!(MCG_S & MCG_S_PLLST)) ;
+ 566              		.loc 1 900 0 discriminator 1
+ 567 00d2 9A79     		ldrb	r2, [r3, #6]	@ zero_extendqisi2
+ 568 00d4 9406     		lsls	r4, r2, #26
+ 569 00d6 FCD5     		bpl	.L41
+ 901:../src/mk20dx128.c **** 	// wait for PLL to lock
+ 902:../src/mk20dx128.c **** 	while (!(MCG_S & MCG_S_LOCK0)) ;
+ 570              		.loc 1 902 0 discriminator 1
+ 571 00d8 3349     		ldr	r1, .L72+76
+ 572              	.L62:
+ 573 00da 8A79     		ldrb	r2, [r1, #6]	@ zero_extendqisi2
+ 574 00dc 324B     		ldr	r3, .L72+76
+ 575 00de 5006     		lsls	r0, r2, #25
+ 576 00e0 FBD5     		bpl	.L62
+ 903:../src/mk20dx128.c **** 	// now we're in PBE mode
+ 904:../src/mk20dx128.c ****   #endif
+ 905:../src/mk20dx128.c **** #endif
+ 906:../src/mk20dx128.c **** 	// now program the clock dividers
+ 907:../src/mk20dx128.c **** #if F_CPU == 240000000
+ 908:../src/mk20dx128.c **** 	// config divisors: 240 MHz core, 60 MHz bus, 30 MHz flash, USB = 240 / 5
+ 909:../src/mk20dx128.c **** 	// TODO: gradual ramp-up for HSRUN mode
+ 910:../src/mk20dx128.c **** 	#if F_BUS == 60000000
+ 911:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(3) | SIM_CLKDIV1_OUTDIV4(7);
+ 912:../src/mk20dx128.c **** 	#elif F_BUS == 80000000
+ 913:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(2) | SIM_CLKDIV1_OUTDIV4(7);
+ 914:../src/mk20dx128.c **** 	#elif F_BUS == 120000000
+ 915:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV4(7);
+ 916:../src/mk20dx128.c **** 	#else
+ 917:../src/mk20dx128.c **** 	#error "This F_CPU & F_BUS combination is not supported"
+ 918:../src/mk20dx128.c **** 	#endif
+ 919:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(4);
+ 920:../src/mk20dx128.c **** #elif F_CPU == 216000000
+ 921:../src/mk20dx128.c **** 	// config divisors: 216 MHz core, 54 MHz bus, 27 MHz flash, USB = IRC48M
+ 922:../src/mk20dx128.c **** 	// TODO: gradual ramp-up for HSRUN mode
+ 923:../src/mk20dx128.c **** 	#if F_BUS == 54000000
+ 924:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(3) | SIM_CLKDIV1_OUTDIV4(7);
+ 925:../src/mk20dx128.c **** 	#elif F_BUS == 72000000
+ 926:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(2) | SIM_CLKDIV1_OUTDIV4(7);
+ 927:../src/mk20dx128.c **** 	#elif F_BUS == 108000000
+ 928:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV4(7);
+ 929:../src/mk20dx128.c **** 	#else
+ 930:../src/mk20dx128.c **** 	#error "This F_CPU & F_BUS combination is not supported"
+ 931:../src/mk20dx128.c **** 	#endif
+ 932:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(0);
+ 933:../src/mk20dx128.c **** #elif F_CPU == 192000000
+ 934:../src/mk20dx128.c **** 	// config divisors: 192 MHz core, 48 MHz bus, 27.4 MHz flash, USB = 192 / 4
+ 935:../src/mk20dx128.c **** 	// TODO: gradual ramp-up for HSRUN mode
+ 936:../src/mk20dx128.c **** 	#if F_BUS == 48000000
+ 937:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(3) | SIM_CLKDIV1_OUTDIV4(6);
+ 938:../src/mk20dx128.c **** 	#elif F_BUS == 64000000
+ 939:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(2) | SIM_CLKDIV1_OUTDIV4(6);
+ 940:../src/mk20dx128.c **** 	#elif F_BUS == 96000000
+ 941:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV4(6);
+ 942:../src/mk20dx128.c **** 	#else
+ 943:../src/mk20dx128.c **** 	#error "This F_CPU & F_BUS combination is not supported"
+ 944:../src/mk20dx128.c **** 	#endif
+ 945:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(3);
+ 946:../src/mk20dx128.c **** #elif F_CPU == 180000000
+ 947:../src/mk20dx128.c **** 	// config divisors: 180 MHz core, 60 MHz bus, 25.7 MHz flash, USB = IRC48M
+ 948:../src/mk20dx128.c **** 	#if F_BUS == 60000000
+ 949:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(2) | SIM_CLKDIV1_OUTDIV4(6);
+ 950:../src/mk20dx128.c **** 	#elif F_BUS == 90000000
+ 951:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV4(6);
+ 952:../src/mk20dx128.c **** 	#else
+ 953:../src/mk20dx128.c **** 	#error "This F_CPU & F_BUS combination is not supported"
+ 954:../src/mk20dx128.c **** 	#endif
+ 955:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(0);
+ 956:../src/mk20dx128.c **** #elif F_CPU == 168000000
+ 957:../src/mk20dx128.c **** 	// config divisors: 168 MHz core, 56 MHz bus, 28 MHz flash, USB = 168 * 2 / 7
+ 958:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(2) | SIM_CLKDIV1_OUTDIV4(5);
+ 959:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(6) | SIM_CLKDIV2_USBFRAC;
+ 960:../src/mk20dx128.c **** #elif F_CPU == 144000000
+ 961:../src/mk20dx128.c **** 	// config divisors: 144 MHz core, 48 MHz bus, 28.8 MHz flash, USB = 144 / 3
+ 962:../src/mk20dx128.c **** 	#if F_BUS == 48000000
+ 963:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(2) | SIM_CLKDIV1_OUTDIV4(4);
+ 964:../src/mk20dx128.c **** 	#elif F_BUS == 72000000
+ 965:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV4(4);
+ 966:../src/mk20dx128.c **** 	#else
+ 967:../src/mk20dx128.c **** 	#error "This F_CPU & F_BUS combination is not supported"
+ 968:../src/mk20dx128.c **** 	#endif
+ 969:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(2);
+ 970:../src/mk20dx128.c **** #elif F_CPU == 120000000
+ 971:../src/mk20dx128.c **** 	// config divisors: 120 MHz core, 60 MHz bus, 24 MHz flash, USB = 128 * 2 / 5
+ 972:../src/mk20dx128.c **** 	#if F_BUS == 60000000
+ 973:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV4(4);
+ 974:../src/mk20dx128.c **** 	#elif F_BUS == 120000000
+ 975:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(0) | SIM_CLKDIV1_OUTDIV4(4);
+ 976:../src/mk20dx128.c **** 	#else
+ 977:../src/mk20dx128.c **** 	#error "This F_CPU & F_BUS combination is not supported"
+ 978:../src/mk20dx128.c **** 	#endif
+ 979:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(4) | SIM_CLKDIV2_USBFRAC;
+ 980:../src/mk20dx128.c **** #elif F_CPU == 96000000
+ 981:../src/mk20dx128.c **** 	// config divisors: 96 MHz core, 48 MHz bus, 24 MHz flash, USB = 96 / 2
+ 982:../src/mk20dx128.c **** 	#if F_BUS == 48000000
+ 983:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV4(3);
+ 984:../src/mk20dx128.c **** 	#elif F_BUS == 96000000
+ 985:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(0) | SIM_CLKDIV1_OUTDIV4(3);
+ 986:../src/mk20dx128.c **** 	#else
+ 987:../src/mk20dx128.c **** 	#error "This F_CPU & F_BUS combination is not supported"
+ 988:../src/mk20dx128.c **** 	#endif
+ 989:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(1);
+ 990:../src/mk20dx128.c **** #elif F_CPU == 72000000
+ 991:../src/mk20dx128.c **** 	// config divisors: 72 MHz core, 36 MHz bus, 24 MHz flash, USB = 72 * 2 / 3
+ 992:../src/mk20dx128.c **** 	#if F_BUS == 36000000
+ 993:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV4(2);
+ 994:../src/mk20dx128.c **** 	#elif F_BUS == 72000000
+ 995:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(0) | SIM_CLKDIV1_OUTDIV4(2);
+ 996:../src/mk20dx128.c **** 	#else
+ 997:../src/mk20dx128.c **** 	#error "This F_CPU & F_BUS combination is not supported"
+ 998:../src/mk20dx128.c **** 	#endif
+ 999:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(2) | SIM_CLKDIV2_USBFRAC;
+1000:../src/mk20dx128.c **** #elif F_CPU == 48000000
+1001:../src/mk20dx128.c **** 	// config divisors: 48 MHz core, 48 MHz bus, 24 MHz flash, USB = 96 / 2
+1002:../src/mk20dx128.c ****   #if defined(KINETISK)
+1003:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(1) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV3(1) |  SIM_CLKD
+ 577              		.loc 1 1003 0
+ 578 00e2 324A     		ldr	r2, .L72+80
+ 579 00e4 3249     		ldr	r1, .L72+84
+ 580 00e6 1160     		str	r1, [r2]
+1004:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(1);
+ 581              		.loc 1 1004 0
+ 582 00e8 0221     		movs	r1, #2
+ 583 00ea 5160     		str	r1, [r2, #4]
+1005:../src/mk20dx128.c ****   #elif defined(KINETISL)
+1006:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(1) | SIM_CLKDIV1_OUTDIV4(1);
+1007:../src/mk20dx128.c ****   #endif
+1008:../src/mk20dx128.c **** #elif F_CPU == 24000000
+1009:../src/mk20dx128.c **** 	// config divisors: 24 MHz core, 24 MHz bus, 24 MHz flash, USB = 96 / 2
+1010:../src/mk20dx128.c **** 	#if defined(KINETISK)
+1011:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(3) | SIM_CLKDIV1_OUTDIV2(3) | SIM_CLKDIV1_OUTDIV3(3) | SIM_CLKDI
+1012:../src/mk20dx128.c **** 	SIM_CLKDIV2 = SIM_CLKDIV2_USBDIV(1);
+1013:../src/mk20dx128.c **** 	#elif defined(KINETISL)
+1014:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(3) | SIM_CLKDIV1_OUTDIV4(0);
+1015:../src/mk20dx128.c **** 	#endif
+1016:../src/mk20dx128.c **** #elif F_CPU == 16000000
+1017:../src/mk20dx128.c **** 	// config divisors: 16 MHz core, 16 MHz bus, 16 MHz flash
+1018:../src/mk20dx128.c ****   #if defined(KINETISK)
+1019:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(0) | SIM_CLKDIV1_OUTDIV3(0) | SIM_CLKDI
+1020:../src/mk20dx128.c ****   #elif defined(KINETISL)
+1021:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV4(0);
+1022:../src/mk20dx128.c ****   #endif
+1023:../src/mk20dx128.c **** #elif F_CPU == 8000000
+1024:../src/mk20dx128.c **** 	// config divisors: 8 MHz core, 8 MHz bus, 8 MHz flash
+1025:../src/mk20dx128.c ****   #if defined(KINETISK)
+1026:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(1) | SIM_CLKDIV1_OUTDIV2(1) | SIM_CLKDIV1_OUTDIV3(1) | SIM_CLKDI
+1027:../src/mk20dx128.c ****   #elif defined(KINETISL)
+1028:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(1) | SIM_CLKDIV1_OUTDIV4(0);
+1029:../src/mk20dx128.c ****   #endif
+1030:../src/mk20dx128.c **** #elif F_CPU == 4000000
+1031:../src/mk20dx128.c **** 	// config divisors: 4 MHz core, 4 MHz bus, 2 MHz flash
+1032:../src/mk20dx128.c **** 	// since we are running from external clock 16MHz
+1033:../src/mk20dx128.c **** 	// fix outdiv too -> cpu 16/4, bus 16/4, flash 16/4
+1034:../src/mk20dx128.c **** 	// here we can go into vlpr?
+1035:../src/mk20dx128.c **** 	// config divisors: 4 MHz core, 4 MHz bus, 4 MHz flash
+1036:../src/mk20dx128.c ****   #if defined(KINETISK)
+1037:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(3) | SIM_CLKDIV1_OUTDIV2(3) | SIM_CLKDIV1_OUTDIV3(3) | SIM_CLKDI
+1038:../src/mk20dx128.c ****   #elif defined(KINETISL)
+1039:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(3) | SIM_CLKDIV1_OUTDIV4(0);
+1040:../src/mk20dx128.c ****   #endif
+1041:../src/mk20dx128.c **** #elif F_CPU == 2000000
+1042:../src/mk20dx128.c **** 	// since we are running from the fast internal reference clock 4MHz
+1043:../src/mk20dx128.c **** 	// but is divided down by 2 so we actually have a 2MHz, MCG_SC[FCDIV] default is 2
+1044:../src/mk20dx128.c **** 	// fix outdiv -> cpu 2/1, bus 2/1, flash 2/2
+1045:../src/mk20dx128.c **** 	// config divisors: 2 MHz core, 2 MHz bus, 1 MHz flash
+1046:../src/mk20dx128.c ****   #if defined(KINETISK)
+1047:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV2(0) | SIM_CLKDIV1_OUTDIV4(1);
+1048:../src/mk20dx128.c ****   #elif defined(KINETISL)
+1049:../src/mk20dx128.c **** 	// config divisors: 2 MHz core, 1 MHz bus, 1 MHz flash
+1050:../src/mk20dx128.c **** 	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(0) | SIM_CLKDIV1_OUTDIV4(1);
+1051:../src/mk20dx128.c ****   #endif
+1052:../src/mk20dx128.c **** #else
+1053:../src/mk20dx128.c **** #error "Error, F_CPU must be 192, 180, 168, 144, 120, 96, 72, 48, 24, 16, 8, 4, or 2 MHz"
+1054:../src/mk20dx128.c **** #endif
+1055:../src/mk20dx128.c **** 
+1056:../src/mk20dx128.c **** #if F_CPU > 16000000
+1057:../src/mk20dx128.c **** 	// switch to PLL as clock source, FLL input = 16 MHz / 512
+1058:../src/mk20dx128.c **** 	MCG_C1 = MCG_C1_CLKS(0) | MCG_C1_FRDIV(4);
+ 584              		.loc 1 1058 0
+ 585 00ec 2022     		movs	r2, #32
+ 586 00ee 1A70     		strb	r2, [r3]
+ 587              	.L43:
+1059:../src/mk20dx128.c **** 	// wait for PLL clock to be used
+1060:../src/mk20dx128.c **** 	while ((MCG_S & MCG_S_CLKST_MASK) != MCG_S_CLKST(3)) ;
+ 588              		.loc 1 1060 0 discriminator 1
+ 589 00f0 9A79     		ldrb	r2, [r3, #6]	@ zero_extendqisi2
+ 590 00f2 02F00C02 		and	r2, r2, #12
+ 591 00f6 0C2A     		cmp	r2, #12
+ 592 00f8 FAD1     		bne	.L43
+1061:../src/mk20dx128.c **** 	// now we're in PEE mode
+1062:../src/mk20dx128.c **** 	// USB uses PLL clock, trace is CPU clock, CLKOUT=OSCERCLK0
+1063:../src/mk20dx128.c **** 	#if defined(KINETISK)
+1064:../src/mk20dx128.c **** 	#if F_CPU == 216000000 || F_CPU == 180000000
+1065:../src/mk20dx128.c **** 	SIM_SOPT2 = SIM_SOPT2_USBSRC | SIM_SOPT2_IRC48SEL | SIM_SOPT2_TRACECLKSEL | SIM_SOPT2_CLKOUTSEL(6)
+1066:../src/mk20dx128.c **** 	#else
+1067:../src/mk20dx128.c **** 	SIM_SOPT2 = SIM_SOPT2_USBSRC | SIM_SOPT2_PLLFLLSEL | SIM_SOPT2_TRACECLKSEL | SIM_SOPT2_CLKOUTSEL(6
+ 593              		.loc 1 1067 0
+ 594 00fa 2E4B     		ldr	r3, .L72+88
+ 595 00fc 2E4A     		ldr	r2, .L72+92
+ 596 00fe 1A60     		str	r2, [r3]
+1068:../src/mk20dx128.c **** 	#endif
+1069:../src/mk20dx128.c **** 	#elif defined(KINETISL)
+1070:../src/mk20dx128.c **** 	SIM_SOPT2 = SIM_SOPT2_USBSRC | SIM_SOPT2_PLLFLLSEL | SIM_SOPT2_CLKOUTSEL(6)
+1071:../src/mk20dx128.c **** 		| SIM_SOPT2_UART0SRC(1) | SIM_SOPT2_TPMSRC(1);
+1072:../src/mk20dx128.c **** 	#endif
+1073:../src/mk20dx128.c **** #else
+1074:../src/mk20dx128.c ****     
+1075:../src/mk20dx128.c **** #if F_CPU == 2000000
+1076:../src/mk20dx128.c **** 	SIM_SOPT2 = SIM_SOPT2_TRACECLKSEL | SIM_SOPT2_CLKOUTSEL(4) | SIM_SOPT2_UART0SRC(3);
+1077:../src/mk20dx128.c **** #else
+1078:../src/mk20dx128.c ****     SIM_SOPT2 = SIM_SOPT2_TRACECLKSEL | SIM_SOPT2_CLKOUTSEL(6) | SIM_SOPT2_UART0SRC(2);
+1079:../src/mk20dx128.c **** #endif
+1080:../src/mk20dx128.c ****     
+1081:../src/mk20dx128.c **** #endif
+1082:../src/mk20dx128.c **** 
+1083:../src/mk20dx128.c **** #if F_CPU <= 2000000
+1084:../src/mk20dx128.c ****     // since we are not going into "stop mode" i removed it
+1085:../src/mk20dx128.c **** 	SMC_PMCTRL = SMC_PMCTRL_RUNM(2); // VLPR mode :-)
+1086:../src/mk20dx128.c **** #endif
+1087:../src/mk20dx128.c **** 
+1088:../src/mk20dx128.c **** 	// initialize the SysTick counter
+1089:../src/mk20dx128.c **** 	SYST_RVR = (F_CPU / 1000) - 1;
+ 597              		.loc 1 1089 0
+ 598 0100 2E4B     		ldr	r3, .L72+96
+ 599 0102 4BF67F32 		movw	r2, #47999
+ 600 0106 1A60     		str	r2, [r3]
+1090:../src/mk20dx128.c **** 	SYST_CVR = 0;
+ 601              		.loc 1 1090 0
+ 602 0108 0022     		movs	r2, #0
+ 603 010a 5A60     		str	r2, [r3, #4]
+1091:../src/mk20dx128.c **** 	SYST_CSR = SYST_CSR_CLKSOURCE | SYST_CSR_TICKINT | SYST_CSR_ENABLE;
+ 604              		.loc 1 1091 0
+ 605 010c 0722     		movs	r2, #7
+ 606 010e 43F8042C 		str	r2, [r3, #-4]
+1092:../src/mk20dx128.c **** 	SCB_SHPR3 = 0x20200000;  // Systick = priority 32
+ 607              		.loc 1 1092 0
+ 608 0112 2B4A     		ldr	r2, .L72+100
+ 609 0114 C3F80C2D 		str	r2, [r3, #3340]
+1093:../src/mk20dx128.c **** 
+1094:../src/mk20dx128.c **** 	//init_pins();
+1095:../src/mk20dx128.c **** 	__enable_irq();
+ 610              		.loc 1 1095 0
+ 611              		.syntax unified
+ 612              	@ 1095 "../src/mk20dx128.c" 1
+ 613 0118 62B6     		CPSIE i
+ 614              	@ 0 "" 2
+1096:../src/mk20dx128.c **** 
+1097:../src/mk20dx128.c **** 	_init_Teensyduino_internal_();
+ 615              		.loc 1 1097 0
+ 616              		.thumb
+ 617              		.syntax unified
+ 618 011a FFF7FEFF 		bl	_init_Teensyduino_internal_
+ 619              	.LVL20:
+1098:../src/mk20dx128.c **** 
+1099:../src/mk20dx128.c **** #if defined(KINETISK)
+1100:../src/mk20dx128.c **** 	// RTC initialization
+1101:../src/mk20dx128.c **** 	if (RTC_SR & RTC_SR_TIF) {
+ 620              		.loc 1 1101 0
+ 621 011e 144B     		ldr	r3, .L72+20
+ 622 0120 1B68     		ldr	r3, [r3]
+ 623 0122 DA07     		lsls	r2, r3, #31
+ 624 0124 05D5     		bpl	.L44
+1102:../src/mk20dx128.c **** 		// this code will normally run on a power-up reset
+1103:../src/mk20dx128.c **** 		// when VBAT has detected a power-up.  Normally our
+1104:../src/mk20dx128.c **** 		// compiled-in time will be stale.  Write a special
+1105:../src/mk20dx128.c **** 		// flag into the VBAT register file indicating the
+1106:../src/mk20dx128.c **** 		// RTC is set with known-stale time and should be
+1107:../src/mk20dx128.c **** 		// updated when fresh time is known.
+1108:../src/mk20dx128.c **** 		#if ARDUINO >= 10600
+1109:../src/mk20dx128.c **** 		rtc_set((uint32_t)&__rtc_localtime);
+1110:../src/mk20dx128.c **** 		#else
+1111:../src/mk20dx128.c **** 		rtc_set(TIME_T);
+ 625              		.loc 1 1111 0
+ 626 0126 2748     		ldr	r0, .L72+104
+ 627 0128 FFF7FEFF 		bl	rtc_set
+ 628              	.LVL21:
+1112:../src/mk20dx128.c **** 		#endif
+1113:../src/mk20dx128.c **** 		*(uint32_t *)0x4003E01C = 0x5A94C3A5;
+ 629              		.loc 1 1113 0
+ 630 012c 264B     		ldr	r3, .L72+108
+ 631 012e 274A     		ldr	r2, .L72+112
+ 632 0130 1A60     		str	r2, [r3]
+ 633              	.L44:
+1114:../src/mk20dx128.c **** 	}
+1115:../src/mk20dx128.c **** 	if ((RCM_SRS0 & RCM_SRS0_PIN) && (*(uint32_t *)0x4003E01C == 0x5A94C3A5)) {
+ 634              		.loc 1 1115 0
+ 635 0132 274B     		ldr	r3, .L72+116
+ 636 0134 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 637 0136 5B06     		lsls	r3, r3, #25
+ 638 0138 09D5     		bpl	.L45
+ 639              		.loc 1 1115 0 is_stmt 0 discriminator 1
+ 640 013a 234C     		ldr	r4, .L72+108
+ 641 013c 234B     		ldr	r3, .L72+112
+ 642 013e 2268     		ldr	r2, [r4]
+ 643 0140 9A42     		cmp	r2, r3
+ 644 0142 04D1     		bne	.L45
+1116:../src/mk20dx128.c **** 		// this code should run immediately after an upload
+1117:../src/mk20dx128.c **** 		// where the Teensy Loader causes the Mini54 to reset.
+1118:../src/mk20dx128.c **** 		// Our compiled-in time will be very fresh, so set
+1119:../src/mk20dx128.c **** 		// the RTC with this, and clear the VBAT resister file
+1120:../src/mk20dx128.c **** 		// data so we don't mess with the time after it's been
+1121:../src/mk20dx128.c **** 		// set well.
+1122:../src/mk20dx128.c **** 		#if ARDUINO >= 10600
+1123:../src/mk20dx128.c **** 		rtc_set((uint32_t)&__rtc_localtime);
+1124:../src/mk20dx128.c **** 		#else
+1125:../src/mk20dx128.c **** 		rtc_set(TIME_T);
+ 645              		.loc 1 1125 0 is_stmt 1
+ 646 0144 1F48     		ldr	r0, .L72+104
+ 647 0146 FFF7FEFF 		bl	rtc_set
+ 648              	.LVL22:
+1126:../src/mk20dx128.c **** 		#endif
+1127:../src/mk20dx128.c **** 		*(uint32_t *)0x4003E01C = 0;
+ 649              		.loc 1 1127 0
+ 650 014a 0023     		movs	r3, #0
+ 651 014c 2360     		str	r3, [r4]
+ 652              	.L45:
+1128:../src/mk20dx128.c **** 	}
+1129:../src/mk20dx128.c **** #endif
+1130:../src/mk20dx128.c **** 
+1131:../src/mk20dx128.c **** 	__libc_init_array();
+ 653              		.loc 1 1131 0
+ 654 014e FFF7FEFF 		bl	__libc_init_array
+ 655              	.LVL23:
+1132:../src/mk20dx128.c **** 
+1133:../src/mk20dx128.c **** 	startup_late_hook();
+ 656              		.loc 1 1133 0
+ 657 0152 FFF7FEFF 		bl	startup_late_hook
+ 658              	.LVL24:
+1134:../src/mk20dx128.c **** 	main();
+ 659              		.loc 1 1134 0
+ 660 0156 FFF7FEFF 		bl	main
+ 661              	.LVL25:
+ 662              	.L46:
+ 663 015a FEE7     		b	.L46
+ 664              	.L73:
+ 665              		.align	2
+ 666              	.L72:
+ 667 015c 0E200540 		.word	1074077710
+ 668 0160 30800440 		.word	1074036784
+ 669 0164 823F0400 		.word	278402
+ 670 0168 0100002B 		.word	721420289
+ 671 016c 10D00340 		.word	1073991696
+ 672 0170 14D00340 		.word	1073991700
+ 673 0174 02D00740 		.word	1074253826
+ 674 0178 00000000 		.word	_edata
+ 675 017c 00E00740 		.word	1074257920
+ 676 0180 FCFFFFFF 		.word	_etext-4
+ 677 0184 00000000 		.word	_sdata
+ 678 0188 00000000 		.word	_sbss
+ 679 018c 00000000 		.word	_ebss
+ 680 0190 00000000 		.word	.LANCHOR0
+ 681 0194 00000000 		.word	.LANCHOR1
+ 682 0198 00E400E0 		.word	-536812544
+ 683 019c 5FE400E0 		.word	-536812449
+ 684 01a0 08ED00E0 		.word	-536810232
+ 685 01a4 00500640 		.word	1074155520
+ 686 01a8 00400640 		.word	1074151424
+ 687 01ac 44800440 		.word	1074036804
+ 688 01b0 00001311 		.word	286457856
+ 689 01b4 04800440 		.word	1074036740
+ 690 01b8 C0100500 		.word	331968
+ 691 01bc 14E000E0 		.word	-536813548
+ 692 01c0 00002020 		.word	538968064
+ 693 01c4 00DD6850 		.word	1349049600
+ 694 01c8 1CE00340 		.word	1073995804
+ 695 01cc A5C3945A 		.word	1519698853
+ 696 01d0 00F00740 		.word	1074262016
+ 697              		.cfi_endproc
+ 698              	.LFE14:
+ 700              		.section	.text._sbrk,"ax",%progbits
+ 701              		.align	1
+ 702              		.global	_sbrk
+ 703              		.thumb
+ 704              		.thumb_func
+ 706              	_sbrk:
+ 707              	.LFB15:
+1135:../src/mk20dx128.c **** 	while (1) ;
+1136:../src/mk20dx128.c **** }
+1137:../src/mk20dx128.c **** 
+1138:../src/mk20dx128.c **** char *__brkval = (char *)&_ebss;
+1139:../src/mk20dx128.c **** 
+1140:../src/mk20dx128.c **** void * _sbrk(int incr)
+1141:../src/mk20dx128.c **** {
+ 708              		.loc 1 1141 0
+ 709              		.cfi_startproc
+ 710              		@ args = 0, pretend = 0, frame = 0
+ 711              		@ frame_needed = 0, uses_anonymous_args = 0
+ 712              		@ link register save eliminated.
+ 713              	.LVL26:
+1142:../src/mk20dx128.c **** 	char *prev = __brkval;
+ 714              		.loc 1 1142 0
+ 715 0000 024A     		ldr	r2, .L75
+ 716 0002 1368     		ldr	r3, [r2]
+ 717              	.LVL27:
+1143:../src/mk20dx128.c **** 	__brkval += incr;
+ 718              		.loc 1 1143 0
+ 719 0004 1844     		add	r0, r0, r3
+ 720              	.LVL28:
+ 721 0006 1060     		str	r0, [r2]
+1144:../src/mk20dx128.c **** 	return prev;
+1145:../src/mk20dx128.c **** }
+ 722              		.loc 1 1145 0
+ 723 0008 1846     		mov	r0, r3
+ 724 000a 7047     		bx	lr
+ 725              	.L76:
+ 726              		.align	2
+ 727              	.L75:
+ 728 000c 00000000 		.word	.LANCHOR2
+ 729              		.cfi_endproc
+ 730              	.LFE15:
+ 732              		.section	.text._read,"ax",%progbits
+ 733              		.align	1
+ 734              		.weak	_read
+ 735              		.thumb
+ 736              		.thumb_func
+ 738              	_read:
+ 739              	.LFB16:
+1146:../src/mk20dx128.c **** 
+1147:../src/mk20dx128.c **** __attribute__((weak)) 
+1148:../src/mk20dx128.c **** int _read(int file, char *ptr, int len)
+1149:../src/mk20dx128.c **** {
+ 740              		.loc 1 1149 0
+ 741              		.cfi_startproc
+ 742              		@ args = 0, pretend = 0, frame = 0
+ 743              		@ frame_needed = 0, uses_anonymous_args = 0
+ 744              		@ link register save eliminated.
+ 745              	.LVL29:
+1150:../src/mk20dx128.c **** 	return 0;
+1151:../src/mk20dx128.c **** }
+ 746              		.loc 1 1151 0
+ 747 0000 0020     		movs	r0, #0
+ 748              	.LVL30:
+ 749 0002 7047     		bx	lr
+ 750              		.cfi_endproc
+ 751              	.LFE16:
+ 753              		.section	.text._close,"ax",%progbits
+ 754              		.align	1
+ 755              		.weak	_close
+ 756              		.thumb
+ 757              		.thumb_func
+ 759              	_close:
+ 760              	.LFB17:
+1152:../src/mk20dx128.c **** 
+1153:../src/mk20dx128.c **** __attribute__((weak)) 
+1154:../src/mk20dx128.c **** int _close(int fd)
+1155:../src/mk20dx128.c **** {
+ 761              		.loc 1 1155 0
+ 762              		.cfi_startproc
+ 763              		@ args = 0, pretend = 0, frame = 0
+ 764              		@ frame_needed = 0, uses_anonymous_args = 0
+ 765              		@ link register save eliminated.
+ 766              	.LVL31:
+1156:../src/mk20dx128.c **** 	return -1;
+1157:../src/mk20dx128.c **** }
+ 767              		.loc 1 1157 0
+ 768 0000 4FF0FF30 		mov	r0, #-1
+ 769              	.LVL32:
+ 770 0004 7047     		bx	lr
+ 771              		.cfi_endproc
+ 772              	.LFE17:
+ 774              		.section	.text._fstat,"ax",%progbits
+ 775              		.align	1
+ 776              		.weak	_fstat
+ 777              		.thumb
+ 778              		.thumb_func
+ 780              	_fstat:
+ 781              	.LFB18:
+1158:../src/mk20dx128.c **** 
+1159:../src/mk20dx128.c **** #include <sys/stat.h>
+1160:../src/mk20dx128.c **** 
+1161:../src/mk20dx128.c **** __attribute__((weak)) 
+1162:../src/mk20dx128.c **** int _fstat(int fd, struct stat *st)
+1163:../src/mk20dx128.c **** {
+ 782              		.loc 1 1163 0
+ 783              		.cfi_startproc
+ 784              		@ args = 0, pretend = 0, frame = 0
+ 785              		@ frame_needed = 0, uses_anonymous_args = 0
+ 786              		@ link register save eliminated.
+ 787              	.LVL33:
+1164:../src/mk20dx128.c **** 	st->st_mode = S_IFCHR;
+ 788              		.loc 1 1164 0
+ 789 0000 4FF40053 		mov	r3, #8192
+ 790 0004 4B60     		str	r3, [r1, #4]
+1165:../src/mk20dx128.c **** 	return 0;
+1166:../src/mk20dx128.c **** }
+ 791              		.loc 1 1166 0
+ 792 0006 0020     		movs	r0, #0
+ 793              	.LVL34:
+ 794 0008 7047     		bx	lr
+ 795              		.cfi_endproc
+ 796              	.LFE18:
+ 798              		.section	.text._isatty,"ax",%progbits
+ 799              		.align	1
+ 800              		.weak	_isatty
+ 801              		.thumb
+ 802              		.thumb_func
+ 804              	_isatty:
+ 805              	.LFB19:
+1167:../src/mk20dx128.c **** 
+1168:../src/mk20dx128.c **** __attribute__((weak)) 
+1169:../src/mk20dx128.c **** int _isatty(int fd)
+1170:../src/mk20dx128.c **** {
+ 806              		.loc 1 1170 0
+ 807              		.cfi_startproc
+ 808              		@ args = 0, pretend = 0, frame = 0
+ 809              		@ frame_needed = 0, uses_anonymous_args = 0
+ 810              		@ link register save eliminated.
+ 811              	.LVL35:
+1171:../src/mk20dx128.c **** 	return 1;
+1172:../src/mk20dx128.c **** }
+ 812              		.loc 1 1172 0
+ 813 0000 0120     		movs	r0, #1
+ 814              	.LVL36:
+ 815 0002 7047     		bx	lr
+ 816              		.cfi_endproc
+ 817              	.LFE19:
+ 819              		.section	.text._lseek,"ax",%progbits
+ 820              		.align	1
+ 821              		.weak	_lseek
+ 822              		.thumb
+ 823              		.thumb_func
+ 825              	_lseek:
+ 826              	.LFB20:
+1173:../src/mk20dx128.c **** 
+1174:../src/mk20dx128.c **** __attribute__((weak)) 
+1175:../src/mk20dx128.c **** int _lseek(int fd, long long offset, int whence)
+1176:../src/mk20dx128.c **** {
+ 827              		.loc 1 1176 0
+ 828              		.cfi_startproc
+ 829              		@ args = 4, pretend = 0, frame = 0
+ 830              		@ frame_needed = 0, uses_anonymous_args = 0
+ 831              		@ link register save eliminated.
+ 832              	.LVL37:
+1177:../src/mk20dx128.c **** 	return -1;
+1178:../src/mk20dx128.c **** }
+ 833              		.loc 1 1178 0
+ 834 0000 4FF0FF30 		mov	r0, #-1
+ 835              	.LVL38:
+ 836 0004 7047     		bx	lr
+ 837              		.cfi_endproc
+ 838              	.LFE20:
+ 840              		.section	.text._exit,"ax",%progbits
+ 841              		.align	1
+ 842              		.weak	_exit
+ 843              		.thumb
+ 844              		.thumb_func
+ 846              	_exit:
+ 847              	.LFB21:
+1179:../src/mk20dx128.c **** 
+1180:../src/mk20dx128.c **** __attribute__((weak)) 
+1181:../src/mk20dx128.c **** void _exit(int status)
+1182:../src/mk20dx128.c **** {
+ 848              		.loc 1 1182 0
+ 849              		.cfi_startproc
+ 850              		@ Volatile: function does not return.
+ 851              		@ args = 0, pretend = 0, frame = 0
+ 852              		@ frame_needed = 0, uses_anonymous_args = 0
+ 853              		@ link register save eliminated.
+ 854              	.LVL39:
+ 855              	.L83:
+ 856 0000 FEE7     		b	.L83
+ 857              		.cfi_endproc
+ 858              	.LFE21:
+ 860              		.section	.text.__cxa_pure_virtual,"ax",%progbits
+ 861              		.align	1
+ 862              		.weak	__cxa_pure_virtual
+ 863              		.thumb
+ 864              		.thumb_func
+ 866              	__cxa_pure_virtual:
+ 867              	.LFB22:
+1183:../src/mk20dx128.c **** 	while (1);
+1184:../src/mk20dx128.c **** }
+1185:../src/mk20dx128.c **** 
+1186:../src/mk20dx128.c **** __attribute__((weak)) 
+1187:../src/mk20dx128.c **** void __cxa_pure_virtual()
+1188:../src/mk20dx128.c **** {
+ 868              		.loc 1 1188 0
+ 869              		.cfi_startproc
+ 870              		@ args = 0, pretend = 0, frame = 0
+ 871              		@ frame_needed = 0, uses_anonymous_args = 0
+ 872              		@ link register save eliminated.
+ 873              	.L85:
+ 874 0000 FEE7     		b	.L85
+ 875              		.cfi_endproc
+ 876              	.LFE22:
+ 878              		.section	.text.__cxa_guard_acquire,"ax",%progbits
+ 879              		.align	1
+ 880              		.weak	__cxa_guard_acquire
+ 881              		.thumb
+ 882              		.thumb_func
+ 884              	__cxa_guard_acquire:
+ 885              	.LFB23:
+1189:../src/mk20dx128.c **** 	while (1);
+1190:../src/mk20dx128.c **** }
+1191:../src/mk20dx128.c **** 
+1192:../src/mk20dx128.c **** __attribute__((weak)) 
+1193:../src/mk20dx128.c **** int __cxa_guard_acquire (char *g) 
+1194:../src/mk20dx128.c **** {
+ 886              		.loc 1 1194 0
+ 887              		.cfi_startproc
+ 888              		@ args = 0, pretend = 0, frame = 0
+ 889              		@ frame_needed = 0, uses_anonymous_args = 0
+ 890              		@ link register save eliminated.
+ 891              	.LVL40:
+1195:../src/mk20dx128.c **** 	return !(*g);
+ 892              		.loc 1 1195 0
+ 893 0000 90F90000 		ldrsb	r0, [r0]
+ 894              	.LVL41:
+1196:../src/mk20dx128.c **** }
+ 895              		.loc 1 1196 0
+ 896 0004 B0FA80F0 		clz	r0, r0
+ 897 0008 4009     		lsrs	r0, r0, #5
+ 898 000a 7047     		bx	lr
+ 899              		.cfi_endproc
+ 900              	.LFE23:
+ 902              		.section	.text.__cxa_guard_release,"ax",%progbits
+ 903              		.align	1
+ 904              		.weak	__cxa_guard_release
+ 905              		.thumb
+ 906              		.thumb_func
+ 908              	__cxa_guard_release:
+ 909              	.LFB24:
+1197:../src/mk20dx128.c **** 
+1198:../src/mk20dx128.c **** __attribute__((weak)) 
+1199:../src/mk20dx128.c **** void __cxa_guard_release(char *g)
+1200:../src/mk20dx128.c **** {
+ 910              		.loc 1 1200 0
+ 911              		.cfi_startproc
+ 912              		@ args = 0, pretend = 0, frame = 0
+ 913              		@ frame_needed = 0, uses_anonymous_args = 0
+ 914              		@ link register save eliminated.
+ 915              	.LVL42:
+1201:../src/mk20dx128.c **** 	*g = 1;
+ 916              		.loc 1 1201 0
+ 917 0000 0123     		movs	r3, #1
+ 918 0002 0370     		strb	r3, [r0]
+ 919 0004 7047     		bx	lr
+ 920              		.cfi_endproc
+ 921              	.LFE24:
+ 923              		.section	.text.nvic_execution_priority,"ax",%progbits
+ 924              		.align	1
+ 925              		.global	nvic_execution_priority
+ 926              		.thumb
+ 927              		.thumb_func
+ 929              	nvic_execution_priority:
+ 930              	.LFB25:
+1202:../src/mk20dx128.c **** }
+1203:../src/mk20dx128.c **** 
+1204:../src/mk20dx128.c **** int nvic_execution_priority(void)
+1205:../src/mk20dx128.c **** {
+ 931              		.loc 1 1205 0
+ 932              		.cfi_startproc
+ 933              		@ args = 0, pretend = 0, frame = 0
+ 934              		@ frame_needed = 0, uses_anonymous_args = 0
+ 935              		@ link register save eliminated.
+ 936              	.LVL43:
+1206:../src/mk20dx128.c **** 	int priority=256;
+1207:../src/mk20dx128.c **** 	uint32_t primask, faultmask, basepri, ipsr;
+1208:../src/mk20dx128.c **** 
+1209:../src/mk20dx128.c **** 	// full algorithm in ARM DDI0403D, page B1-639
+1210:../src/mk20dx128.c **** 	// this isn't quite complete, but hopefully good enough
+1211:../src/mk20dx128.c **** 	__asm__ volatile("mrs %0, faultmask\n" : "=r" (faultmask)::);
+ 937              		.loc 1 1211 0
+ 938              		.syntax unified
+ 939              	@ 1211 "../src/mk20dx128.c" 1
+ 940 0000 EFF31383 		mrs r3, faultmask
+ 941              	
+ 942              	@ 0 "" 2
+ 943              	.LVL44:
+1212:../src/mk20dx128.c **** 	if (faultmask) return -1;
+ 944              		.loc 1 1212 0
+ 945              		.thumb
+ 946              		.syntax unified
+ 947 0004 9BB9     		cbnz	r3, .L91
+1213:../src/mk20dx128.c **** 	__asm__ volatile("mrs %0, primask\n" : "=r" (primask)::);
+ 948              		.loc 1 1213 0
+ 949              		.syntax unified
+ 950              	@ 1213 "../src/mk20dx128.c" 1
+ 951 0006 EFF31080 		mrs r0, primask
+ 952              	
+ 953              	@ 0 "" 2
+ 954              	.LVL45:
+1214:../src/mk20dx128.c **** 	if (primask) return 0;
+ 955              		.loc 1 1214 0
+ 956              		.thumb
+ 957              		.syntax unified
+ 958 000a 98B9     		cbnz	r0, .L92
+1215:../src/mk20dx128.c **** 	__asm__ volatile("mrs %0, ipsr\n" : "=r" (ipsr)::);
+ 959              		.loc 1 1215 0
+ 960              		.syntax unified
+ 961              	@ 1215 "../src/mk20dx128.c" 1
+ 962 000c EFF30583 		mrs r3, ipsr
+ 963              	
+ 964              	@ 0 "" 2
+ 965              	.LVL46:
+1216:../src/mk20dx128.c **** 	if (ipsr) {
+ 966              		.loc 1 1216 0
+ 967              		.thumb
+ 968              		.syntax unified
+ 969 0010 23B1     		cbz	r3, .L93
+1217:../src/mk20dx128.c **** 		if (ipsr < 16) priority = 0; // could be non-zero
+ 970              		.loc 1 1217 0
+ 971 0012 0F2B     		cmp	r3, #15
+ 972 0014 04D9     		bls	.L90
+1218:../src/mk20dx128.c **** 		else priority = NVIC_GET_PRIORITY(ipsr - 16);
+ 973              		.loc 1 1218 0
+ 974 0016 084A     		ldr	r2, .L97
+ 975 0018 985C     		ldrb	r0, [r3, r2]	@ zero_extendqisi2
+ 976              	.LVL47:
+ 977 001a 01E0     		b	.L90
+ 978              	.LVL48:
+ 979              	.L93:
+1206:../src/mk20dx128.c **** 	uint32_t primask, faultmask, basepri, ipsr;
+ 980              		.loc 1 1206 0
+ 981 001c 4FF48070 		mov	r0, #256
+ 982              	.LVL49:
+ 983              	.L90:
+1219:../src/mk20dx128.c **** 	}
+1220:../src/mk20dx128.c **** 	__asm__ volatile("mrs %0, basepri\n" : "=r" (basepri)::);
+ 984              		.loc 1 1220 0
+ 985              		.syntax unified
+ 986              	@ 1220 "../src/mk20dx128.c" 1
+ 987 0020 EFF31183 		mrs r3, basepri
+ 988              	
+ 989              	@ 0 "" 2
+ 990              	.LVL50:
+1221:../src/mk20dx128.c **** 	if (basepri > 0 && basepri < priority) priority = basepri;
+ 991              		.loc 1 1221 0
+ 992              		.thumb
+ 993              		.syntax unified
+ 994 0024 3BB1     		cbz	r3, .L89
+ 995              		.loc 1 1221 0 is_stmt 0 discriminator 1
+ 996 0026 9842     		cmp	r0, r3
+ 997 0028 28BF     		it	cs
+ 998 002a 1846     		movcs	r0, r3
+ 999              	.LVL51:
+ 1000 002c 7047     		bx	lr
+ 1001              	.LVL52:
+ 1002              	.L91:
+1212:../src/mk20dx128.c **** 	__asm__ volatile("mrs %0, primask\n" : "=r" (primask)::);
+ 1003              		.loc 1 1212 0 is_stmt 1
+ 1004 002e 4FF0FF30 		mov	r0, #-1
+ 1005 0032 7047     		bx	lr
+ 1006              	.LVL53:
+ 1007              	.L92:
+1214:../src/mk20dx128.c **** 	__asm__ volatile("mrs %0, ipsr\n" : "=r" (ipsr)::);
+ 1008              		.loc 1 1214 0
+ 1009 0034 1846     		mov	r0, r3
+ 1010              	.LVL54:
+ 1011              	.L89:
+1222:../src/mk20dx128.c **** 	return priority;
+1223:../src/mk20dx128.c **** }
+ 1012              		.loc 1 1223 0
+ 1013 0036 7047     		bx	lr
+ 1014              	.L98:
+ 1015              		.align	2
+ 1016              	.L97:
+ 1017 0038 F0E300E0 		.word	-536812560
+ 1018              		.cfi_endproc
+ 1019              	.LFE25:
+ 1021              		.global	__brkval
+ 1022              		.global	flashconfigbytes
+ 1023              		.global	_VectorsFlash
+ 1024              		.global	_VectorsRam
+ 1025              		.section	.flashconfig,"a",%progbits
+ 1028              	flashconfigbytes:
+ 1029 0000 FF       		.byte	-1
+ 1030 0001 FF       		.byte	-1
+ 1031 0002 FF       		.byte	-1
+ 1032 0003 FF       		.byte	-1
+ 1033 0004 FF       		.byte	-1
+ 1034 0005 FF       		.byte	-1
+ 1035 0006 FF       		.byte	-1
+ 1036 0007 FF       		.byte	-1
+ 1037 0008 FF       		.byte	-1
+ 1038 0009 FF       		.byte	-1
+ 1039 000a FF       		.byte	-1
+ 1040 000b FF       		.byte	-1
+ 1041 000c DE       		.byte	-34
+ 1042 000d F9       		.byte	-7
+ 1043 000e FF       		.byte	-1
+ 1044 000f FF       		.byte	-1
+ 1045              		.section	.data.__brkval,"aw",%progbits
+ 1046              		.align	2
+ 1047              		.set	.LANCHOR2,. + 0
+ 1050              	__brkval:
+ 1051 0000 00000000 		.word	_ebss
+ 1052              		.section	.vectors,"a",%progbits
+ 1053              		.align	2
+ 1054              		.set	.LANCHOR1,. + 0
+ 1057              	_VectorsFlash:
+ 1058 0000 00000000 		.word	_estack
+ 1059 0004 00000000 		.word	ResetHandler
+ 1060 0008 00000000 		.word	nmi_isr
+ 1061 000c 00000000 		.word	hard_fault_isr
+ 1062 0010 00000000 		.word	memmanage_fault_isr
+ 1063 0014 00000000 		.word	bus_fault_isr
+ 1064 0018 00000000 		.word	usage_fault_isr
+ 1065 001c 00000000 		.word	fault_isr
+ 1066 0020 00000000 		.word	fault_isr
+ 1067 0024 00000000 		.word	fault_isr
+ 1068 0028 00000000 		.word	fault_isr
+ 1069 002c 00000000 		.word	svcall_isr
+ 1070 0030 00000000 		.word	debugmonitor_isr
+ 1071 0034 00000000 		.word	fault_isr
+ 1072 0038 00000000 		.word	pendablesrvreq_isr
+ 1073 003c 00000000 		.word	systick_isr
+ 1074 0040 00000000 		.word	dma_ch0_isr
+ 1075 0044 00000000 		.word	dma_ch1_isr
+ 1076 0048 00000000 		.word	dma_ch2_isr
+ 1077 004c 00000000 		.word	dma_ch3_isr
+ 1078 0050 00000000 		.word	dma_ch4_isr
+ 1079 0054 00000000 		.word	dma_ch5_isr
+ 1080 0058 00000000 		.word	dma_ch6_isr
+ 1081 005c 00000000 		.word	dma_ch7_isr
+ 1082 0060 00000000 		.word	dma_ch8_isr
+ 1083 0064 00000000 		.word	dma_ch9_isr
+ 1084 0068 00000000 		.word	dma_ch10_isr
+ 1085 006c 00000000 		.word	dma_ch11_isr
+ 1086 0070 00000000 		.word	dma_ch12_isr
+ 1087 0074 00000000 		.word	dma_ch13_isr
+ 1088 0078 00000000 		.word	dma_ch14_isr
+ 1089 007c 00000000 		.word	dma_ch15_isr
+ 1090 0080 00000000 		.word	dma_error_isr
+ 1091 0084 00000000 		.word	unused_isr
+ 1092 0088 00000000 		.word	flash_cmd_isr
+ 1093 008c 00000000 		.word	flash_error_isr
+ 1094 0090 00000000 		.word	low_voltage_isr
+ 1095 0094 00000000 		.word	wakeup_isr
+ 1096 0098 00000000 		.word	watchdog_isr
+ 1097 009c 00000000 		.word	unused_isr
+ 1098 00a0 00000000 		.word	i2c0_isr
+ 1099 00a4 00000000 		.word	i2c1_isr
+ 1100 00a8 00000000 		.word	spi0_isr
+ 1101 00ac 00000000 		.word	spi1_isr
+ 1102 00b0 00000000 		.word	unused_isr
+ 1103 00b4 00000000 		.word	can0_message_isr
+ 1104 00b8 00000000 		.word	can0_bus_off_isr
+ 1105 00bc 00000000 		.word	can0_error_isr
+ 1106 00c0 00000000 		.word	can0_tx_warn_isr
+ 1107 00c4 00000000 		.word	can0_rx_warn_isr
+ 1108 00c8 00000000 		.word	can0_wakeup_isr
+ 1109 00cc 00000000 		.word	i2s0_tx_isr
+ 1110 00d0 00000000 		.word	i2s0_rx_isr
+ 1111 00d4 00000000 		.word	unused_isr
+ 1112 00d8 00000000 		.word	unused_isr
+ 1113 00dc 00000000 		.word	unused_isr
+ 1114 00e0 00000000 		.word	unused_isr
+ 1115 00e4 00000000 		.word	unused_isr
+ 1116 00e8 00000000 		.word	unused_isr
+ 1117 00ec 00000000 		.word	unused_isr
+ 1118 00f0 00000000 		.word	uart0_lon_isr
+ 1119 00f4 00000000 		.word	uart0_status_isr
+ 1120 00f8 00000000 		.word	uart0_error_isr
+ 1121 00fc 00000000 		.word	uart1_status_isr
+ 1122 0100 00000000 		.word	uart1_error_isr
+ 1123 0104 00000000 		.word	uart2_status_isr
+ 1124 0108 00000000 		.word	uart2_error_isr
+ 1125 010c 00000000 		.word	unused_isr
+ 1126 0110 00000000 		.word	unused_isr
+ 1127 0114 00000000 		.word	unused_isr
+ 1128 0118 00000000 		.word	unused_isr
+ 1129 011c 00000000 		.word	unused_isr
+ 1130 0120 00000000 		.word	unused_isr
+ 1131 0124 00000000 		.word	adc0_isr
+ 1132 0128 00000000 		.word	adc1_isr
+ 1133 012c 00000000 		.word	cmp0_isr
+ 1134 0130 00000000 		.word	cmp1_isr
+ 1135 0134 00000000 		.word	cmp2_isr
+ 1136 0138 00000000 		.word	ftm0_isr
+ 1137 013c 00000000 		.word	ftm1_isr
+ 1138 0140 00000000 		.word	ftm2_isr
+ 1139 0144 00000000 		.word	cmt_isr
+ 1140 0148 00000000 		.word	rtc_alarm_isr
+ 1141 014c 00000000 		.word	rtc_seconds_isr
+ 1142 0150 00000000 		.word	pit0_isr
+ 1143 0154 00000000 		.word	pit1_isr
+ 1144 0158 00000000 		.word	pit2_isr
+ 1145 015c 00000000 		.word	pit3_isr
+ 1146 0160 00000000 		.word	pdb_isr
+ 1147 0164 00000000 		.word	usb_isr
+ 1148 0168 00000000 		.word	usb_charge_isr
+ 1149 016c 00000000 		.word	unused_isr
+ 1150 0170 00000000 		.word	unused_isr
+ 1151 0174 00000000 		.word	unused_isr
+ 1152 0178 00000000 		.word	unused_isr
+ 1153 017c 00000000 		.word	unused_isr
+ 1154 0180 00000000 		.word	unused_isr
+ 1155 0184 00000000 		.word	dac0_isr
+ 1156 0188 00000000 		.word	unused_isr
+ 1157 018c 00000000 		.word	tsi0_isr
+ 1158 0190 00000000 		.word	mcg_isr
+ 1159 0194 00000000 		.word	lptmr_isr
+ 1160 0198 00000000 		.word	unused_isr
+ 1161 019c 00000000 		.word	porta_isr
+ 1162 01a0 00000000 		.word	portb_isr
+ 1163 01a4 00000000 		.word	portc_isr
+ 1164 01a8 00000000 		.word	portd_isr
+ 1165 01ac 00000000 		.word	porte_isr
+ 1166 01b0 00000000 		.word	unused_isr
+ 1167 01b4 00000000 		.word	unused_isr
+ 1168 01b8 00000000 		.word	software_isr
+ 1169              		.section	.dmabuffers,"aw",%progbits
+ 1170              		.align	9
+ 1171              		.set	.LANCHOR0,. + 0
+ 1174              	_VectorsRam:
+ 1175 0000 00000000 		.space	444
+ 1175      00000000 
+ 1175      00000000 
+ 1175      00000000 
+ 1175      00000000 
+ 1176              		.text
+ 1177              	.Letext0:
+ 1178              		.file 2 "c:\\program files (x86)\\gnu tools arm embedded\\5.3 2016q1\\arm-none-eabi\\include\\mach
+ 1179              		.file 3 "c:\\program files (x86)\\gnu tools arm embedded\\5.3 2016q1\\arm-none-eabi\\include\\sys\
+ 1180              		.file 4 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/kinetis.h"
+ 1181              		.file 5 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/pins_arduino.h"
+ 1182              		.file 6 "c:\\program files (x86)\\gnu tools arm embedded\\5.3 2016q1\\arm-none-eabi\\include\\sys\
+ 1183              		.file 7 "c:\\program files (x86)\\gnu tools arm embedded\\5.3 2016q1\\arm-none-eabi\\include\\sys\
+ 1184              		.file 8 "c:\\program files (x86)\\gnu tools arm embedded\\5.3 2016q1\\arm-none-eabi\\include\\sys\
+ 1185              		.file 9 "c:\\program files (x86)\\gnu tools arm embedded\\5.3 2016q1\\arm-none-eabi\\include\\sys\
+DEFINED SYMBOLS
+                            *ABS*:00000000 mk20dx128.c
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:20     .text.systick_default_isr:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:25     .text.systick_default_isr:00000000 systick_default_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:42     .text.systick_default_isr:0000000c $d
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:25     .text.systick_default_isr:00000000 systick_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:49     .text.fault_isr:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:54     .text.fault_isr:00000000 fault_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 usb_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart0_status_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart1_status_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart2_status_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:103    .text.fault_isr:00000030 $d
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:54     .text.fault_isr:00000000 usage_fault_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:54     .text.fault_isr:00000000 bus_fault_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:54     .text.fault_isr:00000000 memmanage_fault_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:54     .text.fault_isr:00000000 hard_fault_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:116    .text.unused_isr:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 unused_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 software_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 portcd_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 porte_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 portd_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 portc_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 portb_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 porta_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 lptmr_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 mcg_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 tsi0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dac1_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dac0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 usbhs_phy_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 usbhs_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 usb_charge_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 pdb_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 pit3_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 pit2_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 pit1_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 pit0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 pit_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 rtc_seconds_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 rtc_alarm_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 cmt_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 tpm2_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 tpm1_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 tpm0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 ftm3_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 ftm2_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 ftm1_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 ftm0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 cmp3_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 cmp2_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 cmp1_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 cmp0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 adc1_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 adc0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 lpuart0_status_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart5_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart5_status_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart4_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart4_status_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart3_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart3_status_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart2_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart1_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart0_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 uart0_lon_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 i2s0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 i2s0_rx_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 i2s0_tx_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can1_wakeup_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can1_rx_warn_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can1_tx_warn_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can1_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can1_bus_off_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can1_message_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can0_wakeup_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can0_rx_warn_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can0_tx_warn_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can0_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can0_bus_off_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 can0_message_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 enet_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 enet_rx_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 enet_tx_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 enet_timer_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 sdhc_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 spi2_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 spi1_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 spi0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 i2c3_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 i2c2_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 i2c1_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 i2c0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 watchdog_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 wakeup_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 low_voltage_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 flash_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 flash_cmd_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 randnum_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 mcm_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_error_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch15_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch14_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch13_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch12_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch11_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch10_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch9_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch8_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch7_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch6_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch5_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch4_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch3_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch2_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch1_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 dma_ch0_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 pendablesrvreq_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 debugmonitor_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 svcall_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:121    .text.unused_isr:00000000 nmi_isr
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:353    .text.startup_default_early_hook:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:357    .text.startup_default_early_hook:00000000 startup_default_early_hook
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:372    .text.startup_default_early_hook:00000008 $d
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:357    .text.startup_default_early_hook:00000000 startup_early_hook
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:379    .text.startup_default_late_hook:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:383    .text.startup_default_late_hook:00000000 startup_default_late_hook
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:383    .text.startup_default_late_hook:00000000 startup_late_hook
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:397    .startup:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:402    .startup:00000000 ResetHandler
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:667    .startup:0000015c $d
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:701    .text._sbrk:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:706    .text._sbrk:00000000 _sbrk
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:728    .text._sbrk:0000000c $d
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:733    .text._read:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:738    .text._read:00000000 _read
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:754    .text._close:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:759    .text._close:00000000 _close
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:775    .text._fstat:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:780    .text._fstat:00000000 _fstat
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:799    .text._isatty:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:804    .text._isatty:00000000 _isatty
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:820    .text._lseek:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:825    .text._lseek:00000000 _lseek
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:841    .text._exit:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:846    .text._exit:00000000 _exit
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:861    .text.__cxa_pure_virtual:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:866    .text.__cxa_pure_virtual:00000000 __cxa_pure_virtual
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:879    .text.__cxa_guard_acquire:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:884    .text.__cxa_guard_acquire:00000000 __cxa_guard_acquire
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:903    .text.__cxa_guard_release:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:908    .text.__cxa_guard_release:00000000 __cxa_guard_release
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:924    .text.nvic_execution_priority:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:929    .text.nvic_execution_priority:00000000 nvic_execution_priority
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:1017   .text.nvic_execution_priority:00000038 $d
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:1050   .data.__brkval:00000000 __brkval
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:1028   .flashconfig:00000000 flashconfigbytes
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:1057   .vectors:00000000 _VectorsFlash
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:1174   .dmabuffers:00000000 _VectorsRam
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:1046   .data.__brkval:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:1053   .vectors:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccIqb9FN.s:1170   .dmabuffers:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+systick_millis_count
+_init_Teensyduino_internal_
+rtc_set
+__libc_init_array
+main
+_edata
+_etext
+_sdata
+_sbss
+_ebss
+_estack

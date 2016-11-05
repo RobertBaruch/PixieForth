@@ -1,0 +1,228 @@
+   1              	# 1 "../src/core_dict.S"
+   1              		.syntax unified
+   0              	
+   0              	
+   0              	
+   2              	
+   3              	.altmacro /* Enable expression-to-string */
+   4              	
+   5              	.set func_counter, 0
+   6              	
+   7              	/* Writes some header data for a new function named 'name',
+   8              	 * and increments the function counter. This sets up a local
+   9              	 * label called 'func' concatenated with the function counter's
+  10              	 * value, and sets the next four bytes to a pointer to the next
+  11              	 * 'func' label (which will be that of the function counter plus
+  12              	 * one). It also writes the header of the function.
+  13              	 *
+  14              	 * Every new_func <name> must be paired with a corresponding
+  15              	 * end_func <name>.
+  16              	 */
+  17              	.macro new_func name, word_name
+  18              	__new_func %func_counter, %func_counter+1, \name, \word_name
+  19              	.set func_counter, func_counter+1
+  20              	.endm
+  21              	
+  22              	.macro __new_func n, nn, name, word_name
+  24              	func\n\():
+  25              		.4byte func\nn
+  26              		.4byte \name\()
+  27              		.asciz "\word_name\()"
+  28              		.align 2, 0
+  29              		.global \name
+  30              		.thumb_func
+  32              	\name\():
+  33              		str lr, [r0], #4
+  34              	.endm
+  35              	
+  36              	/* This macro writes the footer of the function. */
+  37              	.macro end_func name
+  38              		ldr pc, [r0, #-4]!
+  39              		.pool
+  41              	.endm
+  42              	
+  43              	/* This macro has to be called at the end of the file
+  44              	 * so that we cap off the end of the linked list with a 0
+  45              	 * address.
+  46              	 */
+  47              	.macro end_dict
+  48              	__end_dict %func_counter
+  49              	.endm
+  50              	
+  51              	.macro __end_dict n
+  52              	func\n\():
+  53              		.4byte 0
+  54              	.endm
+  55              	
+  56              		.text
+  57              	
+  58              		.align	2
+  59              		.global dict_root
+  61              	dict_root:
+  62              	
+  63              	/*
+  64              	 * When popping/pushing multiple registers, the highest-numbered
+  65              	 * register is at the top of the stack.
+  66              	 */
+  67              	
+  68              	/* (x addr -- ) */
+  69 0000 18000000 	new_func dict_store, !
+  69      00000000 
+  69      21000000 
+  69      40F804EB 
+  70 0010 06BC     	    pop {r1, r2}
+  71 0012 1160     	    str r1, [r2]
+  72 0014 50F804FD 	end_func dict_store
+  73              	
+  74              	/* (addr -- x) */
+  75 0018 32000000 	new_func dict_load, \@
+  75      00000000 
+  75      40000000 
+  75      40F804EB 
+  76 0028 02BC     	    pop {r1}
+  77 002a 0968     	    ldr r1, [r1]
+  78 002c 02B4     	    push {r1}
+  79 002e 50F804FD 	end_func dict_load
+  80              	
+  81              	/* (n1 n2 -- n3) */
+  82 0032 4A000000 	new_func dict_plus, +
+  82      00000000 
+  82      2B0040F8 
+  82      04EB
+  83 0040 06BC     	    pop {r1, r2}
+  84 0042 1144     	    add r1, r2
+  85 0044 02B4     	    push {r1}
+  86 0046 50F804FD 	end_func dict_plus
+  87              	
+  88              	/* (n1 addr --) */
+  89 004a 68000000 	new_func dict_plus_store, +!
+  89      00000000 
+  89      2B210000 
+  89      000040F8 
+  89      04EB
+  90 005c 06BC     	    pop {r1, r2}
+  91 005e 1368     	    ldr r3, [r2]
+  92 0060 0B44     	    add r3, r1
+  93 0062 1360     	    str r3, [r2]
+  94 0064 50F804FD 	end_func dict_plus_store
+  95              	
+  96 0068 86000000 	new_func dict_false, FALSE
+  96      00000000 
+  96      46414C53 
+  96      45000000 
+  96      40F804EB 
+  97 007c 4FF00001 	    mov r1, #0
+  98 0080 02B4     	    push {r1}
+  99 0082 50F804FD 	end_func dict_false
+ 100              	
+ 101 0086 A2000000 	new_func dict_true, TRUE
+ 101      00000000 
+ 101      54525545 
+ 101      000040F8 
+ 101      04EB
+ 102 0098 6FF00001 	    mvn r1, #0
+ 103 009c 02B4     	    push {r1}
+ 104 009e 50F804FD 	end_func dict_true
+ 105              	
+ 106 00a2 C0000000 	new_func dict_and, AND
+ 106      00000000 
+ 106      414E4400 
+ 106      000040F8 
+ 106      04EB
+ 107 00b4 06BC     	    pop {r1, r2}
+ 108 00b6 01EA0201 	    and r1, r2
+ 109 00ba 02B4     	    push {r1}
+ 110 00bc 50F804FD 	end_func dict_and
+ 111              	
+ 112 00c0 DC000000 	new_func dict_or, OR
+ 112      00000000 
+ 112      4F520000 
+ 112      40F804EB 
+ 113 00d0 06BC     	    pop {r1, r2}
+ 114 00d2 41EA0201 	    orr r1, r2
+ 115 00d6 02B4     	    push {r1}
+ 116 00d8 50F804FD 	end_func dict_or
+ 117              	
+ 118 00dc F8000000 	new_func dict_xor, XOR
+ 118      00000000 
+ 118      584F5200 
+ 118      40F804EB 
+ 119 00ec 06BC     	    pop {r1, r2}
+ 120 00ee 81EA0201 	    eor r1, r2
+ 121 00f2 02B4     	    push {r1}
+ 122 00f4 50F804FD 	end_func dict_xor
+ 123              	
+ 124 00f8 18010000 	new_func dict_invert, INVERT
+ 124      00000000 
+ 124      494E5645 
+ 124      52540000 
+ 124      40F804EB 
+ 125 010c 02BC     	    pop {r1}
+ 126 010e 6FEA0101 	    mvn r1, r1
+ 127 0112 02B4     	    push {r1}
+ 128 0114 50F804FD 	end_func dict_invert
+ 129              	
+ 130 0118 36010000 	new_func dict_swap, SWAP
+ 130      00000000 
+ 130      53574150 
+ 130      00000000 
+ 130      40F804EB 
+ 131 012c 06BC     		pop {r1, r2}
+ 132 012e 04B4     		push {r2}
+ 133 0130 02B4     		push {r1}
+ 134 0132 50F804FD 	end_func dict_swap
+ 135              	
+ 136 0136 00000000 	end_dict
+ 136      00BF
+DEFINED SYMBOLS
+  ../src/core_dict.S:5      *ABS*:0000000b func_counter
+  ../src/core_dict.S:61     .text:00000000 dict_root
+  ../src/core_dict.S:69     .text:00000000 func0
+  ../src/core_dict.S:69     .text:00000000 $d
+  ../src/core_dict.S:75     .text:00000018 func1
+  ../src/core_dict.S:69     .text:0000000c dict_store
+  ../src/core_dict.S:69     .text:0000000c $t
+  ../src/core_dict.S:75     .text:00000018 $d
+  ../src/core_dict.S:82     .text:00000032 func2
+  ../src/core_dict.S:75     .text:00000024 dict_load
+  ../src/core_dict.S:75     .text:00000024 $t
+  ../src/core_dict.S:82     .text:00000032 $d
+  ../src/core_dict.S:89     .text:0000004a func3
+  ../src/core_dict.S:82     .text:0000003c dict_plus
+  ../src/core_dict.S:82     .text:0000003c $t
+  ../src/core_dict.S:89     .text:0000004a $d
+  ../src/core_dict.S:96     .text:00000068 func4
+  ../src/core_dict.S:89     .text:00000058 dict_plus_store
+  ../src/core_dict.S:89     .text:00000058 $t
+  ../src/core_dict.S:96     .text:00000068 $d
+  ../src/core_dict.S:101    .text:00000086 func5
+  ../src/core_dict.S:96     .text:00000078 dict_false
+  ../src/core_dict.S:96     .text:00000078 $t
+  ../src/core_dict.S:101    .text:00000086 $d
+  ../src/core_dict.S:106    .text:000000a2 func6
+  ../src/core_dict.S:101    .text:00000094 dict_true
+  ../src/core_dict.S:101    .text:00000094 $t
+  ../src/core_dict.S:106    .text:000000a2 $d
+  ../src/core_dict.S:112    .text:000000c0 func7
+  ../src/core_dict.S:106    .text:000000b0 dict_and
+  ../src/core_dict.S:106    .text:000000b0 $t
+  ../src/core_dict.S:112    .text:000000c0 $d
+  ../src/core_dict.S:118    .text:000000dc func8
+  ../src/core_dict.S:112    .text:000000cc dict_or
+  ../src/core_dict.S:112    .text:000000cc $t
+  ../src/core_dict.S:118    .text:000000dc $d
+  ../src/core_dict.S:124    .text:000000f8 func9
+  ../src/core_dict.S:118    .text:000000e8 dict_xor
+  ../src/core_dict.S:118    .text:000000e8 $t
+  ../src/core_dict.S:124    .text:000000f8 $d
+  ../src/core_dict.S:130    .text:00000118 func10
+  ../src/core_dict.S:124    .text:00000108 dict_invert
+  ../src/core_dict.S:124    .text:00000108 $t
+  ../src/core_dict.S:130    .text:00000118 $d
+  ../src/core_dict.S:136    .text:00000136 func11
+  ../src/core_dict.S:130    .text:00000128 dict_swap
+  ../src/core_dict.S:130    .text:00000128 $t
+  ../src/core_dict.S:136    .text:00000136 $d
+  ../src/core_dict.S:136    .text:0000013a $t
+
+NO UNDEFINED SYMBOLS

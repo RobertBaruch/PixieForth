@@ -1,0 +1,215 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 2
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"parse.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.parse,"ax",%progbits
+  20              		.align	2
+  21              		.global	parse
+  22              		.thumb
+  23              		.thumb_func
+  25              	parse:
+  26              	.LFB0:
+  27              		.file 1 "../src/parse.c"
+   1:../src/parse.c **** /*
+   2:../src/parse.c ****  * parse.c
+   3:../src/parse.c ****  *
+   4:../src/parse.c ****  *  Created on: Oct 21, 2016
+   5:../src/parse.c ****  *      Author: Robert
+   6:../src/parse.c ****  */
+   7:../src/parse.c **** 
+   8:../src/parse.c **** #include <stdint.h>
+   9:../src/parse.c **** 
+  10:../src/parse.c **** // Note that dict_root is a *thing*, not an address. To get its
+  11:../src/parse.c **** // address we need &dict_root. This is the true pointer
+  12:../src/parse.c **** // to dict_root.
+  13:../src/parse.c **** extern uint32_t dict_root;
+  14:../src/parse.c **** 
+  15:../src/parse.c **** uint32_t* parse(char *start) {
+  28              		.loc 1 15 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              	.LVL0:
+  34 0000 30B4     		push	{r4, r5}
+  35              		.cfi_def_cfa_offset 8
+  36              		.cfi_offset 4, -8
+  37              		.cfi_offset 5, -4
+  16:../src/parse.c ****     while (*start == ' ')
+  38              		.loc 1 16 0
+  39 0002 90F90030 		ldrsb	r3, [r0]
+  40 0006 202B     		cmp	r3, #32
+  41 0008 03D1     		bne	.L2
+  42              	.LVL1:
+  43              	.L3:
+  44 000a 10F9013F 		ldrsb	r3, [r0, #1]!
+  45              	.LVL2:
+  46 000e 202B     		cmp	r3, #32
+  47 0010 FBD0     		beq	.L3
+  48              	.LVL3:
+  49              	.L2:
+  17:../src/parse.c ****         start++;
+  18:../src/parse.c **** 
+  19:../src/parse.c ****     char *end = start;
+  20:../src/parse.c ****     while (*end && *end != ' ')
+  50              		.loc 1 20 0
+  51 0012 63B3     		cbz	r3, .L30
+  52 0014 0346     		mov	r3, r0
+  53              	.LVL4:
+  54              	.L4:
+  55 0016 13F9012F 		ldrsb	r2, [r3, #1]!
+  56              	.LVL5:
+  57 001a 32F02002 		bics	r2, r2, #32
+  58 001e FAD1     		bne	.L4
+  59              	.LVL6:
+  60              	.L11:
+  21:../src/parse.c ****         end++;
+  22:../src/parse.c ****     *end = 0;
+  61              		.loc 1 22 0
+  62 0020 0022     		movs	r2, #0
+  23:../src/parse.c **** 
+  24:../src/parse.c ****     uint32_t* dict_ptr = &dict_root;
+  63              		.loc 1 24 0
+  64 0022 144D     		ldr	r5, .L33
+  22:../src/parse.c **** 
+  65              		.loc 1 22 0
+  66 0024 1A70     		strb	r2, [r3]
+  67              	.LVL7:
+  68              	.L9:
+  69              	.LBB2:
+  25:../src/parse.c ****     while (dict_ptr) {
+  26:../src/parse.c ****         char *name_ptr = (char *) (dict_ptr + 2);
+  27:../src/parse.c ****         char *word_ptr = start;
+  28:../src/parse.c ****         while (*name_ptr && *word_ptr && *name_ptr == *word_ptr) {
+  70              		.loc 1 28 0
+  71 0026 95F90830 		ldrsb	r3, [r5, #8]
+  26:../src/parse.c ****         char *word_ptr = start;
+  72              		.loc 1 26 0
+  73 002a 05F10804 		add	r4, r5, #8
+  74              	.LVL8:
+  75              		.loc 1 28 0
+  76 002e E3B1     		cbz	r3, .L12
+  77 0030 90F90020 		ldrsb	r2, [r0]
+  78 0034 82B1     		cbz	r2, .L6
+  79 0036 9A42     		cmp	r2, r3
+  80 0038 0ED1     		bne	.L6
+  81 003a 431C     		adds	r3, r0, #1
+  82 003c 04E0     		b	.L7
+  83              	.LVL9:
+  84              	.L31:
+  85              		.loc 1 28 0 is_stmt 0 discriminator 1
+  86 003e 13F9011B 		ldrsb	r1, [r3], #1
+  87              	.LVL10:
+  88 0042 49B1     		cbz	r1, .L6
+  89              		.loc 1 28 0 discriminator 2
+  90 0044 8A42     		cmp	r2, r1
+  91 0046 07D1     		bne	.L6
+  92              	.LVL11:
+  93              	.L7:
+  94              		.loc 1 28 0
+  95 0048 14F9012F 		ldrsb	r2, [r4, #1]!
+  29:../src/parse.c ****             name_ptr++;
+  30:../src/parse.c ****             word_ptr++;
+  96              		.loc 1 30 0 is_stmt 1
+  97 004c 1946     		mov	r1, r3
+  98              	.LVL12:
+  28:../src/parse.c ****             name_ptr++;
+  99              		.loc 1 28 0
+ 100 004e 002A     		cmp	r2, #0
+ 101 0050 F5D1     		bne	.L31
+ 102              	.LVL13:
+ 103              	.L5:
+  31:../src/parse.c ****         }
+  32:../src/parse.c ****         if (*name_ptr == *word_ptr) {
+ 104              		.loc 1 32 0
+ 105 0052 91F90030 		ldrsb	r3, [r1]
+ 106 0056 2BB1     		cbz	r3, .L32
+ 107              	.L6:
+  33:../src/parse.c ****             return dict_ptr + 1;
+  34:../src/parse.c ****         }
+  35:../src/parse.c ****         dict_ptr = (uint32_t*) *dict_ptr;
+ 108              		.loc 1 35 0
+ 109 0058 2D68     		ldr	r5, [r5]
+ 110              	.LVL14:
+ 111              	.LBE2:
+  25:../src/parse.c ****         char *name_ptr = (char *) (dict_ptr + 2);
+ 112              		.loc 1 25 0
+ 113 005a 002D     		cmp	r5, #0
+ 114 005c E3D1     		bne	.L9
+  36:../src/parse.c ****     }
+  37:../src/parse.c ****     return 0;
+ 115              		.loc 1 37 0
+ 116 005e 2846     		mov	r0, r5
+  38:../src/parse.c **** }
+ 117              		.loc 1 38 0
+ 118 0060 30BC     		pop	{r4, r5}
+ 119              		.cfi_remember_state
+ 120              		.cfi_restore 5
+ 121              		.cfi_restore 4
+ 122              		.cfi_def_cfa_offset 0
+ 123              	.LVL15:
+ 124 0062 7047     		bx	lr
+ 125              	.LVL16:
+ 126              	.L32:
+ 127              		.cfi_restore_state
+ 128              	.LBB3:
+  33:../src/parse.c ****         }
+ 129              		.loc 1 33 0
+ 130 0064 281D     		adds	r0, r5, #4
+ 131              	.LBE3:
+ 132              		.loc 1 38 0
+ 133 0066 30BC     		pop	{r4, r5}
+ 134              		.cfi_remember_state
+ 135              		.cfi_restore 4
+ 136              		.cfi_restore 5
+ 137              		.cfi_def_cfa_offset 0
+ 138              	.LVL17:
+ 139 0068 7047     		bx	lr
+ 140              	.LVL18:
+ 141              	.L12:
+ 142              		.cfi_restore_state
+ 143              	.LBB4:
+  28:../src/parse.c ****             name_ptr++;
+ 144              		.loc 1 28 0
+ 145 006a 0146     		mov	r1, r0
+ 146 006c F1E7     		b	.L5
+ 147              	.LVL19:
+ 148              	.L30:
+ 149              	.LBE4:
+  20:../src/parse.c ****         end++;
+ 150              		.loc 1 20 0
+ 151 006e 0346     		mov	r3, r0
+ 152 0070 D6E7     		b	.L11
+ 153              	.L34:
+ 154 0072 00BF     		.align	2
+ 155              	.L33:
+ 156 0074 00000000 		.word	dict_root
+ 157              		.cfi_endproc
+ 158              	.LFE0:
+ 160              		.text
+ 161              	.Letext0:
+ 162              		.file 2 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\mach
+ 163              		.file 3 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\sys\
+DEFINED SYMBOLS
+                            *ABS*:00000000 parse.c
+C:\Users\Robert\AppData\Local\Temp\ccEwPLFF.s:20     .text.parse:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccEwPLFF.s:25     .text.parse:00000000 parse
+C:\Users\Robert\AppData\Local\Temp\ccEwPLFF.s:156    .text.parse:00000074 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+dict_root

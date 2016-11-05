@@ -1,0 +1,40 @@
+   1              	# 1 "../src/calling.S"
+   1              		.syntax unified
+   0              	
+   0              	
+   0              	
+   2              		.text
+   3              		.align	2
+   4              		.global	calling
+   5              		.thumb
+   6              		.thumb_func
+   8              	
+   9              	calling:
+  10 0000 40F804EB 		str lr, [r0], #4
+  11 0004 50F804FD 		ldr pc, [r0, #-4]!
+  12              	storage:
+  13 0008 00000000 	    .space 4
+  14              	
+  15              		.pool
+  17              	
+  18              		.align	2
+  19              		.global	setup_call_stack
+  20              		.thumb
+  21              		.thumb_func
+  23              	
+  24              	setup_call_stack:
+  25 000c 0048     		ldr r0, =call_stack
+  26 000e 7047     		bx lr
+  27              	
+  28 0010 00000000 		.pool
+DEFINED SYMBOLS
+    ../src/calling.S:3      .text:00000000 $t
+    ../src/calling.S:9      .text:00000000 calling
+    ../src/calling.S:12     .text:00000008 storage
+    ../src/calling.S:13     .text:00000008 $d
+    ../src/calling.S:18     .text:0000000c $t
+    ../src/calling.S:24     .text:0000000c setup_call_stack
+    ../src/calling.S:28     .text:00000010 $d
+
+UNDEFINED SYMBOLS
+call_stack

@@ -3,6 +3,7 @@
 *.lo
 *.o
 *.obj
+*.d
 
 # Precompiled Headers
 *.gch
@@ -26,6 +27,12 @@
 *.exe
 *.out
 *.app
+*.elf
+*.hex
+
+# Build artifacts
+*.objdump
+*.map
 
 # =========================
 # Operating System Files

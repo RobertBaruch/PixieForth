@@ -1,0 +1,227 @@
+   1              	# 1 "../src/finder.S"
+   1              	    .syntax unified
+   0              	
+   0              	
+   0              	
+   2              	    .text
+   3              	    .align  2
+   4              	    .global word_find
+   5              	    .thumb
+   6              	    .thumb_func
+   8              	
+   9              	/*
+  10              	 * ABI:
+  11              	 *   r0-r3 parameters, scratch (r0-r1 retval)
+  12              	 *   r4-r8 callee-save
+  13              	 *   r9 maybe callee-save
+  14              	 *   r10-r11 callee-save
+  15              	 *   r12-r15 do not use
+  16              	 */
+  17              	/* The pointer to the buffer is r1. The address to return to should be
+  18              	 * in LR. If there is a match, the address of the code to execute is
+  19              	 * in R2. Otherwise R2 contains 0.
+  20              	 */
+  21              	word_find:
+  22              	    /* Find the next non-space character, which is the
+  23              	     * start of the word. The pointer to it is left in r1 and r2.
+  24              	     */
+  25 0000 11F8012B 	    ldrb r2, [r1], #1   // r2 = *r1++
+  26 0004 202A     	    cmp r2, #32         //
+  27 0006 3FF4FEAF 	    beq word_find       // if (r2 == ' ') goto word_find.
+  28 000a A1F10101 	    sub r1, #1          // r1--
+  29 000e 0A46     	    mov r2, r1          // r2 = r1
+  30              	
+  31              	    /* Find the next space or nul character. Zero that out.
+  32              	     * r1 still contains the start of the word.
+  33              	     */
+  34              	end_find:
+  35 0010 12F8013B 	    ldrb r3, [r2], #1   // r3 = *r2++
+  36 0014 33F02003 	    bics r3, #32        // r3 = r3 == ' ' ? 0 : r3
+  37 0018 FAD1     	    bne end_find        // if (r3 != 0) goto end_find.
+  38 001a 02F8013C 	    strb r3, [r2, #-1]  // *(r2 - 1) = 0
+  39              	
+  40 001e 194A     	    ldr r2, =dict_root  // r2 = dict_root
+  41              	
+  42              	try_dict_word:
+  43 0020 002A     	    cmp r2, #0
+  44 0022 0ED0     	    beq try_parse_number
+  45              	
+  46              	    /* r1: word_ptr
+  47              	     * r2: dict_ptr
+  48              	     * r3: dict_word_ptr
+  49              	     * r4: buff_word_ptr
+  50              	     */
+  51 0024 02F10803 	    add r3, r2, #8      // dict_word_ptr = dict_ptr + 8 (points to dictionary word)
+  52 0028 0C46     	    mov r4, r1          // buff_word_ptr = word_ptr (start of word in buffer)
+  53              	compare:
+  54 002a 13F8015B 	    ldrb r5, [r3], #1   // r5 = *dict_word_ptr++
+  55 002e 14F8016B 	    ldrb r6, [r4], #1   // r6 = *buff_word_ptr++
+  56              	    /* if r5 and r6 are not equal, fail and go to the next word. */
+  57 0032 B542     	    cmp r5, r6
+  58 0034 03D1     	    bne fail_compare    // if (r5 != r6) goto fail_compare.
+  59              	    /* if r5 and r6 are both zero, we are done! Otherwise keep comparing. */
+  60 0036 0DB9     	    cbnz r5, go_compare // if (r5 != 0) goto compare.
+  61 0038 5268     	    ldr r2, [r2, #4]    // r2 = *(dict_ptr + 4)
+  62 003a 7047     	    bx lr               // return
+  63              	go_compare:
+  64 003c F5E7     	    b compare           // goto compare (because cnz/nz must forward branch)
+  65              	
+  66              	fail_compare:
+  67 003e 1268     	    ldr r2, [r2]        // dict_ptr = *dict_ptr
+  68 0040 EEE7     	    b try_dict_word     // goto try_dict_word.
+  69              	
+  70              	try_parse_number:
+  71              	    /* r1: word_ptr
+  72              	     * r2: buff_word_ptr
+  73              	     * r3: scratch
+  74              	     * r4: num
+  75              	     * r5: base
+  76              	     */
+  77 0042 0A46     	    mov r2, r1          // buff_word_ptr = word_ptr (start of word in buffer)
+  78 0044 84EA0404 	    eor r4, r4          // num = 0
+  79 0048 0F4D     	    ldr r5, =forth_base_finder
+  80 004a 2D78     	    ldrb r5, [r5]       // load base
+  81 004c 1378     	    ldrb r3, [r2]
+  82 004e 2D2B     	    cmp r3, '-'         // if *buff_word_ptr == '-' buff_word_ptr++
+  83 0050 01D1     	    bne more_number
+  84              	another_number:
+  85 0052 12F8013F 	    ldrb r3, [r2, #1]!  // buff_word_ptr++
+  86              	more_number:
+  87 0056 002B     	    cmp r3, #0
+  88 0058 08D0     	    beq yes             // if *buff_word_ptr == 0 push and goto yes.
+  89 005a 302B     	    cmp r3, '0'
+  90 005c 0EDB     	    blt what
+  91 005e 392B     	    cmp r3, '9'
+  92 0060 0CDC     	    bgt what            // if (*buff_word_ptr < '0' || *buff_word_ptr > '9') goto what.
+  93 0062 A3F13003 	    sub r3, '0'
+  94 0066 04FB0534 	    mla r4, r4, r5, r3  // num = num * base + (*buff_word_ptr - '0')
+  95 006a F2E7     	    b another_number
+  96              	yes:
+  97 006c 0B78     	    ldrb r3, [r1]
+  98 006e 2D2B     	    cmp r3, '-'
+  99 0070 08BF     	    it eq
+ 100 0072 6442     	    negeq r4, r4
+ 101 0074 10B4     	    push {r4}
+ 102 0076 4FF00102 	    mov r2, #1
+ 103 007a 7047     	    bx lr
+ 104              	
+ 105              	what:
+ 106 007c 82EA0202 	    eor r2, r2
+ 107 0080 7047     	    bx lr
+ 108              	
+ 109 0082 00000000 	    .pool
+ 109      00000000 
+ 109      0000
+ 111              	
+ 112              	/*
+ 113              	 * Data
+ 114              	 */
+ 115              	    .section .data
+ 116              	    .align 2
+ 117              	    .global forth_base_finder
+ 119              	forth_base_finder:
+ 120 0000 0A       	    .byte 10
+ 121              	
+ 122              	///////
+ 123              	/////// Test
+ 124              	///////
+ 125              	    .section .text
+ 126              	    .align  2
+ 127              	    .global finder_test
+ 128              	    .thumb
+ 129              	    .thumb_func
+ 131              	
+ 132              	finder_test:
+ 133 008c 4FF00101 	    mov r1, #1
+ 134 0090 4FF00D00 	    mov r0, #13
+ 135 0094 FFF7FEFF 	    bl pinMode
+ 136 0098 4FF00101 	    mov r1, #1
+ 137 009c 4FF00200 	    mov r0, #2
+ 138 00a0 FFF7FEFF 	    bl pinMode
+ 139 00a4 4FF00101 	    mov r1, #1
+ 140 00a8 4FF00300 	    mov r0, #3
+ 141 00ac FFF7FEFF 	    bl pinMode
+ 142 00b0 4FF00101 	    mov r1, #1
+ 143 00b4 4FF00400 	    mov r0, #4
+ 144 00b8 FFF7FEFF 	    bl pinMode
+ 145 00bc 4FF00101 	    mov r1, #1
+ 146 00c0 4FF00500 	    mov r0, #5
+ 147 00c4 FFF7FEFF 	    bl pinMode
+ 148              	
+ 149 00c8 FFF7FEFF 	    bl setup_call_stack
+ 150 00cc 0F49     	    ldr r1, =test_string
+ 151 00ce FFF7FEFF 	    bl word_find
+ 152              	check_test:
+ 153 00d2 32B1     	    cbz r2, do_red
+ 154 00d4 012A     	    cmp r2, #1
+ 155 00d6 13D1     	    bne do_yellow
+ 156 00d8 04BC     	    pop {r2}
+ 157 00da 12F15D0F 	    cmp r2, #-93
+ 158 00de 05D0     	    beq do_green
+ 159 00e0 09E0     	    b do_blue
+ 160              	
+ 161              	do_red: // pin 4
+ 162 00e2 4FF40055 	    mov r5, #8192
+ 163 00e6 0A4E     	    ldr r6, =0x400ff004
+ 164 00e8 3560     	    str r5, [r6]
+ 165 00ea FAE7     	    b do_red
+ 166              	
+ 167              	do_green: // pin 5
+ 168 00ec 4FF08005 	    mov r5, #128
+ 169 00f0 084E     	    ldr r6, =0x400ff0c4
+ 170 00f2 3560     	    str r5, [r6]
+ 171 00f4 FAE7     	    b do_green
+ 172              	
+ 173              	do_blue: // pin 2
+ 174 00f6 4FF00105 	    mov r5, #1
+ 175 00fa 064E     	    ldr r6, =0x400ff0c4
+ 176 00fc 3560     	    str r5, [r6]
+ 177 00fe FAE7     	    b do_blue
+ 178              	
+ 179              	do_yellow: // pin 3
+ 180 0100 4FF48055 	    mov r5, #4096
+ 181 0104 024E     	    ldr r6, =0x400ff004
+ 182 0106 3560     	    str r5, [r6]
+ 183 0108 FAE7     	    b do_yellow
+ 184              	
+ 185 010a 00000100 	    .pool
+ 185      000004F0 
+ 185      0F40C4F0 
+ 185      0F40
+ 187              	
+ 188              	    .section .data
+ 189              	test_string:
+ 190 0001 20202D39 	    .asciz "  -93  "
+ 190      33202000 
+DEFINED SYMBOLS
+     ../src/finder.S:3      .text:00000000 $t
+     ../src/finder.S:21     .text:00000000 word_find
+     ../src/finder.S:34     .text:00000010 end_find
+     ../src/finder.S:42     .text:00000020 try_dict_word
+     ../src/finder.S:70     .text:00000042 try_parse_number
+     ../src/finder.S:53     .text:0000002a compare
+     ../src/finder.S:66     .text:0000003e fail_compare
+     ../src/finder.S:63     .text:0000003c go_compare
+     ../src/finder.S:119    .data:00000000 forth_base_finder
+     ../src/finder.S:86     .text:00000056 more_number
+     ../src/finder.S:84     .text:00000052 another_number
+     ../src/finder.S:96     .text:0000006c yes
+     ../src/finder.S:105    .text:0000007c what
+     ../src/finder.S:109    .text:00000082 $d
+     ../src/finder.S:109    .text:00000084 $d
+     ../src/finder.S:116    .data:00000000 $d
+     ../src/finder.S:126    .text:0000008c $t
+     ../src/finder.S:132    .text:0000008c finder_test
+     ../src/finder.S:189    .data:00000001 test_string
+     ../src/finder.S:152    .text:000000d2 check_test
+     ../src/finder.S:161    .text:000000e2 do_red
+     ../src/finder.S:179    .text:00000100 do_yellow
+     ../src/finder.S:167    .text:000000ec do_green
+     ../src/finder.S:173    .text:000000f6 do_blue
+     ../src/finder.S:185    .text:0000010a $d
+     ../src/finder.S:185    .text:0000010c $d
+
+UNDEFINED SYMBOLS
+dict_root
+pinMode
+setup_call_stack

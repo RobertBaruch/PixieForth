@@ -1,0 +1,69 @@
+   1              	# 1 "../src/forth_words_core.S"
+   1              	.syntax unified
+   0              	
+   0              	
+   0              	
+   2              	
+   3              	/* This macro writes the header of the function. */
+   4              	.macro __new_func name
+   5              	    .global \name
+   6              	    .thumb_func
+   7              	    .align 2
+   9              	\name\():
+  10              	.endm
+  11              	
+  12              	/* This macro writes the footer of the function. */
+  13              	.macro __end_func name
+  14              	    .pool
+  16              	.endm
+  17              	
+  18              	/*
+  19              	 * The ABI for words:
+  20              	 *  r0 must contain the stack pointer.
+  21              	 *  lr must contain the address to return to.
+  22              	 */
+  23              	
+  24              	/* Takes the word to push in r1. */
+  25              	/* Not a forth word ( -- x) */
+  26              	__new_func special_word_push
+  27 0000 40F8041B 	    str r1, [r0], #4
+  28 0004 7047     	    bx lr
+  29              	__end_func special_word_push
+  30              	
+  31              	/* ! (x addr -- ) */
+  32 0006 00BF     	__new_func forth_word_store
+  33 0008 30E90600 	    ldmdb r0!, {r1, r2} // r2 <- x, r1 <- addr
+  34 000c 0A60     	    str r2, [r1]
+  35 000e 7047     	    bx lr
+  36              	__end_func forth_word_store
+  37              	
+  38              	/* @ (addr -- x) */
+  39              	__new_func forth_word_load
+  40 0010 50F8041D 	    ldr r1, [r0, #-4]!
+  41 0014 0A68     	    ldr r2, [r1]
+  42 0016 40F8042B 	    str r2, [r0], #4
+  43 001a 7047     	    bx lr
+  44              	__end_func forth_word_load
+  45              	
+  46              	/* POP (x -- ) */
+  47              	__new_func forth_word_pop
+  48 001c A0F10400 	    sub r0, #4
+  49 0020 7047     	    bx lr
+  50              	__end_func forth_word_pop
+  51              	
+  52              	/* + (n1 n2 -- n3) */
+  53 0022 00BF     	__new_func forth_word_add
+  54 0024 30E90600 	    ldmdb r0!, {r1, r2} // r2 <- n1, r1 <- n2
+  55 0028 1144     	    add r1, r2
+  56 002a 40F8041B 	    str r1, [r0], #4
+  57 002e 7047     	    bx lr
+  58              	__end_func forth_word_add
+DEFINED SYMBOLS
+../src/forth_words_core.S:26     .text:00000000 special_word_push
+../src/forth_words_core.S:26     .text:00000000 $t
+../src/forth_words_core.S:32     .text:00000008 forth_word_store
+../src/forth_words_core.S:39     .text:00000010 forth_word_load
+../src/forth_words_core.S:47     .text:0000001c forth_word_pop
+../src/forth_words_core.S:53     .text:00000024 forth_word_add
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,176 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 2
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"PicturedNumericArea.cpp"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text._ZN5forth19PicturedNumericArea8instanceEv,"ax",%progbits
+  20              		.align	2
+  21              		.global	_ZN5forth19PicturedNumericArea8instanceEv
+  22              		.thumb
+  23              		.thumb_func
+  25              	_ZN5forth19PicturedNumericArea8instanceEv:
+  26              		.fnstart
+  27              	.LFB9:
+  28              		.file 1 "../src/PicturedNumericArea.cpp"
+   1:../src/PicturedNumericArea.cpp **** /*
+   2:../src/PicturedNumericArea.cpp ****  * PicturedNumericArea.cpp
+   3:../src/PicturedNumericArea.cpp ****  *
+   4:../src/PicturedNumericArea.cpp ****  *  Created on: Oct 30, 2016
+   5:../src/PicturedNumericArea.cpp ****  *      Author: Robert
+   6:../src/PicturedNumericArea.cpp ****  */
+   7:../src/PicturedNumericArea.cpp **** 
+   8:../src/PicturedNumericArea.cpp **** #include <PicturedNumericArea.h>
+   9:../src/PicturedNumericArea.cpp **** 
+  10:../src/PicturedNumericArea.cpp **** namespace forth {
+  11:../src/PicturedNumericArea.cpp **** 
+  12:../src/PicturedNumericArea.cpp **** PicturedNumericArea& PicturedNumericArea::instance() {
+  29              		.loc 1 12 0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33 0000 38B5     		push	{r3, r4, r5, lr}
+  34              		.cfi_def_cfa_offset 16
+  35              		.cfi_offset 3, -16
+  36              		.cfi_offset 4, -12
+  37              		.cfi_offset 5, -8
+  38              		.cfi_offset 14, -4
+  13:../src/PicturedNumericArea.cpp ****   static PicturedNumericArea instance;
+  39              		.loc 1 13 0
+  40 0002 0C4D     		ldr	r5, .L11
+  41 0004 2968     		ldr	r1, [r5]
+  42 0006 11F00104 		ands	r4, r1, #1
+  43 000a 01D0     		beq	.L10
+  44              	.L3:
+  14:../src/PicturedNumericArea.cpp ****   return instance;
+  15:../src/PicturedNumericArea.cpp **** }
+  45              		.loc 1 15 0
+  46 000c 0A48     		ldr	r0, .L11+4
+  47 000e 38BD     		pop	{r3, r4, r5, pc}
+  48              	.L10:
+  13:../src/PicturedNumericArea.cpp ****   static PicturedNumericArea instance;
+  49              		.loc 1 13 0 discriminator 1
+  50 0010 2846     		mov	r0, r5
+  51 0012 FFF7FEFF 		bl	__cxa_guard_acquire
+  52              	.LVL0:
+  53 0016 0028     		cmp	r0, #0
+  54 0018 F8D0     		beq	.L3
+  55              	.LVL1:
+  56              	.LBB10:
+  57              	.LBB11:
+  58              		.file 2 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/PicturedNumericArea.h"
+   1:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** /*
+   2:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****  * PicturedNumericArea.h
+   3:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****  *
+   4:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****  *  Created on: Oct 30, 2016
+   5:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****  *      Author: Robert
+   6:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****  */
+   7:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** 
+   8:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** #ifndef SRC_PICTUREDNUMERICAREA_H_
+   9:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** #define SRC_PICTUREDNUMERICAREA_H_
+  10:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** 
+  11:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** #include <cstring>
+  12:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** 
+  13:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** namespace forth {
+  14:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** 
+  15:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** class PicturedNumericArea {
+  16:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** private:
+  17:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****     static constexpr int buff_size_ = 128;
+  18:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****     char buff_[buff_size_];
+  19:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****     char *ptr_;
+  20:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** 
+  21:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****     PicturedNumericArea() : ptr_(buff_) { Reset(); }
+  59              		.loc 2 21 0 discriminator 2
+  60 001a 074B     		ldr	r3, .L11+4
+  61              	.LBB12:
+  62              	.LBB13:
+  22:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** 
+  23:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** public:
+  24:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****     static PicturedNumericArea& instance();
+  25:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** 
+  26:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h ****     void Reset() { std::memset(buff_, 0, buff_size_); }
+  63              		.loc 2 26 0 discriminator 2
+  64 001c 2146     		mov	r1, r4
+  65 001e 1846     		mov	r0, r3
+  66 0020 8022     		movs	r2, #128
+  67              	.LBE13:
+  68              	.LBE12:
+  21:F:\kalkulyator-workspace-v2\PixieForth\src\PicturedNumericArea.h **** 
+  69              		.loc 2 21 0 discriminator 2
+  70 0022 C3F88030 		str	r3, [r3, #128]
+  71              	.LVL2:
+  72              	.LBB15:
+  73              	.LBB14:
+  74              		.loc 2 26 0 discriminator 2
+  75 0026 FFF7FEFF 		bl	memset
+  76              	.LVL3:
+  77              	.LBE14:
+  78              	.LBE15:
+  79              	.LBE11:
+  80              	.LBE10:
+  13:../src/PicturedNumericArea.cpp ****   return instance;
+  81              		.loc 1 13 0 discriminator 2
+  82 002a 2846     		mov	r0, r5
+  83 002c FFF7FEFF 		bl	__cxa_guard_release
+  84              	.LVL4:
+  85              		.loc 1 15 0 discriminator 2
+  86 0030 0148     		ldr	r0, .L11+4
+  87 0032 38BD     		pop	{r3, r4, r5, pc}
+  88              	.L12:
+  89              		.align	2
+  90              	.L11:
+  91 0034 00000000 		.word	.LANCHOR0
+  92 0038 00000000 		.word	.LANCHOR1
+  93              		.cfi_endproc
+  94              	.LFE9:
+  95              		.cantunwind
+  96              		.fnend
+  98              		.section	.bss._ZZN5forth19PicturedNumericArea8instanceEvE8instance,"aw",%nobits
+  99              		.align	2
+ 100              		.set	.LANCHOR1,. + 0
+ 103              	_ZZN5forth19PicturedNumericArea8instanceEvE8instance:
+ 104 0000 00000000 		.space	132
+ 104      00000000 
+ 104      00000000 
+ 104      00000000 
+ 104      00000000 
+ 105              		.section	.bss._ZGVZN5forth19PicturedNumericArea8instanceEvE8instance,"aw",%nobits
+ 106              		.align	2
+ 107              		.set	.LANCHOR0,. + 0
+ 110              	_ZGVZN5forth19PicturedNumericArea8instanceEvE8instance:
+ 111 0000 00000000 		.space	4
+ 112              		.text
+ 113              	.Letext0:
+ 114              		.file 3 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++\
+ 115              		.file 4 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++\
+ 116              		.file 5 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\stri
+ 117              		.file 6 "<built-in>"
+ 118              		.file 7 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\lib\\gcc\\arm-none-eabi\\5.4
+DEFINED SYMBOLS
+                            *ABS*:00000000 PicturedNumericArea.cpp
+C:\Users\Robert\AppData\Local\Temp\ccLj9Mre.s:20     .text._ZN5forth19PicturedNumericArea8instanceEv:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccLj9Mre.s:25     .text._ZN5forth19PicturedNumericArea8instanceEv:00000000 _ZN5forth19PicturedNumericArea8instanceEv
+C:\Users\Robert\AppData\Local\Temp\ccLj9Mre.s:91     .text._ZN5forth19PicturedNumericArea8instanceEv:00000034 $d
+.ARM.exidx.text._ZN5forth19PicturedNumericArea8instanceEv:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccLj9Mre.s:99     .bss._ZZN5forth19PicturedNumericArea8instanceEvE8instance:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccLj9Mre.s:103    .bss._ZZN5forth19PicturedNumericArea8instanceEvE8instance:00000000 _ZZN5forth19PicturedNumericArea8instanceEvE8instance
+C:\Users\Robert\AppData\Local\Temp\ccLj9Mre.s:106    .bss._ZGVZN5forth19PicturedNumericArea8instanceEvE8instance:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccLj9Mre.s:110    .bss._ZGVZN5forth19PicturedNumericArea8instanceEvE8instance:00000000 _ZGVZN5forth19PicturedNumericArea8instanceEvE8instance
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+__cxa_guard_acquire
+memset
+__cxa_guard_release
