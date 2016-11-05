@@ -10,35 +10,21 @@ CPP_SRCS += \
 ../src/DataStack.cpp \
 ../src/PicturedNumericArea.cpp \
 ../src/System.cpp \
-../src/main.cpp \
-../src/stack.cpp 
+../src/main.cpp 
 
 S_UPPER_SRCS += \
-../src/calling.S \
-../src/core_dict.S \
-../src/finder.S \
-../src/forth_system.S \
-../src/forth_words_core.S 
+../src/forth_system.S 
 
 OBJS += \
 ./src/DataStack.o \
 ./src/PicturedNumericArea.o \
 ./src/System.o \
-./src/calling.o \
-./src/core_dict.o \
-./src/finder.o \
 ./src/forth_system.o \
-./src/forth_words_core.o \
 ./src/main.o \
-./src/parse.o \
-./src/stack.o 
+./src/parse.o 
 
 S_UPPER_DEPS += \
-./src/calling.d \
-./src/core_dict.d \
-./src/finder.d \
-./src/forth_system.d \
-./src/forth_words_core.d 
+./src/forth_system.d 
 
 C_DEPS += \
 ./src/parse.d 
@@ -47,8 +33,7 @@ CPP_DEPS += \
 ./src/DataStack.d \
 ./src/PicturedNumericArea.d \
 ./src/System.d \
-./src/main.d \
-./src/stack.d 
+./src/main.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

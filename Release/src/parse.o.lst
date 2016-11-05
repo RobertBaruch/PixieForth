@@ -206,9 +206,9 @@
  163              		.file 3 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\sys\
 DEFINED SYMBOLS
                             *ABS*:00000000 parse.c
-C:\Users\Robert\AppData\Local\Temp\ccEwPLFF.s:20     .text.parse:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccEwPLFF.s:25     .text.parse:00000000 parse
-C:\Users\Robert\AppData\Local\Temp\ccEwPLFF.s:156    .text.parse:00000074 $d
+C:\Users\Robert\AppData\Local\Temp\ccN6gNcr.s:20     .text.parse:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccN6gNcr.s:25     .text.parse:00000000 parse
+C:\Users\Robert\AppData\Local\Temp\ccN6gNcr.s:156    .text.parse:00000074 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS

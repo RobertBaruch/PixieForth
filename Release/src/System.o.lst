@@ -423,34 +423,34 @@
  345              		.file 13 "<built-in>"
 DEFINED SYMBOLS
                             *ABS*:00000000 System.cpp
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:20     .text._ZN5forth6System8instanceEv:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:25     .text._ZN5forth6System8instanceEv:00000000 _ZN5forth6System8instanceEv
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:91     .text._ZN5forth6System8instanceEv:00000034 $d
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:20     .text._ZN5forth6System8instanceEv:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:25     .text._ZN5forth6System8instanceEv:00000000 _ZN5forth6System8instanceEv
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:91     .text._ZN5forth6System8instanceEv:00000034 $d
 .ARM.extab.text._ZN5forth6System8instanceEv:00000000 $d
 .ARM.exidx.text._ZN5forth6System8instanceEv:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:117    .text._ZN5forth6System3PopEv:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:122    .text._ZN5forth6System3PopEv:00000000 _ZN5forth6System3PopEv
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:147    .text._ZN5forth6System3PopEv:00000010 $d
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:117    .text._ZN5forth6System3PopEv:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:122    .text._ZN5forth6System3PopEv:00000000 _ZN5forth6System3PopEv
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:147    .text._ZN5forth6System3PopEv:00000010 $d
 .ARM.exidx.text._ZN5forth6System3PopEv:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:154    .text._ZN5forth6System3AddEv:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:159    .text._ZN5forth6System3AddEv:00000000 _ZN5forth6System3AddEv
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:221    .text._ZN5forth6System3AddEv:0000001c $d
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:154    .text._ZN5forth6System3AddEv:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:159    .text._ZN5forth6System3AddEv:00000000 _ZN5forth6System3AddEv
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:221    .text._ZN5forth6System3AddEv:0000001c $d
 .ARM.exidx.text._ZN5forth6System3AddEv:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:228    .text._ZN5forth6System5StoreEv:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:233    .text._ZN5forth6System5StoreEv:00000000 _ZN5forth6System5StoreEv
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:266    .text._ZN5forth6System5StoreEv:00000010 $d
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:228    .text._ZN5forth6System5StoreEv:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:233    .text._ZN5forth6System5StoreEv:00000000 _ZN5forth6System5StoreEv
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:266    .text._ZN5forth6System5StoreEv:00000010 $d
 .ARM.exidx.text._ZN5forth6System5StoreEv:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:273    .text.startup._GLOBAL__sub_I__ZN5forth6System6stack_E:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:277    .text.startup._GLOBAL__sub_I__ZN5forth6System6stack_E:00000000 _GLOBAL__sub_I__ZN5forth6System6stack_E
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:301    .text.startup._GLOBAL__sub_I__ZN5forth6System6stack_E:0000000c $d
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:273    .text.startup._GLOBAL__sub_I__ZN5forth6System6stack_E:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:277    .text.startup._GLOBAL__sub_I__ZN5forth6System6stack_E:00000000 _GLOBAL__sub_I__ZN5forth6System6stack_E
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:301    .text.startup._GLOBAL__sub_I__ZN5forth6System6stack_E:0000000c $d
 .ARM.exidx.text.startup._GLOBAL__sub_I__ZN5forth6System6stack_E:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:310    .init_array:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:332    .bss._ZN5forth6System6stack_E:00000000 _ZN5forth6System6stack_E
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:314    .bss._ZGVZN5forth6System8instanceEvE8instance:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:318    .bss._ZGVZN5forth6System8instanceEvE8instance:00000000 _ZGVZN5forth6System8instanceEvE8instance
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:321    .bss._ZZN5forth6System8instanceEvE8instance:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:325    .bss._ZZN5forth6System8instanceEvE8instance:00000000 _ZZN5forth6System8instanceEvE8instance
-C:\Users\Robert\AppData\Local\Temp\cc8eBKBw.s:328    .bss._ZN5forth6System6stack_E:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:310    .init_array:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:332    .bss._ZN5forth6System6stack_E:00000000 _ZN5forth6System6stack_E
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:314    .bss._ZGVZN5forth6System8instanceEvE8instance:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:318    .bss._ZGVZN5forth6System8instanceEvE8instance:00000000 _ZGVZN5forth6System8instanceEvE8instance
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:321    .bss._ZZN5forth6System8instanceEvE8instance:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:325    .bss._ZZN5forth6System8instanceEvE8instance:00000000 _ZZN5forth6System8instanceEvE8instance
+C:\Users\Robert\AppData\Local\Temp\ccy5XDxq.s:328    .bss._ZN5forth6System6stack_E:00000000 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS

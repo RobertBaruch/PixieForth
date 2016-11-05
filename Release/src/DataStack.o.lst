@@ -159,18 +159,18 @@
  122              		.file 8 "<built-in>"
 DEFINED SYMBOLS
                             *ABS*:00000000 DataStack.cpp
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:20     .text._ZN5forth9DataStack8instanceEv:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:25     .text._ZN5forth9DataStack8instanceEv:00000000 _ZN5forth9DataStack8instanceEv
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:76     .text._ZN5forth9DataStack8instanceEv:00000028 $d
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:20     .text._ZN5forth9DataStack8instanceEv:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:25     .text._ZN5forth9DataStack8instanceEv:00000000 _ZN5forth9DataStack8instanceEv
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:76     .text._ZN5forth9DataStack8instanceEv:00000028 $d
 .ARM.exidx.text._ZN5forth9DataStack8instanceEv:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:106    .bss._ZN5forth9DataStack11data_stack_E:00000000 _ZN5forth9DataStack11data_stack_E
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:113    .bss._ZN5forth9DataStack3sp_E:00000000 _ZN5forth9DataStack3sp_E
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:88     .bss._ZZN5forth9DataStack8instanceEvE8instance:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:92     .bss._ZZN5forth9DataStack8instanceEvE8instance:00000000 _ZZN5forth9DataStack8instanceEvE8instance
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:95     .bss._ZGVZN5forth9DataStack8instanceEvE8instance:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:99     .bss._ZGVZN5forth9DataStack8instanceEvE8instance:00000000 _ZGVZN5forth9DataStack8instanceEvE8instance
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:102    .bss._ZN5forth9DataStack11data_stack_E:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccPvX2UB.s:109    .bss._ZN5forth9DataStack3sp_E:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:106    .bss._ZN5forth9DataStack11data_stack_E:00000000 _ZN5forth9DataStack11data_stack_E
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:113    .bss._ZN5forth9DataStack3sp_E:00000000 _ZN5forth9DataStack3sp_E
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:88     .bss._ZZN5forth9DataStack8instanceEvE8instance:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:92     .bss._ZZN5forth9DataStack8instanceEvE8instance:00000000 _ZZN5forth9DataStack8instanceEvE8instance
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:95     .bss._ZGVZN5forth9DataStack8instanceEvE8instance:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:99     .bss._ZGVZN5forth9DataStack8instanceEvE8instance:00000000 _ZGVZN5forth9DataStack8instanceEvE8instance
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:102    .bss._ZN5forth9DataStack11data_stack_E:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccFZkt1J.s:109    .bss._ZN5forth9DataStack3sp_E:00000000 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS

@@ -16,12 +16,12 @@
   16              		.text
   17              	.Ltext0:
   18              		.cfi_sections	.debug_frame
-  19              		.section	.text._Z9parse_hexPc,"ax",%progbits
+  19              		.section	.text.startup.main,"ax",%progbits
   20              		.align	2
-  21              		.global	_Z9parse_hexPc
+  21              		.global	main
   22              		.thumb
   23              		.thumb_func
-  25              	_Z9parse_hexPc:
+  25              	main:
   26              		.fnstart
   27              	.LFB479:
   28              		.file 1 "../src/main.cpp"
@@ -35,567 +35,38 @@
    8:../src/main.cpp **** extern "C" uint32_t forth_testing;
    9:../src/main.cpp **** extern "C" uint32_t* forth_enter(uint32_t* param_stack, uint32_t* forth_word);
   10:../src/main.cpp **** 
-  11:../src/main.cpp **** typedef struct {
-  12:../src/main.cpp ****     const char *name;
-  13:../src/main.cpp ****     void (*fn)();
-  14:../src/main.cpp **** } fndef;
-  15:../src/main.cpp **** 
-  16:../src/main.cpp **** fndef defs[] = {
-  17:../src/main.cpp ****         {"+", forth::System::Add},
-  18:../src/main.cpp ****         {"!", forth::System::Store},
-  19:../src/main.cpp ****         {nullptr, nullptr}
-  20:../src/main.cpp **** };
-  21:../src/main.cpp **** 
-  22:../src/main.cpp **** bool parse_hex(char *buff) {
-  29              		.loc 1 22 0
+  11:../src/main.cpp **** extern "C" int main(void)
+  12:../src/main.cpp **** {
+  29              		.loc 1 12 0
   30              		.cfi_startproc
   31              		@ args = 0, pretend = 0, frame = 0
   32              		@ frame_needed = 0, uses_anonymous_args = 0
-  33              		@ link register save eliminated.
-  34              	.LVL0:
-  35 0000 30B4     		push	{r4, r5}
-  36              		.cfi_def_cfa_offset 8
-  37              		.cfi_offset 4, -8
-  38              		.cfi_offset 5, -4
-  23:../src/main.cpp ****     uint32_t num = 0;
-  24:../src/main.cpp ****     char *ptr = buff;
-  25:../src/main.cpp ****     while (*ptr) {
-  39              		.loc 1 25 0
-  40 0002 90F90030 		ldrsb	r3, [r0]
-  41 0006 7BB3     		cbz	r3, .L10
-  42 0008 0021     		movs	r1, #0
-  43 000a 04E0     		b	.L9
-  44              	.LVL1:
-  45              	.L16:
-  26:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
-  27:../src/main.cpp ****             num = num * 16 + (*ptr - '0');
-  46              		.loc 1 27 0
-  47 000c A4F13001 		sub	r1, r4, #48
-  48              	.LVL2:
-  49              	.L4:
-  25:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
-  50              		.loc 1 25 0
-  51 0010 10F9013F 		ldrsb	r3, [r0, #1]!
-  52              	.LVL3:
-  53 0014 A3B1     		cbz	r3, .L2
-  54              	.LVL4:
-  55              	.L9:
-  26:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
-  56              		.loc 1 26 0
-  57 0016 DAB2     		uxtb	r2, r3
-  58 0018 A2F13004 		sub	r4, r2, #48
-  59 001c 092C     		cmp	r4, #9
-  28:../src/main.cpp ****         } else if (*ptr >= 'a' && *ptr <= 'f') {
-  60              		.loc 1 28 0
-  61 001e A2F16105 		sub	r5, r2, #97
-  27:../src/main.cpp ****         } else if (*ptr >= 'a' && *ptr <= 'f') {
-  62              		.loc 1 27 0
-  63 0022 03EB0114 		add	r4, r3, r1, lsl #4
-  26:../src/main.cpp ****             num = num * 16 + (*ptr - '0');
-  64              		.loc 1 26 0
-  65 0026 F1D9     		bls	.L16
-  66              		.loc 1 28 0
-  67 0028 052D     		cmp	r5, #5
-  29:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'a');
-  30:../src/main.cpp ****         } else if (*ptr >= 'A' && *ptr <= 'F') {
-  68              		.loc 1 30 0
-  69 002a A2F14102 		sub	r2, r2, #65
-  29:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'a');
-  70              		.loc 1 29 0
-  71 002e 03EB0114 		add	r4, r3, r1, lsl #4
-  28:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'a');
-  72              		.loc 1 28 0
-  73 0032 0DD8     		bhi	.L5
-  25:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
-  74              		.loc 1 25 0
-  75 0034 10F9013F 		ldrsb	r3, [r0, #1]!
-  76              	.LVL5:
-  29:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'a');
-  77              		.loc 1 29 0
-  78 0038 A4F15701 		sub	r1, r4, #87
-  79              	.LVL6:
-  25:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
-  80              		.loc 1 25 0
-  81 003c 002B     		cmp	r3, #0
-  82 003e EAD1     		bne	.L9
-  83              	.LVL7:
-  84              	.L2:
-  85              	.LBB49:
-  86              	.LBB50:
-  87              	.LBB51:
-  88              		.file 2 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/DataStack.h"
-   1:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** /*
-   2:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****  * DataStack.h
-   3:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****  *
-   4:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****  *  Created on: Oct 30, 2016
-   5:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****  *      Author: Robert
-   6:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****  */
-   7:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** 
-   8:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** #ifndef SRC_DATASTACK_H_
-   9:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** #define SRC_DATASTACK_H_
-  10:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** 
-  11:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** #include <cstdint>
-  12:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** 
-  13:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** namespace forth {
-  14:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** 
-  15:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** class DataStack {
-  16:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** private:
-  17:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****     static constexpr int stack_size_ = 1024;
-  18:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****     static std::uint32_t *sp_;
-  19:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****     static std::uint32_t data_stack_[stack_size_];
-  20:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** 
-  21:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****     DataStack() { Reset(); }
-  22:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** 
-  23:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** public:
-  24:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****     static DataStack& instance();
-  25:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h **** 
-  26:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****     void Reset() { sp_ = data_stack_; }
-  27:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****     std::uint32_t **GetSPPtr() { return &sp_; }
-  28:F:\kalkulyator-workspace-v2\PixieForth\src\DataStack.h ****     void Push(std::uint32_t val) { *sp_++ = val; }
-  89              		.loc 2 28 0
-  90 0040 0A4A     		ldr	r2, .L17
-  91 0042 1368     		ldr	r3, [r2]
-  92 0044 181D     		adds	r0, r3, #4
-  93 0046 1060     		str	r0, [r2]
-  94              	.LBE51:
-  95              	.LBE50:
-  96              	.LBE49:
-  31:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'A');
-  32:../src/main.cpp ****         } else {
-  33:../src/main.cpp ****             while (*ptr) ptr++; // skip the rest, ambiguous condition
-  34:../src/main.cpp ****             return false;
-  35:../src/main.cpp ****         }
-  36:../src/main.cpp ****         ptr++;
-  37:../src/main.cpp ****     }
-  38:../src/main.cpp ****     forth::System::Push(num);
-  39:../src/main.cpp ****     return true;
-  40:../src/main.cpp **** }
-  97              		.loc 1 40 0
-  98 0048 30BC     		pop	{r4, r5}
-  99              		.cfi_remember_state
- 100              		.cfi_restore 5
- 101              		.cfi_restore 4
- 102              		.cfi_def_cfa_offset 0
-  39:../src/main.cpp **** }
- 103              		.loc 1 39 0
- 104 004a 0120     		movs	r0, #1
- 105              	.LBB54:
- 106              	.LBB53:
- 107              	.LBB52:
- 108              		.loc 2 28 0
- 109 004c 1960     		str	r1, [r3]
- 110              	.LVL8:
- 111              	.LBE52:
- 112              	.LBE53:
- 113              	.LBE54:
- 114              		.loc 1 40 0
- 115 004e 7047     		bx	lr
- 116              	.LVL9:
- 117              	.L5:
- 118              		.cfi_restore_state
-  30:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'A');
- 119              		.loc 1 30 0
- 120 0050 052A     		cmp	r2, #5
- 121 0052 02D8     		bhi	.L8
-  31:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'A');
- 122              		.loc 1 31 0
- 123 0054 A4F13701 		sub	r1, r4, #55
- 124              	.LVL10:
- 125 0058 DAE7     		b	.L4
- 126              	.LVL11:
- 127              	.L8:
-  33:../src/main.cpp ****             return false;
- 128              		.loc 1 33 0 discriminator 1
- 129 005a 10F9013F 		ldrsb	r3, [r0, #1]!
- 130              	.LVL12:
- 131 005e 002B     		cmp	r3, #0
- 132 0060 FBD1     		bne	.L8
-  34:../src/main.cpp ****         }
- 133              		.loc 1 34 0
- 134 0062 1846     		mov	r0, r3
- 135              	.LVL13:
- 136              		.loc 1 40 0
- 137 0064 30BC     		pop	{r4, r5}
- 138              		.cfi_remember_state
- 139              		.cfi_restore 4
- 140              		.cfi_restore 5
- 141              		.cfi_def_cfa_offset 0
- 142 0066 7047     		bx	lr
- 143              	.LVL14:
- 144              	.L10:
- 145              		.cfi_restore_state
-  23:../src/main.cpp ****     char *ptr = buff;
- 146              		.loc 1 23 0
- 147 0068 1946     		mov	r1, r3
- 148 006a E9E7     		b	.L2
- 149              	.L18:
- 150              		.align	2
- 151              	.L17:
- 152 006c 00000000 		.word	_ZN5forth9DataStack3sp_E
- 153              		.cfi_endproc
- 154              	.LFE479:
- 155              		.cantunwind
- 156              		.fnend
- 158              		.section	.text._Z9parse_decPc,"ax",%progbits
- 159              		.align	2
- 160              		.global	_Z9parse_decPc
- 161              		.thumb
- 162              		.thumb_func
- 164              	_Z9parse_decPc:
- 165              		.fnstart
- 166              	.LFB480:
-  41:../src/main.cpp **** 
-  42:../src/main.cpp **** bool parse_dec(char *buff) {
- 167              		.loc 1 42 0
- 168              		.cfi_startproc
- 169              		@ args = 0, pretend = 0, frame = 0
- 170              		@ frame_needed = 0, uses_anonymous_args = 0
- 171              		@ link register save eliminated.
- 172              	.LVL15:
-  43:../src/main.cpp ****     uint32_t num = 0;
-  44:../src/main.cpp ****     char *ptr = buff;
-  45:../src/main.cpp ****     while (*ptr) {
- 173              		.loc 1 45 0
- 174 0000 90F90020 		ldrsb	r2, [r0]
- 175 0004 12B3     		cbz	r2, .L27
-  46:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 176              		.loc 1 46 0
- 177 0006 A2F13003 		sub	r3, r2, #48
- 178 000a DBB2     		uxtb	r3, r3
- 179 000c 092B     		cmp	r3, #9
- 180 000e 98BF     		it	ls
- 181 0010 0023     		movls	r3, #0
- 182 0012 02D9     		bls	.L23
- 183 0014 14E0     		b	.L26
- 184              	.LVL16:
- 185              	.L33:
- 186 0016 0929     		cmp	r1, #9
- 187 0018 12D8     		bhi	.L26
- 188              	.LVL17:
- 189              	.L23:
-  47:../src/main.cpp ****             num = num * 10 + (*ptr - '0');
- 190              		.loc 1 47 0
- 191 001a 03EB8303 		add	r3, r3, r3, lsl #2
- 192              	.LVL18:
- 193 001e 02EB4303 		add	r3, r2, r3, lsl #1
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 194              		.loc 1 45 0
- 195 0022 10F9012F 		ldrsb	r2, [r0, #1]!
- 196              	.LVL19:
-  46:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 197              		.loc 1 46 0
- 198 0026 A2F13001 		sub	r1, r2, #48
- 199 002a C9B2     		uxtb	r1, r1
- 200              		.loc 1 47 0
- 201 002c 303B     		subs	r3, r3, #48
- 202              	.LVL20:
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 203              		.loc 1 45 0
- 204 002e 002A     		cmp	r2, #0
- 205 0030 F1D1     		bne	.L33
- 206              	.LVL21:
- 207              	.L20:
- 208              	.LBB58:
- 209              	.LBB59:
- 210              	.LBB60:
- 211              		.loc 2 28 0
- 212 0032 0749     		ldr	r1, .L36
- 213 0034 0A68     		ldr	r2, [r1]
- 214 0036 101D     		adds	r0, r2, #4
- 215 0038 0860     		str	r0, [r1]
- 216              	.LBE60:
- 217              	.LBE59:
- 218              	.LBE58:
-  48:../src/main.cpp ****         } else {
-  49:../src/main.cpp ****             while (*ptr) ptr++; // skip the rest, ambiguous condition
-  50:../src/main.cpp ****             return false;
-  51:../src/main.cpp ****         }
-  52:../src/main.cpp ****         ptr++;
-  53:../src/main.cpp ****     }
-  54:../src/main.cpp ****     forth::System::Push(num);
-  55:../src/main.cpp ****     return true;
- 219              		.loc 1 55 0
- 220 003a 0120     		movs	r0, #1
- 221              	.LBB63:
- 222              	.LBB62:
- 223              	.LBB61:
- 224              		.loc 2 28 0
- 225 003c 1360     		str	r3, [r2]
- 226              	.LVL22:
- 227              	.LBE61:
- 228              	.LBE62:
- 229              	.LBE63:
- 230              		.loc 1 55 0
- 231 003e 7047     		bx	lr
- 232              	.L26:
- 233              	.LVL23:
-  49:../src/main.cpp ****             return false;
- 234              		.loc 1 49 0 discriminator 1
- 235 0040 10F9013F 		ldrsb	r3, [r0, #1]!
- 236              	.LVL24:
- 237 0044 002B     		cmp	r3, #0
- 238 0046 FBD1     		bne	.L26
-  50:../src/main.cpp ****         }
- 239              		.loc 1 50 0
- 240 0048 1846     		mov	r0, r3
- 241              	.LVL25:
-  56:../src/main.cpp **** }
- 242              		.loc 1 56 0
- 243 004a 7047     		bx	lr
- 244              	.LVL26:
- 245              	.L27:
-  43:../src/main.cpp ****     char *ptr = buff;
- 246              		.loc 1 43 0
- 247 004c 1346     		mov	r3, r2
- 248 004e F0E7     		b	.L20
- 249              	.L37:
- 250              		.align	2
- 251              	.L36:
- 252 0050 00000000 		.word	_ZN5forth9DataStack3sp_E
- 253              		.cfi_endproc
- 254              	.LFE480:
- 255              		.cantunwind
- 256              		.fnend
- 258              		.section	.text._Z13parse_neg_decPc,"ax",%progbits
- 259              		.align	2
- 260              		.global	_Z13parse_neg_decPc
- 261              		.thumb
- 262              		.thumb_func
- 264              	_Z13parse_neg_decPc:
- 265              		.fnstart
- 266              	.LFB481:
-  57:../src/main.cpp **** 
-  58:../src/main.cpp **** bool parse_neg_dec(char *buff) {
- 267              		.loc 1 58 0
- 268              		.cfi_startproc
- 269              		@ args = 0, pretend = 0, frame = 0
- 270              		@ frame_needed = 0, uses_anonymous_args = 0
- 271              	.LVL27:
- 272 0000 10B5     		push	{r4, lr}
- 273              		.save {r4, lr}
- 274              		.cfi_def_cfa_offset 8
- 275              		.cfi_offset 4, -8
- 276              		.cfi_offset 14, -4
- 277              	.LBB77:
- 278              	.LBB78:
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 279              		.loc 1 45 0
- 280 0002 90F90020 		ldrsb	r2, [r0]
- 281 0006 4AB3     		cbz	r2, .L46
-  46:../src/main.cpp ****             num = num * 10 + (*ptr - '0');
- 282              		.loc 1 46 0
- 283 0008 A2F13003 		sub	r3, r2, #48
- 284 000c DBB2     		uxtb	r3, r3
- 285 000e 092B     		cmp	r3, #9
- 286 0010 98BF     		it	ls
- 287 0012 0023     		movls	r3, #0
- 288 0014 02D9     		bls	.L42
- 289 0016 1BE0     		b	.L45
- 290              	.LVL28:
- 291              	.L52:
- 292 0018 0929     		cmp	r1, #9
- 293 001a 19D8     		bhi	.L45
- 294              	.LVL29:
- 295              	.L42:
-  47:../src/main.cpp ****         } else {
- 296              		.loc 1 47 0
- 297 001c 03EB8303 		add	r3, r3, r3, lsl #2
- 298              	.LVL30:
- 299 0020 02EB4303 		add	r3, r2, r3, lsl #1
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 300              		.loc 1 45 0
- 301 0024 10F9012F 		ldrsb	r2, [r0, #1]!
-  46:../src/main.cpp ****             num = num * 10 + (*ptr - '0');
- 302              		.loc 1 46 0
- 303 0028 A2F13001 		sub	r1, r2, #48
- 304 002c C9B2     		uxtb	r1, r1
-  47:../src/main.cpp ****         } else {
- 305              		.loc 1 47 0
- 306 002e 303B     		subs	r3, r3, #48
- 307              	.LVL31:
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 308              		.loc 1 45 0
- 309 0030 002A     		cmp	r2, #0
- 310 0032 F1D1     		bne	.L52
- 311              	.LVL32:
- 312              	.L39:
- 313              	.LBB79:
- 314              	.LBB80:
- 315              	.LBB81:
- 316              		.loc 2 28 0
- 317 0034 0A4C     		ldr	r4, .L56
- 318 0036 2268     		ldr	r2, [r4]
- 319 0038 111D     		adds	r1, r2, #4
- 320 003a 2160     		str	r1, [r4]
- 321 003c 1360     		str	r3, [r2]
- 322              	.LVL33:
- 323              	.LBE81:
- 324              	.LBE80:
- 325              	.LBE79:
- 326              	.LBE78:
- 327              	.LBE77:
- 328              	.LBB84:
- 329              	.LBB85:
-  59:../src/main.cpp ****     if (parse_dec(buff)) {
-  60:../src/main.cpp ****         int32_t num = (int32_t) forth::System::Pop();
- 330              		.loc 1 60 0
- 331 003e FFF7FEFF 		bl	_ZN5forth6System3PopEv
- 332              	.LVL34:
- 333              	.LBB86:
- 334              	.LBB87:
- 335              	.LBB88:
- 336              		.loc 2 28 0
- 337 0042 2368     		ldr	r3, [r4]
- 338 0044 4242     		negs	r2, r0
- 339              	.LVL35:
- 340 0046 191D     		adds	r1, r3, #4
- 341 0048 2160     		str	r1, [r4]
- 342 004a 0120     		movs	r0, #1
- 343              	.LVL36:
- 344 004c 1A60     		str	r2, [r3]
- 345              	.LVL37:
- 346 004e 10BD     		pop	{r4, pc}
- 347              	.L45:
- 348              	.LVL38:
- 349              	.LBE88:
- 350              	.LBE87:
- 351              	.LBE86:
- 352              	.LBE85:
- 353              	.LBE84:
- 354              	.LBB89:
- 355              	.LBB82:
-  49:../src/main.cpp ****             return false;
- 356              		.loc 1 49 0
- 357 0050 10F9013F 		ldrsb	r3, [r0, #1]!
- 358              	.LVL39:
- 359 0054 002B     		cmp	r3, #0
- 360 0056 FBD1     		bne	.L45
- 361              	.LBE82:
- 362              	.LBE89:
-  61:../src/main.cpp ****         forth::System::Push(-num);
-  62:../src/main.cpp ****         return true;
-  63:../src/main.cpp ****     }
-  64:../src/main.cpp ****     return false;
- 363              		.loc 1 64 0
- 364 0058 1846     		mov	r0, r3
- 365              	.LVL40:
-  65:../src/main.cpp **** }
- 366              		.loc 1 65 0
- 367 005a 10BD     		pop	{r4, pc}
- 368              	.LVL41:
- 369              	.L46:
- 370              	.LBB90:
- 371              	.LBB83:
-  43:../src/main.cpp ****     char *ptr = buff;
- 372              		.loc 1 43 0
- 373 005c 1346     		mov	r3, r2
- 374 005e E9E7     		b	.L39
- 375              	.L57:
- 376              		.align	2
- 377              	.L56:
- 378 0060 00000000 		.word	_ZN5forth9DataStack3sp_E
- 379              	.LBE83:
- 380              	.LBE90:
- 381              		.cfi_endproc
- 382              	.LFE481:
- 383              		.fnend
- 385              		.section	.text._Z6parse2Pci,"ax",%progbits
- 386              		.align	2
- 387              		.global	_Z6parse2Pci
- 388              		.thumb
- 389              		.thumb_func
- 391              	_Z6parse2Pci:
- 392              		.fnstart
- 393              	.LFB482:
-  66:../src/main.cpp **** 
-  67:../src/main.cpp **** bool parse2(char *buff, int len) {
- 394              		.loc 1 67 0
- 395              		.cfi_startproc
- 396              		@ args = 0, pretend = 0, frame = 0
- 397              		@ frame_needed = 0, uses_anonymous_args = 0
- 398              	.LVL42:
- 399 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
- 400              		.save {r4, r5, r6, r7, r8, lr}
- 401              		.cfi_def_cfa_offset 24
- 402              		.cfi_offset 4, -24
- 403              		.cfi_offset 5, -20
- 404              		.cfi_offset 6, -16
- 405              		.cfi_offset 7, -12
- 406              		.cfi_offset 8, -8
- 407              		.cfi_offset 14, -4
-  68:../src/main.cpp ****     if (len <= 0) return true;
- 408              		.loc 1 68 0
- 409 0004 0F1E     		subs	r7, r1, #0
- 410 0006 6EDD     		ble	.L131
-  69:../src/main.cpp **** 
-  70:../src/main.cpp ****     char *start = buff;
-  71:../src/main.cpp ****     while (*start == ' ') start++;
-  72:../src/main.cpp **** 
-  73:../src/main.cpp ****     char *end = start;
-  74:../src/main.cpp ****     while (*end && *end != ' ') end++;
-  75:../src/main.cpp ****     *end = 0;
-  76:../src/main.cpp ****     if (start == end) return true;
-  77:../src/main.cpp ****     len -= end - buff + 1;
-  78:../src/main.cpp ****     buff = end + 1;
-  79:../src/main.cpp ****     Serial.print("parse: ");
-  80:../src/main.cpp ****     Serial.println(start);
-  81:../src/main.cpp **** 
-  82:../src/main.cpp ****     fndef *defptr = defs;
-  83:../src/main.cpp ****     while (defptr->name != nullptr) {
- 411              		.loc 1 83 0 discriminator 2
- 412 0008 DFF8E481 		ldr	r8, .L139+12
- 413 000c 0646     		mov	r6, r0
- 414              	.LVL43:
- 415              	.L61:
-  71:../src/main.cpp **** 
- 416              		.loc 1 71 0 discriminator 2
- 417 000e 96F90030 		ldrsb	r3, [r6]
- 418 0012 202B     		cmp	r3, #32
- 419 0014 3446     		mov	r4, r6
- 420 0016 03D1     		bne	.L65
- 421              	.LVL44:
- 422              	.L66:
-  71:../src/main.cpp **** 
- 423              		.loc 1 71 0 is_stmt 0 discriminator 1
- 424 0018 14F9013F 		ldrsb	r3, [r4, #1]!
- 425              	.LVL45:
- 426 001c 202B     		cmp	r3, #32
- 427 001e FBD0     		beq	.L66
- 428              	.LVL46:
- 429              	.L65:
-  74:../src/main.cpp ****     *end = 0;
- 430              		.loc 1 74 0 is_stmt 1 discriminator 3
- 431 0020 33F02003 		bics	r3, r3, #32
- 432 0024 00F09F80 		beq	.L63
-  74:../src/main.cpp ****     *end = 0;
- 433              		.loc 1 74 0 is_stmt 0
- 434 0028 2246     		mov	r2, r4
- 435              	.LVL47:
- 436              	.L67:
-  74:../src/main.cpp ****     *end = 0;
- 437              		.loc 1 74 0 discriminator 2
- 438 002a 12F9013F 		ldrsb	r3, [r2, #1]!
- 439              	.LVL48:
- 440 002e 33F02003 		bics	r3, r3, #32
- 441 0032 FAD1     		bne	.L67
-  76:../src/main.cpp ****     len -= end - buff + 1;
- 442              		.loc 1 76 0 is_stmt 1
- 443 0034 A242     		cmp	r2, r4
-  75:../src/main.cpp ****     if (start == end) return true;
- 444              		.loc 1 75 0
- 445 0036 1370     		strb	r3, [r2]
-  76:../src/main.cpp ****     len -= end - buff + 1;
- 446              		.loc 1 76 0
- 447 0038 55D0     		beq	.L131
-  77:../src/main.cpp ****     buff = end + 1;
- 448              		.loc 1 77 0
- 449 003a 931B     		subs	r3, r2, r6
- 450 003c 0133     		adds	r3, r3, #1
- 451              	.LBB131:
- 452              	.LBB132:
- 453              	.LBB133:
- 454              	.LBB134:
- 455              		.file 3 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/usb_serial.h"
+  33 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  34              		.save {r4, r5, r6, r7, r8, lr}
+  35              		.cfi_def_cfa_offset 24
+  36              		.cfi_offset 4, -24
+  37              		.cfi_offset 5, -20
+  38              		.cfi_offset 6, -16
+  39              		.cfi_offset 7, -12
+  40              		.cfi_offset 8, -8
+  41              		.cfi_offset 14, -4
+  13:../src/main.cpp ****     delay(2000); // delay for USB to get ready
+  42              		.loc 1 13 0
+  43 0004 4FF4FA60 		mov	r0, #2000
+  44 0008 FFF7FEFF 		bl	delay
+  45              	.LVL0:
+  14:../src/main.cpp **** 
+  15:../src/main.cpp ****     forth::System& system = forth::System::instance();
+  46              		.loc 1 15 0
+  47 000c FFF7FEFF 		bl	_ZN5forth6System8instanceEv
+  48              	.LVL1:
+  49              	.LBB29:
+  50              	.LBB30:
+  51              	.LBB31:
+  52              	.LBB32:
+  53              	.LBB33:
+  54              	.LBB34:
+  55              		.file 2 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/usb_serial.h"
    1:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** /* Teensyduino Core Library
    2:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * http://www.pjrc.com/teensy/
    3:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
@@ -678,662 +149,19 @@
   80:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual void clear(void) { usb_serial_flush_input(); }
   81:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual size_t write(uint8_t c) { return usb_serial_putchar(c); }
   82:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual size_t write(const uint8_t *buffer, size_t size) { return usb_serial_write(buffer, 
- 456              		.loc 3 82 0
- 457 003e 0721     		movs	r1, #7
- 458 0040 6848     		ldr	r0, .L139
- 459              	.LBE134:
- 460              	.LBE133:
- 461              	.LBE132:
- 462              	.LBE131:
-  77:../src/main.cpp ****     buff = end + 1;
- 463              		.loc 1 77 0
- 464 0042 FF1A     		subs	r7, r7, r3
- 465              	.LVL49:
-  78:../src/main.cpp ****     Serial.print("parse: ");
- 466              		.loc 1 78 0
- 467 0044 561C     		adds	r6, r2, #1
- 468              	.LVL50:
- 469              	.LBB138:
- 470              	.LBB137:
- 471              	.LBB136:
- 472              	.LBB135:
- 473              		.loc 3 82 0
- 474 0046 FFF7FEFF 		bl	usb_serial_write
- 475              	.LVL51:
- 476              	.LBE135:
- 477              	.LBE136:
- 478              	.LBE137:
- 479              	.LBE138:
- 480              	.LBB139:
- 481              	.LBB140:
- 482              	.LBB141:
- 483              	.LBB142:
- 484              	.LBB143:
- 485              		.file 4 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/Print.h"
-   1:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** /* Teensyduino Core Library
-   2:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * http://www.pjrc.com/teensy/
-   3:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
-   4:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
-   5:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * Permission is hereby granted, free of charge, to any person obtaining
-   6:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * a copy of this software and associated documentation files (the
-   7:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * "Software"), to deal in the Software without restriction, including
-   8:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * without limitation the rights to use, copy, modify, merge, publish,
-   9:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * distribute, sublicense, and/or sell copies of the Software, and to
-  10:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * permit persons to whom the Software is furnished to do so, subject to
-  11:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * the following conditions:
-  12:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
-  13:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * 1. The above copyright notice and this permission notice shall be
-  14:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * included in all copies or substantial portions of the Software.
-  15:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
-  16:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * 2. If the Software is incorporated into a build system that allows
-  17:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * selection among a list of target devices, then similar target
-  18:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * devices manufactured by PJRC.COM must be included in the list of
-  19:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * target devices and selectable in the same manner.
-  20:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
-  21:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  22:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  23:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-  24:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-  25:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-  26:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-  27:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  28:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * SOFTWARE.
-  29:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  */
-  30:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  31:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #ifndef Print_h
-  32:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define Print_h
-  33:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  34:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <inttypes.h>
-  35:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <stdio.h> // for size_t - gives sprintf and other stuff to all sketches & libs
-  36:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <stdarg.h>
-  37:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "core_id.h"
-  38:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "WString.h"
-  39:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "Printable.h"
-  40:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  41:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define DEC 10
-  42:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define HEX 16
-  43:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define OCT 8
-  44:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define BIN 2
-  45:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define BYTE 0
-  46:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  47:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** class __FlashStringHelper;
-  48:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  49:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** class Print
-  50:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** {
-  51:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****   public:
-  52:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	Print() : write_error(0) {}
-  53:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(uint8_t b) = 0;
-  54:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t write(const char *str)			{ return write((const uint8_t *)str, strlen(str)); }
- 486              		.loc 4 54 0
- 487 004a 2046     		mov	r0, r4
- 488 004c FFF7FEFF 		bl	strlen
- 489              	.LVL52:
- 490              	.LBB144:
- 491              	.LBB145:
- 492              		.loc 3 82 0
- 493 0050 0146     		mov	r1, r0
- 494 0052 2046     		mov	r0, r4
- 495              	.LVL53:
- 496 0054 FFF7FEFF 		bl	usb_serial_write
- 497              	.LVL54:
- 498              	.LBE145:
- 499              	.LBE144:
- 500              	.LBE143:
- 501              	.LBE142:
- 502              	.LBE141:
-  55:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(const uint8_t *buffer, size_t size);
-  56:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t write(const char *buffer, size_t size)	{ return write((const uint8_t *)buffer, size); }
-  57:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const String &s);
-  58:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(char c)				{ return write((uint8_t)c); }
-  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const char s[])			{ return write(s); }
-  60:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
-  61:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  62:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(uint8_t b)				{ return printNumber(b, 10, 0); }
-  63:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(int n)				{ return print((long)n); }
-  64:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned int n)			{ return printNumber(n, 10, 0); }
-  65:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(long n);
-  66:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned long n)			{ return printNumber(n, 10, 0); }
-  67:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  68:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned char n, int base)		{ return printNumber(n, base, 0); }
-  69:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(int n, int base)			{ return (base == 10) ? print(n) : printNumber(n, base, 0); }
-  70:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned int n, int base)		{ return printNumber(n, base, 0); }
-  71:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(long n, int base)			{ return (base == 10) ? print(n) : printNumber(n, base, 0); }
-  72:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned long n, int base)		{ return printNumber(n, base, 0); }
-  73:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  74:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(double n, int digits = 2)		{ return printFloat(n, digits); }
-  75:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const Printable &obj)		{ return obj.printTo(*this); }
-  76:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(void);
-  77:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const String &s)			{ return print(s) + println(); }
-  78:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(char c)				{ return print(c) + println(); }
-  79:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const char s[])			{ return print(s) + println(); }
- 503              		.loc 4 79 0
- 504 0058 6348     		ldr	r0, .L139+4
- 505 005a FFF7FEFF 		bl	_ZN5Print7printlnEv
- 506              	.LVL55:
- 507              	.LBE140:
- 508              	.LBE139:
- 509              		.loc 1 83 0
- 510 005e D8F80010 		ldr	r1, [r8]
- 511 0062 94F90050 		ldrsb	r5, [r4]
- 512 0066 D9B1     		cbz	r1, .L69
- 513 0068 DFF884C1 		ldr	ip, .L139+12
- 514              	.LVL56:
- 515              	.L76:
- 516              	.LBB146:
-  84:../src/main.cpp ****         const char *name_ptr = defptr->name;
-  85:../src/main.cpp ****         char *word_ptr = start;
-  86:../src/main.cpp ****         while (*name_ptr && *word_ptr && *name_ptr == *word_ptr) {
- 517              		.loc 1 86 0
- 518 006c 91F90030 		ldrsb	r3, [r1]
- 519 0070 002B     		cmp	r3, #0
- 520 0072 46D0     		beq	.L100
- 521 0074 85B1     		cbz	r5, .L71
- 522 0076 AB42     		cmp	r3, r5
- 523 0078 08BF     		it	eq
- 524 007a 2046     		moveq	r0, r4
- 525 007c 05D0     		beq	.L73
- 526 007e 0BE0     		b	.L71
- 527              	.LVL57:
- 528              	.L74:
- 529              		.loc 1 86 0 is_stmt 0 discriminator 1
- 530 0080 10F9012F 		ldrsb	r2, [r0, #1]!
- 531              	.LVL58:
- 532 0084 42B1     		cbz	r2, .L71
- 533              		.loc 1 86 0 discriminator 2
- 534 0086 9342     		cmp	r3, r2
- 535 0088 06D1     		bne	.L71
- 536              	.LVL59:
- 537              	.L73:
- 538              		.loc 1 86 0
- 539 008a 11F9013F 		ldrsb	r3, [r1, #1]!
- 540              	.LVL60:
- 541 008e 002B     		cmp	r3, #0
- 542 0090 F6D1     		bne	.L74
- 543 0092 90F90130 		ldrsb	r3, [r0, #1]
- 544              	.LVL61:
- 545              	.L70:
-  87:../src/main.cpp ****             name_ptr++;
-  88:../src/main.cpp ****             word_ptr++;
-  89:../src/main.cpp ****         }
-  90:../src/main.cpp ****         if (*name_ptr == *word_ptr) {
- 546              		.loc 1 90 0 is_stmt 1
- 547 0096 83B3     		cbz	r3, .L135
- 548              	.L71:
- 549              	.LVL62:
- 550              	.LBE146:
-  83:../src/main.cpp ****         const char *name_ptr = defptr->name;
- 551              		.loc 1 83 0
- 552 0098 5CF8081F 		ldr	r1, [ip, #8]!
- 553              	.LVL63:
- 554 009c 0029     		cmp	r1, #0
- 555 009e E5D1     		bne	.L76
- 556              	.LVL64:
- 557              	.L69:
-  91:../src/main.cpp ****             defptr->fn();
-  92:../src/main.cpp ****             return parse2(buff, len);
-  93:../src/main.cpp ****         }
-  94:../src/main.cpp ****         defptr++;
-  95:../src/main.cpp ****     }
-  96:../src/main.cpp **** 
-  97:../src/main.cpp ****     if (*start == '$') {
- 558              		.loc 1 97 0
- 559 00a0 242D     		cmp	r5, #36
- 560 00a2 64D0     		beq	.L136
-  98:../src/main.cpp ****         if (!parse_hex(start + 1)) return false;
-  99:../src/main.cpp ****     } else if (*start == '-') {
- 561              		.loc 1 99 0
- 562 00a4 2D2D     		cmp	r5, #45
- 563 00a6 2ED0     		beq	.L86
- 564              	.LVL65:
- 565              	.LBB147:
- 566              	.LBB148:
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 567              		.loc 1 45 0
- 568 00a8 002D     		cmp	r5, #0
- 569 00aa 00F09580 		beq	.L137
-  46:../src/main.cpp ****             num = num * 10 + (*ptr - '0');
- 570              		.loc 1 46 0
- 571 00ae A5F13003 		sub	r3, r5, #48
- 572 00b2 DBB2     		uxtb	r3, r3
- 573 00b4 092B     		cmp	r3, #9
- 574 00b6 19D8     		bhi	.L99
- 575 00b8 0023     		movs	r3, #0
- 576 00ba 01E0     		b	.L97
- 577              	.LVL66:
- 578              	.L128:
- 579 00bc 092A     		cmp	r2, #9
- 580 00be 15D8     		bhi	.L99
- 581              	.LVL67:
- 582              	.L97:
-  47:../src/main.cpp ****         } else {
- 583              		.loc 1 47 0
- 584 00c0 03EB8303 		add	r3, r3, r3, lsl #2
- 585              	.LVL68:
- 586 00c4 05EB4303 		add	r3, r5, r3, lsl #1
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 587              		.loc 1 45 0
- 588 00c8 14F9015F 		ldrsb	r5, [r4, #1]!
- 589              	.LVL69:
-  46:../src/main.cpp ****             num = num * 10 + (*ptr - '0');
- 590              		.loc 1 46 0
- 591 00cc A5F13002 		sub	r2, r5, #48
- 592 00d0 D2B2     		uxtb	r2, r2
-  47:../src/main.cpp ****         } else {
- 593              		.loc 1 47 0
- 594 00d2 303B     		subs	r3, r3, #48
- 595              	.LVL70:
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 596              		.loc 1 45 0
- 597 00d4 002D     		cmp	r5, #0
- 598 00d6 F1D1     		bne	.L128
- 599              	.LVL71:
- 600              	.L87:
- 601              	.LBB149:
- 602              	.LBB150:
- 603              	.LBB151:
- 604              		.loc 2 28 0
- 605 00d8 4449     		ldr	r1, .L139+8
- 606 00da 0A68     		ldr	r2, [r1]
- 607 00dc 101D     		adds	r0, r2, #4
- 608 00de 0860     		str	r0, [r1]
- 609 00e0 1360     		str	r3, [r2]
- 610              	.LVL72:
- 611              	.L75:
- 612              	.LBE151:
- 613              	.LBE150:
- 614              	.LBE149:
- 615              	.LBE148:
- 616              	.LBE147:
-  68:../src/main.cpp **** 
- 617              		.loc 1 68 0
- 618 00e2 002F     		cmp	r7, #0
- 619 00e4 93DC     		bgt	.L61
- 620              	.LVL73:
- 621              	.L131:
-  76:../src/main.cpp ****     len -= end - buff + 1;
- 622              		.loc 1 76 0
- 623 00e6 0120     		movs	r0, #1
- 100:../src/main.cpp ****         if (!parse_neg_dec(start + 1)) return false;
- 101:../src/main.cpp ****     } else {
- 102:../src/main.cpp ****         if (!parse_dec(start)) return false;
- 103:../src/main.cpp ****     }
- 104:../src/main.cpp ****     return parse2(buff, len);
- 105:../src/main.cpp **** }
- 624              		.loc 1 105 0
- 625 00e8 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
- 626              	.LVL74:
- 627              	.L99:
- 628              	.LBB154:
- 629              	.LBB152:
-  49:../src/main.cpp ****             return false;
- 630              		.loc 1 49 0
- 631 00ec 14F9013F 		ldrsb	r3, [r4, #1]!
- 632              	.LVL75:
- 633 00f0 002B     		cmp	r3, #0
- 634 00f2 FBD1     		bne	.L99
- 635              	.LVL76:
- 636              	.L106:
- 637              	.LBE152:
- 638              	.LBE154:
-  98:../src/main.cpp ****     } else if (*start == '-') {
- 639              		.loc 1 98 0
- 640 00f4 1846     		mov	r0, r3
- 641 00f6 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
- 642              	.LVL77:
- 643              	.L135:
- 644              	.LBB155:
-  91:../src/main.cpp ****             return parse2(buff, len);
- 645              		.loc 1 91 0
- 646 00fa DCF80430 		ldr	r3, [ip, #4]
- 647 00fe 9847     		blx	r3
- 648              	.LVL78:
-  92:../src/main.cpp ****         }
- 649              		.loc 1 92 0
- 650 0100 EFE7     		b	.L75
- 651              	.LVL79:
- 652              	.L100:
-  86:../src/main.cpp ****             name_ptr++;
- 653              		.loc 1 86 0
- 654 0102 2B46     		mov	r3, r5
- 655 0104 C7E7     		b	.L70
- 656              	.LVL80:
- 657              	.L86:
- 658              	.LBE155:
- 659              	.LBB156:
- 660              	.LBB157:
- 661              	.LBB158:
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 662              		.loc 1 45 0
- 663 0106 94F90120 		ldrsb	r2, [r4, #1]
- 664              	.LBE158:
- 665              	.LBE157:
- 666              	.LBE156:
- 100:../src/main.cpp ****     } else {
- 667              		.loc 1 100 0
- 668 010a 0134     		adds	r4, r4, #1
- 669              	.LVL81:
- 670              	.LBB173:
- 671              	.LBB165:
- 672              	.LBB162:
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 673              		.loc 1 45 0
- 674 010c 002A     		cmp	r2, #0
- 675 010e 67D0     		beq	.L104
-  46:../src/main.cpp ****             num = num * 10 + (*ptr - '0');
- 676              		.loc 1 46 0
- 677 0110 A2F13003 		sub	r3, r2, #48
- 678 0114 DBB2     		uxtb	r3, r3
- 679 0116 092B     		cmp	r3, #9
- 680 0118 1CD8     		bhi	.L94
- 681 011a 0023     		movs	r3, #0
- 682 011c 01E0     		b	.L92
- 683              	.LVL82:
- 684              	.L127:
- 685 011e 0929     		cmp	r1, #9
- 686 0120 18D8     		bhi	.L94
- 687              	.LVL83:
- 688              	.L92:
-  47:../src/main.cpp ****         } else {
- 689              		.loc 1 47 0
- 690 0122 03EB8303 		add	r3, r3, r3, lsl #2
- 691              	.LVL84:
- 692 0126 02EB4303 		add	r3, r2, r3, lsl #1
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 693              		.loc 1 45 0
- 694 012a 14F9012F 		ldrsb	r2, [r4, #1]!
-  46:../src/main.cpp ****             num = num * 10 + (*ptr - '0');
- 695              		.loc 1 46 0
- 696 012e A2F13001 		sub	r1, r2, #48
- 697 0132 C9B2     		uxtb	r1, r1
-  47:../src/main.cpp ****         } else {
- 698              		.loc 1 47 0
- 699 0134 303B     		subs	r3, r3, #48
- 700              	.LVL85:
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 701              		.loc 1 45 0
- 702 0136 002A     		cmp	r2, #0
- 703 0138 F1D1     		bne	.L127
- 704              	.LVL86:
- 705              	.L89:
- 706              	.LBB159:
- 707              	.LBB160:
- 708              	.LBB161:
- 709              		.loc 2 28 0
- 710 013a 2C4C     		ldr	r4, .L139+8
- 711 013c 2268     		ldr	r2, [r4]
- 712 013e 111D     		adds	r1, r2, #4
- 713 0140 2160     		str	r1, [r4]
- 714 0142 1360     		str	r3, [r2]
- 715              	.LVL87:
- 716              	.LBE161:
- 717              	.LBE160:
- 718              	.LBE159:
- 719              	.LBE162:
- 720              	.LBE165:
- 721              	.LBB166:
- 722              	.LBB167:
-  60:../src/main.cpp ****         forth::System::Push(-num);
- 723              		.loc 1 60 0
- 724 0144 FFF7FEFF 		bl	_ZN5forth6System3PopEv
- 725              	.LVL88:
- 726              	.LBB168:
- 727              	.LBB169:
- 728              	.LBB170:
- 729              		.loc 2 28 0
- 730 0148 2368     		ldr	r3, [r4]
- 731 014a 4042     		negs	r0, r0
- 732              	.LVL89:
- 733 014c 1A1D     		adds	r2, r3, #4
- 734 014e 2260     		str	r2, [r4]
- 735 0150 1860     		str	r0, [r3]
- 736              	.LVL90:
- 737 0152 C6E7     		b	.L75
- 738              	.L94:
- 739              	.LVL91:
- 740              	.LBE170:
- 741              	.LBE169:
- 742              	.LBE168:
- 743              	.LBE167:
- 744              	.LBE166:
- 745              	.LBB171:
- 746              	.LBB163:
-  49:../src/main.cpp ****             return false;
- 747              		.loc 1 49 0
- 748 0154 14F9013F 		ldrsb	r3, [r4, #1]!
- 749              	.LVL92:
- 750 0158 002B     		cmp	r3, #0
- 751 015a CBD0     		beq	.L106
- 752              	.LVL93:
- 753 015c 14F9013F 		ldrsb	r3, [r4, #1]!
- 754              	.LVL94:
- 755 0160 002B     		cmp	r3, #0
- 756 0162 F7D1     		bne	.L94
- 757 0164 C6E7     		b	.L106
- 758              	.LVL95:
- 759              	.L63:
- 760              	.LBE163:
- 761              	.LBE171:
- 762              	.LBE173:
-  75:../src/main.cpp ****     if (start == end) return true;
- 763              		.loc 1 75 0
- 764 0166 2370     		strb	r3, [r4]
-  76:../src/main.cpp ****     len -= end - buff + 1;
- 765              		.loc 1 76 0
- 766 0168 0120     		movs	r0, #1
- 767              		.loc 1 105 0
- 768 016a BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
- 769              	.LVL96:
- 770              	.L136:
- 771              	.LBB174:
- 772              	.LBB175:
-  25:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 773              		.loc 1 25 0
- 774 016e 94F90130 		ldrsb	r3, [r4, #1]
- 775              	.LBE175:
- 776              	.LBE174:
-  98:../src/main.cpp ****     } else if (*start == '-') {
- 777              		.loc 1 98 0
- 778 0172 0134     		adds	r4, r4, #1
- 779              	.LVL97:
- 780              	.LBB181:
- 781              	.LBB179:
-  25:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 782              		.loc 1 25 0
- 783 0174 93B3     		cbz	r3, .L101
- 784 0176 0021     		movs	r1, #0
- 785 0178 04E0     		b	.L85
- 786              	.LVL98:
- 787              	.L138:
-  27:../src/main.cpp ****         } else if (*ptr >= 'a' && *ptr <= 'f') {
- 788              		.loc 1 27 0
- 789 017a A0F13001 		sub	r1, r0, #48
- 790              	.LVL99:
- 791              	.L80:
-  25:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 792              		.loc 1 25 0
- 793 017e 14F9013F 		ldrsb	r3, [r4, #1]!
- 794              	.LVL100:
- 795 0182 ABB1     		cbz	r3, .L78
- 796              	.LVL101:
- 797              	.L85:
-  26:../src/main.cpp ****             num = num * 16 + (*ptr - '0');
- 798              		.loc 1 26 0
- 799 0184 DAB2     		uxtb	r2, r3
- 800 0186 A2F13000 		sub	r0, r2, #48
- 801 018a 0928     		cmp	r0, #9
-  28:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'a');
- 802              		.loc 1 28 0
- 803 018c A2F1610E 		sub	lr, r2, #97
-  27:../src/main.cpp ****         } else if (*ptr >= 'a' && *ptr <= 'f') {
- 804              		.loc 1 27 0
- 805 0190 03EB0110 		add	r0, r3, r1, lsl #4
-  26:../src/main.cpp ****             num = num * 16 + (*ptr - '0');
- 806              		.loc 1 26 0
- 807 0194 F1D9     		bls	.L138
-  28:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'a');
- 808              		.loc 1 28 0
- 809 0196 BEF1050F 		cmp	lr, #5
-  30:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'A');
- 810              		.loc 1 30 0
- 811 019a A2F14102 		sub	r2, r2, #65
-  29:../src/main.cpp ****         } else if (*ptr >= 'A' && *ptr <= 'F') {
- 812              		.loc 1 29 0
- 813 019e 03EB0110 		add	r0, r3, r1, lsl #4
-  28:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'a');
- 814              		.loc 1 28 0
- 815 01a2 0BD8     		bhi	.L81
-  25:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 816              		.loc 1 25 0
- 817 01a4 14F9013F 		ldrsb	r3, [r4, #1]!
- 818              	.LVL102:
-  29:../src/main.cpp ****         } else if (*ptr >= 'A' && *ptr <= 'F') {
- 819              		.loc 1 29 0
- 820 01a8 A0F15701 		sub	r1, r0, #87
- 821              	.LVL103:
-  25:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 822              		.loc 1 25 0
- 823 01ac 002B     		cmp	r3, #0
- 824 01ae E9D1     		bne	.L85
- 825              	.LVL104:
- 826              	.L78:
- 827              	.LBB176:
- 828              	.LBB177:
- 829              	.LBB178:
- 830              		.loc 2 28 0
- 831 01b0 0E4A     		ldr	r2, .L139+8
- 832 01b2 1368     		ldr	r3, [r2]
- 833 01b4 181D     		adds	r0, r3, #4
- 834 01b6 1060     		str	r0, [r2]
- 835 01b8 1960     		str	r1, [r3]
- 836              	.LVL105:
- 837 01ba 92E7     		b	.L75
- 838              	.LVL106:
- 839              	.L81:
- 840              	.LBE178:
- 841              	.LBE177:
- 842              	.LBE176:
-  30:../src/main.cpp ****             num = num * 16 + 10 + (*ptr - 'A');
- 843              		.loc 1 30 0
- 844 01bc 052A     		cmp	r2, #5
- 845 01be 02D8     		bhi	.L84
-  31:../src/main.cpp ****         } else {
- 846              		.loc 1 31 0
- 847 01c0 A0F13701 		sub	r1, r0, #55
- 848              	.LVL107:
- 849 01c4 DBE7     		b	.L80
- 850              	.LVL108:
- 851              	.L84:
-  33:../src/main.cpp ****             return false;
- 852              		.loc 1 33 0
- 853 01c6 14F9013F 		ldrsb	r3, [r4, #1]!
- 854              	.LVL109:
- 855 01ca 002B     		cmp	r3, #0
- 856 01cc 92D0     		beq	.L106
- 857              	.LVL110:
- 858 01ce 14F9013F 		ldrsb	r3, [r4, #1]!
- 859              	.LVL111:
- 860 01d2 002B     		cmp	r3, #0
- 861 01d4 F7D1     		bne	.L84
- 862 01d6 8DE7     		b	.L106
- 863              	.LVL112:
- 864              	.L137:
- 865              	.LBE179:
- 866              	.LBE181:
- 867              	.LBB182:
- 868              	.LBB153:
-  45:../src/main.cpp ****         if (*ptr >= '0' && *ptr <= '9') {
- 869              		.loc 1 45 0
- 870 01d8 2B46     		mov	r3, r5
- 871 01da 7DE7     		b	.L87
- 872              	.LVL113:
- 873              	.L101:
- 874              	.LBE153:
- 875              	.LBE182:
- 876              	.LBB183:
- 877              	.LBB180:
-  23:../src/main.cpp ****     char *ptr = buff;
- 878              		.loc 1 23 0
- 879 01dc 1946     		mov	r1, r3
- 880 01de E7E7     		b	.L78
- 881              	.LVL114:
- 882              	.L104:
- 883              	.LBE180:
- 884              	.LBE183:
- 885              	.LBB184:
- 886              	.LBB172:
- 887              	.LBB164:
-  43:../src/main.cpp ****     char *ptr = buff;
- 888              		.loc 1 43 0
- 889 01e0 1346     		mov	r3, r2
- 890 01e2 AAE7     		b	.L89
- 891              	.L140:
- 892              		.align	2
- 893              	.L139:
- 894 01e4 00000000 		.word	.LC0
- 895 01e8 00000000 		.word	Serial
- 896 01ec 00000000 		.word	_ZN5forth9DataStack3sp_E
- 897 01f0 00000000 		.word	.LANCHOR0
- 898              	.LBE164:
- 899              	.LBE172:
- 900              	.LBE184:
- 901              		.cfi_endproc
- 902              	.LFE482:
- 903              		.fnend
- 905              		.section	.text.startup.main,"ax",%progbits
- 906              		.align	2
- 907              		.global	main
- 908              		.thumb
- 909              		.thumb_func
- 911              	main:
- 912              		.fnstart
- 913              	.LFB483:
- 106:../src/main.cpp **** 
- 107:../src/main.cpp **** char word_buff[128];
- 108:../src/main.cpp **** 
- 109:../src/main.cpp **** extern "C" int main(void)
- 110:../src/main.cpp **** {
- 914              		.loc 1 110 0
- 915              		.cfi_startproc
- 916              		@ args = 0, pretend = 0, frame = 0
- 917              		@ frame_needed = 0, uses_anonymous_args = 0
- 918 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
- 919              		.save {r4, r5, r6, r7, r8, lr}
- 920              		.cfi_def_cfa_offset 24
- 921              		.cfi_offset 4, -24
- 922              		.cfi_offset 5, -20
- 923              		.cfi_offset 6, -16
- 924              		.cfi_offset 7, -12
- 925              		.cfi_offset 8, -8
- 926              		.cfi_offset 14, -4
- 111:../src/main.cpp ****     delay(2000); // delay for USB to get ready
- 927              		.loc 1 111 0
- 928 0004 4FF4FA60 		mov	r0, #2000
- 929 0008 FFF7FEFF 		bl	delay
- 930              	.LVL115:
- 112:../src/main.cpp **** 
- 113:../src/main.cpp ****     forth::System& system = forth::System::instance();
- 931              		.loc 1 113 0
- 932 000c FFF7FEFF 		bl	_ZN5forth6System8instanceEv
- 933              	.LVL116:
- 934              	.LBB197:
- 935              	.LBB198:
- 936              	.LBB199:
- 937              	.LBB200:
- 938              	.LBB201:
- 939              	.LBB202:
- 940              		.loc 3 82 0
- 941 0010 1121     		movs	r1, #17
- 942 0012 0F48     		ldr	r0, .L144
- 943 0014 0F4C     		ldr	r4, .L144+4
- 944              	.LBE202:
- 945              	.LBE201:
- 946              	.LBE200:
- 947              	.LBE199:
- 948              	.LBE198:
- 949              	.LBE197:
- 950              	.LBB208:
- 951              	.LBB209:
- 952              		.file 5 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/core_pins.h"
+  56              		.loc 2 82 0
+  57 0010 1121     		movs	r1, #17
+  58 0012 0F48     		ldr	r0, .L5
+  59 0014 0F4C     		ldr	r4, .L5+4
+  60              	.LBE34:
+  61              	.LBE33:
+  62              	.LBE32:
+  63              	.LBE31:
+  64              	.LBE30:
+  65              	.LBE29:
+  66              	.LBB40:
+  67              	.LBB41:
+  68              		.file 3 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/core_pins.h"
    1:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** /* Teensyduino Core Library
    2:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h ****  * http://www.pjrc.com/teensy/
    3:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
@@ -3366,12 +2194,12 @@
 2030:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 		if (val) {
 2031:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			if (pin == 0) {
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN0_PORTSET = CORE_PIN0_BITMASK;
- 953              		.loc 5 2032 0
- 954 0016 DFF84C80 		ldr	r8, .L144+20
- 955              	.LBE209:
- 956              	.LBE208:
- 957              	.LBB212:
- 958              	.LBB213:
+  69              		.loc 3 2032 0
+  70 0016 DFF84C80 		ldr	r8, .L5+20
+  71              	.LBE41:
+  72              	.LBE40:
+  73              	.LBB44:
+  74              	.LBB45:
 2033:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
 2034:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN1_PORTSET = CORE_PIN1_BITMASK;
 2035:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 2) {
@@ -3508,197 +2336,223 @@
 2166:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 		} else {
 2167:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			if (pin == 0) {
 2168:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN0_PORTCLEAR = CORE_PIN0_BITMASK;
- 959              		.loc 5 2168 0
- 960 001a 0F4F     		ldr	r7, .L144+8
- 961              	.LBE213:
- 962              	.LBE212:
- 963              	.LBB215:
- 964              	.LBB207:
- 965              	.LBB206:
- 966              	.LBB205:
- 967              	.LBB204:
- 968              	.LBB203:
- 969              		.loc 3 82 0
- 970 001c FFF7FEFF 		bl	usb_serial_write
- 971              	.LVL117:
- 972              	.LBE203:
- 973              	.LBE204:
- 974              	.LBE205:
- 975              	.LBE206:
- 976              		.loc 4 79 0
- 977 0020 0E48     		ldr	r0, .L144+12
- 978 0022 FFF7FEFF 		bl	_ZN5Print7printlnEv
- 979              	.LVL118:
- 980              	.LBE207:
- 981              	.LBE215:
- 114:../src/main.cpp **** 
- 115:../src/main.cpp ****     char buff[] = "$a -2 ADD";
- 116:../src/main.cpp ****     int len = strlen(buff);
- 117:../src/main.cpp ****     uint32_t **sp_ptr = system.GetSPPtr();
- 118:../src/main.cpp **** 
- 119:../src/main.cpp ****     // Make sure you set your terminal to send and receive LF
- 120:../src/main.cpp ****     // as the newline character, and to local echo.
- 121:../src/main.cpp ****     Serial.println("\nPIXIEFORTH READY");
- 122:../src/main.cpp **** 
- 123:../src/main.cpp ****     pinMode(0, OUTPUT);
- 982              		.loc 1 123 0
- 983 0026 0020     		movs	r0, #0
- 984 0028 0121     		movs	r1, #1
- 985 002a FFF7FEFF 		bl	pinMode
- 986              	.LVL119:
- 987              	.LBB216:
- 988              	.LBB210:
+  75              		.loc 3 2168 0
+  76 001a 0F4F     		ldr	r7, .L5+8
+  77              	.LBE45:
+  78              	.LBE44:
+  79              	.LBB47:
+  80              	.LBB39:
+  81              	.LBB38:
+  82              	.LBB37:
+  83              	.LBB36:
+  84              	.LBB35:
+  85              		.loc 2 82 0
+  86 001c FFF7FEFF 		bl	usb_serial_write
+  87              	.LVL2:
+  88              	.LBE35:
+  89              	.LBE36:
+  90              	.LBE37:
+  91              	.LBE38:
+  92              		.file 4 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/Print.h"
+   1:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** /* Teensyduino Core Library
+   2:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * http://www.pjrc.com/teensy/
+   3:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
+   4:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
+   5:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * Permission is hereby granted, free of charge, to any person obtaining
+   6:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * a copy of this software and associated documentation files (the
+   7:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * "Software"), to deal in the Software without restriction, including
+   8:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * without limitation the rights to use, copy, modify, merge, publish,
+   9:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * distribute, sublicense, and/or sell copies of the Software, and to
+  10:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * permit persons to whom the Software is furnished to do so, subject to
+  11:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * the following conditions:
+  12:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
+  13:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * 1. The above copyright notice and this permission notice shall be
+  14:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * included in all copies or substantial portions of the Software.
+  15:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
+  16:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * 2. If the Software is incorporated into a build system that allows
+  17:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * selection among a list of target devices, then similar target
+  18:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * devices manufactured by PJRC.COM must be included in the list of
+  19:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * target devices and selectable in the same manner.
+  20:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
+  21:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  22:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  23:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  24:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+  25:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  26:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  27:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  28:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * SOFTWARE.
+  29:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  */
+  30:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  31:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #ifndef Print_h
+  32:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define Print_h
+  33:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  34:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <inttypes.h>
+  35:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <stdio.h> // for size_t - gives sprintf and other stuff to all sketches & libs
+  36:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <stdarg.h>
+  37:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "core_id.h"
+  38:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "WString.h"
+  39:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "Printable.h"
+  40:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  41:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define DEC 10
+  42:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define HEX 16
+  43:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define OCT 8
+  44:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define BIN 2
+  45:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define BYTE 0
+  46:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  47:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** class __FlashStringHelper;
+  48:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  49:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** class Print
+  50:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** {
+  51:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****   public:
+  52:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	Print() : write_error(0) {}
+  53:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(uint8_t b) = 0;
+  54:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t write(const char *str)			{ return write((const uint8_t *)str, strlen(str)); }
+  55:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(const uint8_t *buffer, size_t size);
+  56:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t write(const char *buffer, size_t size)	{ return write((const uint8_t *)buffer, size); }
+  57:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const String &s);
+  58:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(char c)				{ return write((uint8_t)c); }
+  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const char s[])			{ return write(s); }
+  60:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
+  61:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  62:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(uint8_t b)				{ return printNumber(b, 10, 0); }
+  63:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(int n)				{ return print((long)n); }
+  64:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned int n)			{ return printNumber(n, 10, 0); }
+  65:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(long n);
+  66:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned long n)			{ return printNumber(n, 10, 0); }
+  67:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  68:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned char n, int base)		{ return printNumber(n, base, 0); }
+  69:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(int n, int base)			{ return (base == 10) ? print(n) : printNumber(n, base, 0); }
+  70:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned int n, int base)		{ return printNumber(n, base, 0); }
+  71:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(long n, int base)			{ return (base == 10) ? print(n) : printNumber(n, base, 0); }
+  72:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned long n, int base)		{ return printNumber(n, base, 0); }
+  73:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  74:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(double n, int digits = 2)		{ return printFloat(n, digits); }
+  75:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const Printable &obj)		{ return obj.printTo(*this); }
+  76:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(void);
+  77:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const String &s)			{ return print(s) + println(); }
+  78:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(char c)				{ return print(c) + println(); }
+  79:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const char s[])			{ return print(s) + println(); }
+  93              		.loc 4 79 0
+  94 0020 0E48     		ldr	r0, .L5+12
+  95 0022 FFF7FEFF 		bl	_ZN5Print7printlnEv
+  96              	.LVL3:
+  97              	.LBE39:
+  98              	.LBE47:
+  16:../src/main.cpp **** 
+  17:../src/main.cpp ****     uint32_t **sp_ptr = system.GetSPPtr();
+  18:../src/main.cpp **** 
+  19:../src/main.cpp ****     // Make sure you set your terminal to send and receive LF
+  20:../src/main.cpp ****     // as the newline character, and to local echo.
+  21:../src/main.cpp ****     Serial.println("\nPIXIEFORTH READY");
+  22:../src/main.cpp **** 
+  23:../src/main.cpp ****     pinMode(0, OUTPUT);
+  99              		.loc 1 23 0
+ 100 0026 0020     		movs	r0, #0
+ 101 0028 0121     		movs	r1, #1
+ 102 002a FFF7FEFF 		bl	pinMode
+ 103              	.LVL4:
+ 104              	.LBB48:
+ 105              	.LBB42:
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
- 989              		.loc 5 2032 0
- 990 002e 4FF08065 		mov	r5, #67108864
- 991 0032 2068     		ldr	r0, [r4]
- 992 0034 2E46     		mov	r6, r5
- 993              	.L142:
- 994              	.LVL120:
- 995              	.LBE210:
- 996              	.LBE216:
- 124:../src/main.cpp ****     while (1) {
- 125:../src/main.cpp ****         //delay(200);
- 126:../src/main.cpp ****         digitalWriteFast(0, HIGH);
- 127:../src/main.cpp ****         *sp_ptr = forth_enter(*sp_ptr, &forth_testing);
- 997              		.loc 1 127 0
- 998 0036 0A49     		ldr	r1, .L144+16
- 999              	.LBB217:
- 1000              	.LBB211:
+ 106              		.loc 3 2032 0
+ 107 002e 4FF08065 		mov	r5, #67108864
+ 108 0032 2068     		ldr	r0, [r4]
+ 109 0034 2E46     		mov	r6, r5
+ 110              	.L2:
+ 111              	.LVL5:
+ 112              	.LBE42:
+ 113              	.LBE48:
+  24:../src/main.cpp ****     while (1) {
+  25:../src/main.cpp ****         //delay(200);
+  26:../src/main.cpp ****         digitalWriteFast(0, HIGH);
+  27:../src/main.cpp ****         *sp_ptr = forth_enter(*sp_ptr, &forth_testing);
+ 114              		.loc 1 27 0 discriminator 1
+ 115 0036 0A49     		ldr	r1, .L5+16
+ 116              	.LBB49:
+ 117              	.LBB43:
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
- 1001              		.loc 5 2032 0
- 1002 0038 C8F80060 		str	r6, [r8]
- 1003              	.LVL121:
- 1004              	.LBE211:
- 1005              	.LBE217:
- 1006              		.loc 1 127 0
- 1007 003c FFF7FEFF 		bl	forth_enter
- 1008              	.LVL122:
- 128:../src/main.cpp ****         //delay(200);
- 129:../src/main.cpp ****         digitalWriteFast(0, LOW);
- 130:../src/main.cpp ****         *sp_ptr = forth_enter(*sp_ptr, &forth_testing);
- 1009              		.loc 1 130 0
- 1010 0040 0749     		ldr	r1, .L144+16
- 127:../src/main.cpp ****         //delay(200);
- 1011              		.loc 1 127 0
- 1012 0042 2060     		str	r0, [r4]
- 1013              	.LVL123:
- 1014              	.LBB218:
- 1015              	.LBB214:
- 1016              		.loc 5 2168 0
- 1017 0044 3D60     		str	r5, [r7]
- 1018              	.LVL124:
- 1019              	.LBE214:
- 1020              	.LBE218:
- 1021              		.loc 1 130 0
- 1022 0046 FFF7FEFF 		bl	forth_enter
- 1023              	.LVL125:
- 1024 004a 2060     		str	r0, [r4]
- 1025 004c F3E7     		b	.L142
- 1026              	.L145:
- 1027 004e 00BF     		.align	2
- 1028              	.L144:
- 1029 0050 08000000 		.word	.LC1
- 1030 0054 00000000 		.word	_ZN5forth9DataStack3sp_E
- 1031 0058 08F10F40 		.word	1074786568
- 1032 005c 00000000 		.word	Serial
- 1033 0060 00000000 		.word	forth_testing
- 1034 0064 04F10F40 		.word	1074786564
- 1035              		.cfi_endproc
- 1036              	.LFE483:
- 1037              		.fnend
- 1039              		.global	word_buff
- 1040              		.global	defs
- 1041              		.section	.data.defs,"aw",%progbits
- 1042              		.align	2
- 1043              		.set	.LANCHOR0,. + 0
- 1046              	defs:
- 1047 0000 1C000000 		.word	.LC2
- 1048 0004 00000000 		.word	_ZN5forth6System3AddEv
- 1049 0008 20000000 		.word	.LC3
- 1050 000c 00000000 		.word	_ZN5forth6System5StoreEv
- 1051 0010 00000000 		.word	0
- 1052 0014 00000000 		.word	0
- 1053              		.section	.rodata.str1.4,"aMS",%progbits,1
- 1054              		.align	2
- 1055              	.LC0:
- 1056 0000 70617273 		.ascii	"parse: \000"
- 1056      653A2000 
- 1057              	.LC1:
- 1058 0008 0A504958 		.ascii	"\012PIXIEFORTH READY\000"
- 1058      4945464F 
- 1058      52544820 
- 1058      52454144 
- 1058      5900
- 1059 001a 0000     		.space	2
- 1060              	.LC2:
- 1061 001c 2B00     		.ascii	"+\000"
- 1062 001e 0000     		.space	2
- 1063              	.LC3:
- 1064 0020 2100     		.ascii	"!\000"
- 1065              		.section	.bss.word_buff,"aw",%nobits
- 1066              		.align	2
- 1069              	word_buff:
- 1070 0000 00000000 		.space	128
- 1070      00000000 
- 1070      00000000 
- 1070      00000000 
- 1070      00000000 
- 1071              		.text
- 1072              	.Letext0:
- 1073              		.file 6 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\lib\\gcc\\arm-none-eabi\\5.4
- 1074              		.file 7 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\mach
- 1075              		.file 8 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\sys\
- 1076              		.file 9 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\stdi
- 1077              		.file 10 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++
- 1078              		.file 11 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++
- 1079              		.file 12 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++
- 1080              		.file 13 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\str
- 1081              		.file 14 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/PicturedNumericArea.h"
- 1082              		.file 15 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/pins_arduino.h"
- 1083              		.file 16 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/System.h"
- 1084              		.file 17 "<built-in>"
+ 118              		.loc 3 2032 0 discriminator 1
+ 119 0038 C8F80060 		str	r6, [r8]
+ 120              	.LVL6:
+ 121              	.LBE43:
+ 122              	.LBE49:
+ 123              		.loc 1 27 0 discriminator 1
+ 124 003c FFF7FEFF 		bl	forth_enter
+ 125              	.LVL7:
+  28:../src/main.cpp ****         //delay(200);
+  29:../src/main.cpp ****         digitalWriteFast(0, LOW);
+  30:../src/main.cpp ****         *sp_ptr = forth_enter(*sp_ptr, &forth_testing);
+ 126              		.loc 1 30 0 discriminator 1
+ 127 0040 0749     		ldr	r1, .L5+16
+  27:../src/main.cpp ****         //delay(200);
+ 128              		.loc 1 27 0 discriminator 1
+ 129 0042 2060     		str	r0, [r4]
+ 130              	.LVL8:
+ 131              	.LBB50:
+ 132              	.LBB46:
+ 133              		.loc 3 2168 0 discriminator 1
+ 134 0044 3D60     		str	r5, [r7]
+ 135              	.LVL9:
+ 136              	.LBE46:
+ 137              	.LBE50:
+ 138              		.loc 1 30 0 discriminator 1
+ 139 0046 FFF7FEFF 		bl	forth_enter
+ 140              	.LVL10:
+ 141 004a 2060     		str	r0, [r4]
+ 142 004c F3E7     		b	.L2
+ 143              	.L6:
+ 144 004e 00BF     		.align	2
+ 145              	.L5:
+ 146 0050 00000000 		.word	.LC0
+ 147 0054 00000000 		.word	_ZN5forth9DataStack3sp_E
+ 148 0058 08F10F40 		.word	1074786568
+ 149 005c 00000000 		.word	Serial
+ 150 0060 00000000 		.word	forth_testing
+ 151 0064 04F10F40 		.word	1074786564
+ 152              		.cfi_endproc
+ 153              	.LFE479:
+ 154              		.fnend
+ 156              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 157              		.align	2
+ 158              	.LC0:
+ 159 0000 0A504958 		.ascii	"\012PIXIEFORTH READY\000"
+ 159      4945464F 
+ 159      52544820 
+ 159      52454144 
+ 159      5900
+ 160              		.text
+ 161              	.Letext0:
+ 162              		.file 5 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\lib\\gcc\\arm-none-eabi\\5.4
+ 163              		.file 6 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\mach
+ 164              		.file 7 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\sys\
+ 165              		.file 8 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\stdi
+ 166              		.file 9 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++\
+ 167              		.file 10 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++
+ 168              		.file 11 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++
+ 169              		.file 12 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\str
+ 170              		.file 13 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/PicturedNumericArea.h"
+ 171              		.file 14 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/pins_arduino.h"
+ 172              		.file 15 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/DataStack.h"
+ 173              		.file 16 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/System.h"
+ 174              		.file 17 "<built-in>"
 DEFINED SYMBOLS
                             *ABS*:00000000 main.cpp
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:20     .text._Z9parse_hexPc:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:25     .text._Z9parse_hexPc:00000000 _Z9parse_hexPc
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:152    .text._Z9parse_hexPc:0000006c $d
-   .ARM.exidx.text._Z9parse_hexPc:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:159    .text._Z9parse_decPc:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:164    .text._Z9parse_decPc:00000000 _Z9parse_decPc
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:252    .text._Z9parse_decPc:00000050 $d
-   .ARM.exidx.text._Z9parse_decPc:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:259    .text._Z13parse_neg_decPc:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:264    .text._Z13parse_neg_decPc:00000000 _Z13parse_neg_decPc
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:378    .text._Z13parse_neg_decPc:00000060 $d
-.ARM.exidx.text._Z13parse_neg_decPc:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:386    .text._Z6parse2Pci:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:391    .text._Z6parse2Pci:00000000 _Z6parse2Pci
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:894    .text._Z6parse2Pci:000001e4 $d
-     .ARM.exidx.text._Z6parse2Pci:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:906    .text.startup.main:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:911    .text.startup.main:00000000 main
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:1029   .text.startup.main:00000050 $d
+C:\Users\Robert\AppData\Local\Temp\ccsUszJ8.s:20     .text.startup.main:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccsUszJ8.s:25     .text.startup.main:00000000 main
+C:\Users\Robert\AppData\Local\Temp\ccsUszJ8.s:146    .text.startup.main:00000050 $d
      .ARM.exidx.text.startup.main:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:1069   .bss.word_buff:00000000 word_buff
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:1046   .data.defs:00000000 defs
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:1042   .data.defs:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:1054   .rodata.str1.4:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccOjx6Lp.s:1066   .bss.word_buff:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccsUszJ8.s:157    .rodata.str1.4:00000000 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS
-_ZN5forth9DataStack3sp_E
-_ZN5forth6System3PopEv
-__aeabi_unwind_cpp_pr0
-usb_serial_write
-strlen
-_ZN5Print7printlnEv
-Serial
 delay
 _ZN5forth6System8instanceEv
+usb_serial_write
+_ZN5Print7printlnEv
 pinMode
 forth_enter
+_ZN5forth9DataStack3sp_E
+Serial
 forth_testing
-_ZN5forth6System3AddEv
-_ZN5forth6System5StoreEv
+__aeabi_unwind_cpp_pr0
