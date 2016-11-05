@@ -62,7 +62,7 @@
  *     .4byte forth_exit
  */
 .macro __defword name, flags=0, label
-    .text
+    .section .data
     .type forth_name_\label\(), %object
     .align 2
     .global forth_name_\label
@@ -107,7 +107,7 @@ forth_\label\():
  *     __next
  */
 .macro __defnative name, flags=0, label
-    .text
+    .section .data
     .type forth_name_\label\(), %object
     .align 2
     .global forth_name_\label
@@ -125,6 +125,8 @@ forth_end_name_\label\():
 forth_\label\():
     .4byte forth_code_\label
     .size forth_\label\(), 4
+
+    .text
     .global forth_code_\label
     .thumb_func
     .type forth_code_\label\(), %function
@@ -230,8 +232,8 @@ forth_var_\name\():
   * "interpret" routine.
   */
 .macro __next
-    ldr r10, [r12], #4 // increment the instruction pointer
-    ldr r9, [r10]  // r9 is now the top of the callee
+    ldr r10, [r12], #4 // r10 <- word to execute, next_word_ptr++
+    ldr r9, [r10]  // r9 <- code for word to execute
     bx r9
 .endm
 
@@ -246,15 +248,17 @@ __defvar "STATE",,state // the Forth state: 0 = interpreting, 1 = compiling.
  * r0 (first parameter) is the pointer to the parameter stack.
  * r1 (second parameter) is the address of the Forth routine to jump to,
  *     which is forth_<x>, not code_forth_<x>.
+ * Because we don't trust the return stack or the parameter stack, we
+ * store SP in r8 for later restoration, and are very careful NEVER to clobber r8!
  * TODO: change this to a struct so we can pass and return all sorts of things,
  *       like the HERE pointer.
  */
 __new_func forth_enter
     push {r2-r12, lr}
     mov r8, sp
-    push {r1}
-    mov r11, r0
-    mov r12, sp
+    // push {r1}
+    mov r11, r0 // r11 <- parameter stack addr
+    mov r12, r1 // r12 <- addr of next word
     __next
 __end_func forth_enter
 
@@ -299,7 +303,7 @@ __end_defnative 2drop
 /* ( x y -- y x ) */
 __defnative "SWAP",,swap
     ldmdb r11!, {r0, r1} // r0,r1 <- x,y
-    __pushreg2 r0, r1
+    __pushreg2 r1, r0
 __end_defnative swap
 
 /* ( a b c d -- c d a b ) */
@@ -411,7 +415,7 @@ __end_defnative divmod
 __defnative "/",,div
     ldmdb r11!, {r0, r1} // r0,r1 <- x,y
     sdiv r0, r1
-    __pushreg r1
+    __pushreg r0
 __end_defnative div
 
 /* ( x y -- 0 | 0xffffffff ) */
@@ -824,7 +828,7 @@ check_current_find:
     ands r4, F_HIDDEN | F_LENMASK
     cmp r4, r1 // skip hidden entries and entries not matching the string length
     itt ne
-    movne r3, r2
+    movne r2, r3
     bne check_current_find
     mov r5, r0 // r5 <- ptr to buffer
     adds r6, r2, #9 // r6 <- ptr to name
@@ -833,7 +837,7 @@ check_name_find:
     ldrb r9, [r6], #1
     cmp r7, r9
     itt ne
-    movne r3, r2
+    movne r2, r3
     bne check_current_find
     subs r4, #1
     cbz r4, end_find

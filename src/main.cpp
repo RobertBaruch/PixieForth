@@ -1,33 +1,33 @@
 #include "WProgram.h"
+#include <stdint.h>
 #include <usb_serial.h>
-#include <PicturedNumericArea.h>
-#include <DataStack.h>
-#include <System.h>
+#include <forth_system.h>
 
-extern "C" void forth_do_colon(void);
-extern "C" uint32_t forth_testing;
-extern "C" uint32_t* forth_enter(uint32_t* param_stack, uint32_t* forth_word);
+extern void run_unit_tests();
+
+static constexpr int stack_size = 1024;
+uint32_t *sp;
+uint32_t data_stack[stack_size];
 
 extern "C" int main(void)
 {
-    delay(2000); // delay for USB to get ready
+  delay(2000); // delay for USB to get enumerated
+  sp = data_stack;
 
-    forth::System& system = forth::System::instance();
+  // Make sure you set your terminal to send and receive LF
+  // as the newline character, and to local echo.
+  Serial.println();
+  Serial.println("PIXIEFORTH READY");
+  Serial.println();
 
-    uint32_t **sp_ptr = system.GetSPPtr();
+  run_unit_tests();
 
-    // Make sure you set your terminal to send and receive LF
-    // as the newline character, and to local echo.
-    Serial.println("\nPIXIEFORTH READY");
-
-    pinMode(0, OUTPUT);
-    while (1) {
-        //delay(200);
-        digitalWriteFast(0, HIGH);
-        *sp_ptr = forth_enter(*sp_ptr, &forth_testing);
-        //delay(200);
-        digitalWriteFast(0, LOW);
-        *sp_ptr = forth_enter(*sp_ptr, &forth_testing);
-    }
+  pinMode(0, OUTPUT);
+  while (1) {
+    delay(200);
+    digitalWriteFast(0, HIGH);
+    delay(200);
+    digitalWriteFast(0, LOW);
+  }
 }
 

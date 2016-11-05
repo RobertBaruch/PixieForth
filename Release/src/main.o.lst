@@ -23,50 +23,60 @@
   23              		.thumb_func
   25              	main:
   26              		.fnstart
-  27              	.LFB479:
+  27              	.LFB454:
   28              		.file 1 "../src/main.cpp"
    1:../src/main.cpp **** #include "WProgram.h"
-   2:../src/main.cpp **** #include <usb_serial.h>
-   3:../src/main.cpp **** #include <PicturedNumericArea.h>
-   4:../src/main.cpp **** #include <DataStack.h>
-   5:../src/main.cpp **** #include <System.h>
-   6:../src/main.cpp **** 
-   7:../src/main.cpp **** extern "C" void forth_do_colon(void);
-   8:../src/main.cpp **** extern "C" uint32_t forth_testing;
-   9:../src/main.cpp **** extern "C" uint32_t* forth_enter(uint32_t* param_stack, uint32_t* forth_word);
-  10:../src/main.cpp **** 
-  11:../src/main.cpp **** extern "C" int main(void)
-  12:../src/main.cpp **** {
-  29              		.loc 1 12 0
+   2:../src/main.cpp **** #include <stdint.h>
+   3:../src/main.cpp **** #include <usb_serial.h>
+   4:../src/main.cpp **** #include <forth_system.h>
+   5:../src/main.cpp **** 
+   6:../src/main.cpp **** extern void run_unit_tests();
+   7:../src/main.cpp **** 
+   8:../src/main.cpp **** static constexpr int stack_size = 1024;
+   9:../src/main.cpp **** uint32_t *sp;
+  10:../src/main.cpp **** uint32_t data_stack[stack_size];
+  11:../src/main.cpp **** 
+  12:../src/main.cpp **** extern "C" int main(void)
+  13:../src/main.cpp **** {
+  29              		.loc 1 13 0
   30              		.cfi_startproc
   31              		@ args = 0, pretend = 0, frame = 0
   32              		@ frame_needed = 0, uses_anonymous_args = 0
-  33 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
-  34              		.save {r4, r5, r6, r7, r8, lr}
-  35              		.cfi_def_cfa_offset 24
-  36              		.cfi_offset 4, -24
-  37              		.cfi_offset 5, -20
-  38              		.cfi_offset 6, -16
-  39              		.cfi_offset 7, -12
-  40              		.cfi_offset 8, -8
-  41              		.cfi_offset 14, -4
-  13:../src/main.cpp ****     delay(2000); // delay for USB to get ready
-  42              		.loc 1 13 0
-  43 0004 4FF4FA60 		mov	r0, #2000
-  44 0008 FFF7FEFF 		bl	delay
-  45              	.LVL0:
-  14:../src/main.cpp **** 
-  15:../src/main.cpp ****     forth::System& system = forth::System::instance();
-  46              		.loc 1 15 0
-  47 000c FFF7FEFF 		bl	_ZN5forth6System8instanceEv
-  48              	.LVL1:
-  49              	.LBB29:
-  50              	.LBB30:
-  51              	.LBB31:
-  52              	.LBB32:
-  53              	.LBB33:
-  54              	.LBB34:
-  55              		.file 2 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/usb_serial.h"
+  33 0000 70B5     		push	{r4, r5, r6, lr}
+  34              		.save {r4, r5, r6, lr}
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 4, -16
+  37              		.cfi_offset 5, -12
+  38              		.cfi_offset 6, -8
+  39              		.cfi_offset 14, -4
+  14:../src/main.cpp ****   delay(2000); // delay for USB to get enumerated
+  40              		.loc 1 14 0
+  41 0002 4FF4FA60 		mov	r0, #2000
+  42 0006 FFF7FEFF 		bl	delay
+  43              	.LVL0:
+  15:../src/main.cpp ****   sp = data_stack;
+  44              		.loc 1 15 0
+  45 000a 114B     		ldr	r3, .L5
+  46 000c 114A     		ldr	r2, .L5+4
+  16:../src/main.cpp **** 
+  17:../src/main.cpp ****   // Make sure you set your terminal to send and receive LF
+  18:../src/main.cpp ****   // as the newline character, and to local echo.
+  19:../src/main.cpp ****   Serial.println();
+  47              		.loc 1 19 0
+  48 000e 1248     		ldr	r0, .L5+8
+  15:../src/main.cpp ****   sp = data_stack;
+  49              		.loc 1 15 0
+  50 0010 1A60     		str	r2, [r3]
+  51              		.loc 1 19 0
+  52 0012 FFF7FEFF 		bl	_ZN5Print7printlnEv
+  53              	.LVL1:
+  54              	.LBB20:
+  55              	.LBB21:
+  56              	.LBB22:
+  57              	.LBB23:
+  58              	.LBB24:
+  59              	.LBB25:
+  60              		.file 2 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/usb_serial.h"
    1:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** /* Teensyduino Core Library
    2:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * http://www.pjrc.com/teensy/
    3:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
@@ -149,19 +159,18 @@
   80:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual void clear(void) { usb_serial_flush_input(); }
   81:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual size_t write(uint8_t c) { return usb_serial_putchar(c); }
   82:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual size_t write(const uint8_t *buffer, size_t size) { return usb_serial_write(buffer, 
-  56              		.loc 2 82 0
-  57 0010 1121     		movs	r1, #17
-  58 0012 0F48     		ldr	r0, .L5
-  59 0014 0F4C     		ldr	r4, .L5+4
-  60              	.LBE34:
-  61              	.LBE33:
-  62              	.LBE32:
-  63              	.LBE31:
-  64              	.LBE30:
-  65              	.LBE29:
-  66              	.LBB40:
-  67              	.LBB41:
-  68              		.file 3 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/core_pins.h"
+  61              		.loc 2 82 0
+  62 0016 1021     		movs	r1, #16
+  63 0018 1048     		ldr	r0, .L5+12
+  64              	.LBE25:
+  65              	.LBE24:
+  66              	.LBE23:
+  67              	.LBE22:
+  68              	.LBE21:
+  69              	.LBE20:
+  70              	.LBB31:
+  71              	.LBB32:
+  72              		.file 3 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/core_pins.h"
    1:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** /* Teensyduino Core Library
    2:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h ****  * http://www.pjrc.com/teensy/
    3:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
@@ -2194,12 +2203,12 @@
 2030:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 		if (val) {
 2031:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			if (pin == 0) {
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN0_PORTSET = CORE_PIN0_BITMASK;
-  69              		.loc 3 2032 0
-  70 0016 DFF84C80 		ldr	r8, .L5+20
-  71              	.LBE41:
-  72              	.LBE40:
-  73              	.LBB44:
-  74              	.LBB45:
+  73              		.loc 3 2032 0
+  74 001a 114E     		ldr	r6, .L5+16
+  75              	.LBE32:
+  76              	.LBE31:
+  77              	.LBB35:
+  78              	.LBB36:
 2033:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
 2034:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN1_PORTSET = CORE_PIN1_BITMASK;
 2035:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 2) {
@@ -2336,24 +2345,24 @@
 2166:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 		} else {
 2167:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			if (pin == 0) {
 2168:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN0_PORTCLEAR = CORE_PIN0_BITMASK;
-  75              		.loc 3 2168 0
-  76 001a 0F4F     		ldr	r7, .L5+8
-  77              	.LBE45:
-  78              	.LBE44:
-  79              	.LBB47:
-  80              	.LBB39:
-  81              	.LBB38:
-  82              	.LBB37:
-  83              	.LBB36:
-  84              	.LBB35:
-  85              		.loc 2 82 0
-  86 001c FFF7FEFF 		bl	usb_serial_write
-  87              	.LVL2:
-  88              	.LBE35:
-  89              	.LBE36:
-  90              	.LBE37:
-  91              	.LBE38:
-  92              		.file 4 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/Print.h"
+  79              		.loc 3 2168 0
+  80 001c 114D     		ldr	r5, .L5+20
+  81              	.LBE36:
+  82              	.LBE35:
+  83              	.LBB38:
+  84              	.LBB30:
+  85              	.LBB29:
+  86              	.LBB28:
+  87              	.LBB27:
+  88              	.LBB26:
+  89              		.loc 2 82 0
+  90 001e FFF7FEFF 		bl	usb_serial_write
+  91              	.LVL2:
+  92              	.LBE26:
+  93              	.LBE27:
+  94              	.LBE28:
+  95              	.LBE29:
+  96              		.file 4 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/Print.h"
    1:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** /* Teensyduino Core Library
    2:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * http://www.pjrc.com/teensy/
    3:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
@@ -2433,126 +2442,126 @@
   77:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const String &s)			{ return print(s) + println(); }
   78:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(char c)				{ return print(c) + println(); }
   79:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const char s[])			{ return print(s) + println(); }
-  93              		.loc 4 79 0
-  94 0020 0E48     		ldr	r0, .L5+12
-  95 0022 FFF7FEFF 		bl	_ZN5Print7printlnEv
-  96              	.LVL3:
-  97              	.LBE39:
-  98              	.LBE47:
-  16:../src/main.cpp **** 
-  17:../src/main.cpp ****     uint32_t **sp_ptr = system.GetSPPtr();
-  18:../src/main.cpp **** 
-  19:../src/main.cpp ****     // Make sure you set your terminal to send and receive LF
-  20:../src/main.cpp ****     // as the newline character, and to local echo.
-  21:../src/main.cpp ****     Serial.println("\nPIXIEFORTH READY");
+  97              		.loc 4 79 0
+  98 0022 0D48     		ldr	r0, .L5+8
+  99 0024 FFF7FEFF 		bl	_ZN5Print7printlnEv
+ 100              	.LVL3:
+ 101              	.LBE30:
+ 102              	.LBE38:
+  20:../src/main.cpp ****   Serial.println("PIXIEFORTH READY");
+  21:../src/main.cpp ****   Serial.println();
+ 103              		.loc 1 21 0
+ 104 0028 0B48     		ldr	r0, .L5+8
+ 105 002a FFF7FEFF 		bl	_ZN5Print7printlnEv
+ 106              	.LVL4:
   22:../src/main.cpp **** 
-  23:../src/main.cpp ****     pinMode(0, OUTPUT);
-  99              		.loc 1 23 0
- 100 0026 0020     		movs	r0, #0
- 101 0028 0121     		movs	r1, #1
- 102 002a FFF7FEFF 		bl	pinMode
- 103              	.LVL4:
- 104              	.LBB48:
- 105              	.LBB42:
+  23:../src/main.cpp ****   run_unit_tests();
+ 107              		.loc 1 23 0
+ 108 002e FFF7FEFF 		bl	_Z14run_unit_testsv
+ 109              	.LVL5:
+  24:../src/main.cpp **** 
+  25:../src/main.cpp ****   pinMode(0, OUTPUT);
+ 110              		.loc 1 25 0
+ 111 0032 0121     		movs	r1, #1
+ 112 0034 0020     		movs	r0, #0
+ 113 0036 FFF7FEFF 		bl	pinMode
+ 114              	.LVL6:
+ 115              	.L2:
+  26:../src/main.cpp ****   while (1) {
+  27:../src/main.cpp ****     delay(200);
+ 116              		.loc 1 27 0 discriminator 1
+ 117 003a C820     		movs	r0, #200
+ 118              	.LBB39:
+ 119              	.LBB33:
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
- 106              		.loc 3 2032 0
- 107 002e 4FF08065 		mov	r5, #67108864
- 108 0032 2068     		ldr	r0, [r4]
- 109 0034 2E46     		mov	r6, r5
- 110              	.L2:
- 111              	.LVL5:
- 112              	.LBE42:
- 113              	.LBE48:
-  24:../src/main.cpp ****     while (1) {
-  25:../src/main.cpp ****         //delay(200);
-  26:../src/main.cpp ****         digitalWriteFast(0, HIGH);
-  27:../src/main.cpp ****         *sp_ptr = forth_enter(*sp_ptr, &forth_testing);
- 114              		.loc 1 27 0 discriminator 1
- 115 0036 0A49     		ldr	r1, .L5+16
- 116              	.LBB49:
- 117              	.LBB43:
+ 120              		.loc 3 2032 0 discriminator 1
+ 121 003c 4FF08064 		mov	r4, #67108864
+ 122              	.LBE33:
+ 123              	.LBE39:
+ 124              		.loc 1 27 0 discriminator 1
+ 125 0040 FFF7FEFF 		bl	delay
+ 126              	.LVL7:
+ 127              	.LBB40:
+ 128              	.LBB34:
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
- 118              		.loc 3 2032 0 discriminator 1
- 119 0038 C8F80060 		str	r6, [r8]
- 120              	.LVL6:
- 121              	.LBE43:
- 122              	.LBE49:
- 123              		.loc 1 27 0 discriminator 1
- 124 003c FFF7FEFF 		bl	forth_enter
- 125              	.LVL7:
-  28:../src/main.cpp ****         //delay(200);
-  29:../src/main.cpp ****         digitalWriteFast(0, LOW);
-  30:../src/main.cpp ****         *sp_ptr = forth_enter(*sp_ptr, &forth_testing);
- 126              		.loc 1 30 0 discriminator 1
- 127 0040 0749     		ldr	r1, .L5+16
-  27:../src/main.cpp ****         //delay(200);
- 128              		.loc 1 27 0 discriminator 1
- 129 0042 2060     		str	r0, [r4]
- 130              	.LVL8:
- 131              	.LBB50:
- 132              	.LBB46:
- 133              		.loc 3 2168 0 discriminator 1
- 134 0044 3D60     		str	r5, [r7]
- 135              	.LVL9:
- 136              	.LBE46:
- 137              	.LBE50:
- 138              		.loc 1 30 0 discriminator 1
- 139 0046 FFF7FEFF 		bl	forth_enter
- 140              	.LVL10:
- 141 004a 2060     		str	r0, [r4]
- 142 004c F3E7     		b	.L2
+ 129              		.loc 3 2032 0 discriminator 1
+ 130 0044 3460     		str	r4, [r6]
+ 131              	.LVL8:
+ 132              	.LBE34:
+ 133              	.LBE40:
+  28:../src/main.cpp ****     digitalWriteFast(0, HIGH);
+  29:../src/main.cpp ****     delay(200);
+ 134              		.loc 1 29 0 discriminator 1
+ 135 0046 C820     		movs	r0, #200
+ 136 0048 FFF7FEFF 		bl	delay
+ 137              	.LVL9:
+ 138              	.LBB41:
+ 139              	.LBB37:
+ 140              		.loc 3 2168 0 discriminator 1
+ 141 004c 2C60     		str	r4, [r5]
+ 142 004e F4E7     		b	.L2
  143              	.L6:
- 144 004e 00BF     		.align	2
+ 144              		.align	2
  145              	.L5:
- 146 0050 00000000 		.word	.LC0
- 147 0054 00000000 		.word	_ZN5forth9DataStack3sp_E
- 148 0058 08F10F40 		.word	1074786568
- 149 005c 00000000 		.word	Serial
- 150 0060 00000000 		.word	forth_testing
- 151 0064 04F10F40 		.word	1074786564
- 152              		.cfi_endproc
- 153              	.LFE479:
- 154              		.fnend
- 156              		.section	.rodata.str1.4,"aMS",%progbits,1
- 157              		.align	2
- 158              	.LC0:
- 159 0000 0A504958 		.ascii	"\012PIXIEFORTH READY\000"
- 159      4945464F 
- 159      52544820 
- 159      52454144 
- 159      5900
- 160              		.text
- 161              	.Letext0:
- 162              		.file 5 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\lib\\gcc\\arm-none-eabi\\5.4
- 163              		.file 6 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\mach
- 164              		.file 7 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\sys\
- 165              		.file 8 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\stdi
- 166              		.file 9 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++\
- 167              		.file 10 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++
- 168              		.file 11 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\c++
- 169              		.file 12 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\str
- 170              		.file 13 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/PicturedNumericArea.h"
- 171              		.file 14 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/pins_arduino.h"
- 172              		.file 15 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/DataStack.h"
- 173              		.file 16 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/System.h"
- 174              		.file 17 "<built-in>"
+ 146 0050 00000000 		.word	.LANCHOR0
+ 147 0054 00000000 		.word	.LANCHOR1
+ 148 0058 00000000 		.word	Serial
+ 149 005c 00000000 		.word	.LC0
+ 150 0060 04F10F40 		.word	1074786564
+ 151 0064 08F10F40 		.word	1074786568
+ 152              	.LBE37:
+ 153              	.LBE41:
+ 154              		.cfi_endproc
+ 155              	.LFE454:
+ 156              		.fnend
+ 158              		.global	data_stack
+ 159              		.global	sp
+ 160              		.section	.bss.sp,"aw",%nobits
+ 161              		.align	2
+ 162              		.set	.LANCHOR0,. + 0
+ 165              	sp:
+ 166 0000 00000000 		.space	4
+ 167              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 168              		.align	2
+ 169              	.LC0:
+ 170 0000 50495849 		.ascii	"PIXIEFORTH READY\000"
+ 170      45464F52 
+ 170      54482052 
+ 170      45414459 
+ 170      00
+ 171              		.section	.bss.data_stack,"aw",%nobits
+ 172              		.align	2
+ 173              		.set	.LANCHOR1,. + 0
+ 176              	data_stack:
+ 177 0000 00000000 		.space	4096
+ 177      00000000 
+ 177      00000000 
+ 177      00000000 
+ 177      00000000 
+ 178              		.text
+ 179              	.Letext0:
+ 180              		.file 5 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\lib\\gcc\\arm-none-eabi\\5.4
+ 181              		.file 6 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\mach
+ 182              		.file 7 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\sys\
+ 183              		.file 8 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/pins_arduino.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 main.cpp
-C:\Users\Robert\AppData\Local\Temp\ccsUszJ8.s:20     .text.startup.main:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccsUszJ8.s:25     .text.startup.main:00000000 main
-C:\Users\Robert\AppData\Local\Temp\ccsUszJ8.s:146    .text.startup.main:00000050 $d
+C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:20     .text.startup.main:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:25     .text.startup.main:00000000 main
+C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:146    .text.startup.main:00000050 $d
      .ARM.exidx.text.startup.main:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccsUszJ8.s:157    .rodata.str1.4:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:176    .bss.data_stack:00000000 data_stack
+C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:165    .bss.sp:00000000 sp
+C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:161    .bss.sp:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:168    .rodata.str1.4:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:172    .bss.data_stack:00000000 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS
 delay
-_ZN5forth6System8instanceEv
-usb_serial_write
 _ZN5Print7printlnEv
+usb_serial_write
+_Z14run_unit_testsv
 pinMode
-forth_enter
-_ZN5forth9DataStack3sp_E
 Serial
-forth_testing
 __aeabi_unwind_cpp_pr0
