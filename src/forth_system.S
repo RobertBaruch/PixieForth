@@ -619,10 +619,12 @@ __end_defnative substore
 /* ( src-addr dest-addr len -- ) */
 /* Which is backwards from memcpy, which is dest, src, len. */
 __defnative "MEMCOPY",,memcpy
+    __begin_c_call
     // Want r0 = dest, r1 = src, r2 = len.
     __popreg2 r2, r0
     __popreg r1
     bl memcpy
+    __end_c_call
 __end_defnative memcpy
 
 /* Block move with overlapping regions allowed. */

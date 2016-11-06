@@ -12,6 +12,7 @@ uint32_t data_stack[stack_size];
 extern "C" int main(void)
 {
   delay(2000); // delay for USB to get enumerated
+
   sp = data_stack;
 
   // Make sure you set your terminal to send and receive LF
@@ -24,9 +25,9 @@ extern "C" int main(void)
 
   pinMode(0, OUTPUT);
   while (1) {
-    delay(200);
+    delay(1000);
     digitalWriteFast(0, HIGH);
-    delay(200);
+    delay(100);
     digitalWriteFast(0, LOW);
   }
 }

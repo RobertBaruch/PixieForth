@@ -54,20 +54,21 @@
   41 0002 4FF4FA60 		mov	r0, #2000
   42 0006 FFF7FEFF 		bl	delay
   43              	.LVL0:
-  15:../src/main.cpp ****   sp = data_stack;
-  44              		.loc 1 15 0
-  45 000a 114B     		ldr	r3, .L5
-  46 000c 114A     		ldr	r2, .L5+4
+  15:../src/main.cpp **** 
+  16:../src/main.cpp ****   sp = data_stack;
+  44              		.loc 1 16 0
+  45 000a 124B     		ldr	r3, .L5
+  46 000c 124A     		ldr	r2, .L5+4
+  17:../src/main.cpp **** 
+  18:../src/main.cpp ****   // Make sure you set your terminal to send and receive LF
+  19:../src/main.cpp ****   // as the newline character, and to local echo.
+  20:../src/main.cpp ****   Serial.println();
+  47              		.loc 1 20 0
+  48 000e 1348     		ldr	r0, .L5+8
   16:../src/main.cpp **** 
-  17:../src/main.cpp ****   // Make sure you set your terminal to send and receive LF
-  18:../src/main.cpp ****   // as the newline character, and to local echo.
-  19:../src/main.cpp ****   Serial.println();
-  47              		.loc 1 19 0
-  48 000e 1248     		ldr	r0, .L5+8
-  15:../src/main.cpp ****   sp = data_stack;
-  49              		.loc 1 15 0
+  49              		.loc 1 16 0
   50 0010 1A60     		str	r2, [r3]
-  51              		.loc 1 19 0
+  51              		.loc 1 20 0
   52 0012 FFF7FEFF 		bl	_ZN5Print7printlnEv
   53              	.LVL1:
   54              	.LBB20:
@@ -161,7 +162,7 @@
   82:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual size_t write(const uint8_t *buffer, size_t size) { return usb_serial_write(buffer, 
   61              		.loc 2 82 0
   62 0016 1021     		movs	r1, #16
-  63 0018 1048     		ldr	r0, .L5+12
+  63 0018 1148     		ldr	r0, .L5+12
   64              	.LBE25:
   65              	.LBE24:
   66              	.LBE23:
@@ -2204,7 +2205,7 @@
 2031:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			if (pin == 0) {
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN0_PORTSET = CORE_PIN0_BITMASK;
   73              		.loc 3 2032 0
-  74 001a 114E     		ldr	r6, .L5+16
+  74 001a 124E     		ldr	r6, .L5+16
   75              	.LBE32:
   76              	.LBE31:
   77              	.LBB35:
@@ -2346,7 +2347,7 @@
 2167:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			if (pin == 0) {
 2168:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN0_PORTCLEAR = CORE_PIN0_BITMASK;
   79              		.loc 3 2168 0
-  80 001c 114D     		ldr	r5, .L5+20
+  80 001c 124D     		ldr	r5, .L5+20
   81              	.LBE36:
   82              	.LBE35:
   83              	.LBB38:
@@ -2443,72 +2444,72 @@
   78:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(char c)				{ return print(c) + println(); }
   79:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const char s[])			{ return print(s) + println(); }
   97              		.loc 4 79 0
-  98 0022 0D48     		ldr	r0, .L5+8
+  98 0022 0E48     		ldr	r0, .L5+8
   99 0024 FFF7FEFF 		bl	_ZN5Print7printlnEv
  100              	.LVL3:
  101              	.LBE30:
  102              	.LBE38:
-  20:../src/main.cpp ****   Serial.println("PIXIEFORTH READY");
-  21:../src/main.cpp ****   Serial.println();
- 103              		.loc 1 21 0
- 104 0028 0B48     		ldr	r0, .L5+8
+  21:../src/main.cpp ****   Serial.println("PIXIEFORTH READY");
+  22:../src/main.cpp ****   Serial.println();
+ 103              		.loc 1 22 0
+ 104 0028 0C48     		ldr	r0, .L5+8
  105 002a FFF7FEFF 		bl	_ZN5Print7printlnEv
  106              	.LVL4:
-  22:../src/main.cpp **** 
-  23:../src/main.cpp ****   run_unit_tests();
- 107              		.loc 1 23 0
+  23:../src/main.cpp **** 
+  24:../src/main.cpp ****   run_unit_tests();
+ 107              		.loc 1 24 0
  108 002e FFF7FEFF 		bl	_Z14run_unit_testsv
  109              	.LVL5:
-  24:../src/main.cpp **** 
-  25:../src/main.cpp ****   pinMode(0, OUTPUT);
- 110              		.loc 1 25 0
+  25:../src/main.cpp **** 
+  26:../src/main.cpp ****   pinMode(0, OUTPUT);
+ 110              		.loc 1 26 0
  111 0032 0121     		movs	r1, #1
  112 0034 0020     		movs	r0, #0
  113 0036 FFF7FEFF 		bl	pinMode
  114              	.LVL6:
  115              	.L2:
-  26:../src/main.cpp ****   while (1) {
-  27:../src/main.cpp ****     delay(200);
- 116              		.loc 1 27 0 discriminator 1
- 117 003a C820     		movs	r0, #200
+  27:../src/main.cpp ****   while (1) {
+  28:../src/main.cpp ****     delay(1000);
+ 116              		.loc 1 28 0 discriminator 1
+ 117 003a 4FF47A70 		mov	r0, #1000
  118              	.LBB39:
  119              	.LBB33:
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
  120              		.loc 3 2032 0 discriminator 1
- 121 003c 4FF08064 		mov	r4, #67108864
+ 121 003e 4FF08064 		mov	r4, #67108864
  122              	.LBE33:
  123              	.LBE39:
- 124              		.loc 1 27 0 discriminator 1
- 125 0040 FFF7FEFF 		bl	delay
+ 124              		.loc 1 28 0 discriminator 1
+ 125 0042 FFF7FEFF 		bl	delay
  126              	.LVL7:
  127              	.LBB40:
  128              	.LBB34:
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
  129              		.loc 3 2032 0 discriminator 1
- 130 0044 3460     		str	r4, [r6]
+ 130 0046 3460     		str	r4, [r6]
  131              	.LVL8:
  132              	.LBE34:
  133              	.LBE40:
-  28:../src/main.cpp ****     digitalWriteFast(0, HIGH);
-  29:../src/main.cpp ****     delay(200);
- 134              		.loc 1 29 0 discriminator 1
- 135 0046 C820     		movs	r0, #200
- 136 0048 FFF7FEFF 		bl	delay
+  29:../src/main.cpp ****     digitalWriteFast(0, HIGH);
+  30:../src/main.cpp ****     delay(100);
+ 134              		.loc 1 30 0 discriminator 1
+ 135 0048 6420     		movs	r0, #100
+ 136 004a FFF7FEFF 		bl	delay
  137              	.LVL9:
  138              	.LBB41:
  139              	.LBB37:
  140              		.loc 3 2168 0 discriminator 1
- 141 004c 2C60     		str	r4, [r5]
- 142 004e F4E7     		b	.L2
+ 141 004e 2C60     		str	r4, [r5]
+ 142 0050 F3E7     		b	.L2
  143              	.L6:
- 144              		.align	2
+ 144 0052 00BF     		.align	2
  145              	.L5:
- 146 0050 00000000 		.word	.LANCHOR0
- 147 0054 00000000 		.word	.LANCHOR1
- 148 0058 00000000 		.word	Serial
- 149 005c 00000000 		.word	.LC0
- 150 0060 04F10F40 		.word	1074786564
- 151 0064 08F10F40 		.word	1074786568
+ 146 0054 00000000 		.word	.LANCHOR0
+ 147 0058 00000000 		.word	.LANCHOR1
+ 148 005c 00000000 		.word	Serial
+ 149 0060 00000000 		.word	.LC0
+ 150 0064 04F10F40 		.word	1074786564
+ 151 0068 08F10F40 		.word	1074786568
  152              	.LBE37:
  153              	.LBE41:
  154              		.cfi_endproc
@@ -2546,15 +2547,15 @@
  183              		.file 8 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/pins_arduino.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 main.cpp
-C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:20     .text.startup.main:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:25     .text.startup.main:00000000 main
-C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:146    .text.startup.main:00000050 $d
+C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:20     .text.startup.main:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:25     .text.startup.main:00000000 main
+C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:146    .text.startup.main:00000054 $d
      .ARM.exidx.text.startup.main:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:176    .bss.data_stack:00000000 data_stack
-C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:165    .bss.sp:00000000 sp
-C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:161    .bss.sp:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:168    .rodata.str1.4:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccmcMCOQ.s:172    .bss.data_stack:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:176    .bss.data_stack:00000000 data_stack
+C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:165    .bss.sp:00000000 sp
+C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:161    .bss.sp:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:168    .rodata.str1.4:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:172    .bss.data_stack:00000000 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS

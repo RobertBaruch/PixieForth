@@ -717,489 +717,491 @@
  619              	/* ( src-addr dest-addr len -- ) */
  620              	/* Which is backwards from memcpy, which is dest, src, len. */
  621              	__defnative "MEMCOPY",,memcpy
- 622              	    // Want r0 = dest, r1 = src, r2 = len.
- 623 0442 7BE90202 	    __popreg2 r2, r0
- 624 0446 5BF8041D 	    __popreg r1
- 625 044a FFF7FEFF 	    bl memcpy
- 626 044e 5CF804AB 	__end_defnative memcpy
- 626      DAF80090 
- 626      4847
- 627              	
- 628              	/* Block move with overlapping regions allowed. */
- 629              	/* ( src-addr dest-addr len -- ) */
- 630              	__defnative "MEMMOVE",,memmove
- 631              	    // Want r0 = dest, r1 = src, r2 = len.
- 632 0458 7BE90202 	    __popreg2 r2, r0
- 633 045c 5BF8041D 	    __popreg r1
- 634 0460 002A     	    cmp r2, #0
- 635 0462 06DB     	    blt end_memmove
- 636              	loop_memmove:
- 637 0464 2AB1     	    cbz r2, end_memmove
- 638 0466 11F8013B 	    ldrb r3, [r1], #1
- 639 046a 02F8013B 	    strb r3, [r2], #1
- 640 046e 013A     	    subs r2, #1
- 641 0470 F8E7     	    b loop_memmove
- 642              	end_memmove:
- 643 0472 5CF804AB 	__end_defnative memmove
- 643      DAF80090 
- 643      4847
- 644              	
- 645              	/* Pop param stack and push onto return stack */
- 646              	/* ( addr -- ) */
- 647              	__defnative ">R",,param_to_return
- 648 047c 5BF8040D 	    __popreg r0
- 649 0480 01B4     	    push {r0}
- 650 0482 5CF804AB 	__end_defnative param_to_return
- 650      DAF80090 
- 650      4847
- 651              	
- 652              	/* Pop return stack and push onto param stack */
- 653              	/* ( -- addr ) */
- 654              	__defnative "R>",,return_to_param
- 655 048c 01BC     	    pop {r0}
- 656 048e 4BF8040B 	    __pushreg r0
- 657 0492 5CF804AB 	__end_defnative return_to_param
- 657      DAF80090 
- 657      4847
- 658              	
- 659              	/* Fetch top of return stack, push onto param stack */
- 660              	/* ( -- addr ) */
- 661              	__defnative "R\@",,fetch_return
- 662 049c 0098     	    ldr r0, [sp]
- 663 049e 4BF8040B 	    __pushreg r0
- 664 04a2 5CF804AB 	__end_defnative fetch_return
- 664      DAF80090 
- 664      4847
- 665              	
- 666              	/* Replace top of return stack with popped value from param stack */
- 667              	/* ( addr -- ) */
- 668              	__defnative "R!",,store_return
- 669 04ac 5BF8040D 	    __popreg r0
- 670 04b0 0090     	    str r0, [sp]
- 671 04b2 5CF804AB 	__end_defnative store_return
- 671      DAF80090 
- 671      4847
- 672              	
- 673              	/* Waits for a byte from serial. */
- 674              	/* ( -- k ) */
- 675              	__defnative "KEY",,key
- 676 04bc 4DF804CD 	    __begin_c_call
- 677              	await_key:
- 678 04c0 FFF7FEFF 	    bl usb_serial_getchar
- 679 04c4 10F1010F 	    cmn r0, #1
- 680 04c8 FAD0     	    beq await_key
- 681 04ca 4BF8040B 	    __pushreg r0
- 682 04ce 5DF804CB 	    __end_c_call
- 683 04d2 5CF804AB 	__end_defnative key
- 683      DAF80090 
- 683      4847
- 684              	
- 685              	/* Outputs a byte to serial. */
- 686              	/* ( k -- ) */
- 687              	__defnative "EMIT",,emit
- 688 04dc 4DF804CD 	    __begin_c_call
- 689 04e0 5BF8040D 	    __popreg r0
- 690 04e4 FFF7FEFF 	    bl usb_serial_putchar
- 691 04e8 5DF804CB 	    __end_c_call
- 692 04ec 5CF804AB 	__end_defnative emit
- 692      DAF80090 
- 692      4847
- 693              	
- 694              	/*
- 695              	 * Waits for a "word" from serial. A word starts with any non-whitespace
- 696              	 * character except backslash, and continues to any whitespace character.
- 697              	 * Characters between backslash and newline (inclusive) are ignored.
- 698              	 * The maximum size of a word if F_LENMASK. We accept characters after that,
- 699              	 * but ignore them.
- 700              	 */
- 701              	/* ( -- buff-addr len ) */
- 702              	    .section .data
- 704              	    .align 2
- 705              	    .global forth_word_buffer
- 706              	forth_word_buffer:
- 707 03dc 00000000 	    .space F_LENMASK
- 707      00000000 
- 707      00000000 
- 707      00000000 
- 707      00000000 
- 709              	
- 710 03fb 00C80300 	__defnative "WORD",,word
- 710      00000000 
- 710      0004574F 
- 710      52440000 
- 710      00000000 
- 711 04f6 4DF804CD 	    __begin_c_call
- 712 04fa 1A4C     	    ldr r4, =forth_word_buffer
- 713 04fc 4BF8044B 	    __pushreg r4
- 714 0500 0025     	    movs r5, #0
- 715              	await_word:
- 716 0502 FFF7FEFF 	    bl usb_serial_getchar
- 717 0506 10F1010F 	    cmn r0, #1
- 718 050a FAD0     	    beq await_word
- 719 050c 2028     	    cmp r0, ' '
- 720 050e F8D0     	    beq await_word
- 721 0510 0928     	    cmp r0, '\t'
- 722 0512 F6D0     	    beq await_word
- 723 0514 0A28     	    cmp r0, '\n'
- 724 0516 F4D0     	    beq await_word
- 725 0518 0D28     	    cmp r0, '\r'
- 726 051a F2D0     	    beq await_word
- 727              	start_word:
- 728 051c 5C28     	    cmp r0, '\\'
- 729 051e 12D0     	    beq await_end_comment_word
- 730 0520 1F2D     	    cmp r5, F_LENMASK // We ignore anything that would overflow the buffer
- 731 0522 02D0     	    beq getchar_for_word
- 732 0524 04F8010B 	    strb r0, [r4], #1
- 733 0528 0135     	    adds r5, #1
- 734              	getchar_for_word:
- 735 052a FFF7FEFF 	    bl usb_serial_getchar
- 736 052e 10F1010F 	    cmn r0, #1
- 737 0532 FAD0     	    beq getchar_for_word
- 738 0534 2028     	    cmp r0, ' '
- 739 0536 0BD0     	    beq end_word
- 740 0538 0928     	    cmp r0, '\t'
- 741 053a 09D0     	    beq end_word
- 742 053c 0A28     	    cmp r0, '\n'
- 743 053e 07D0     	    beq end_word
- 744 0540 0D28     	    cmp r0, '\r'
- 745 0542 05D0     	    beq end_word
- 746 0544 EAE7     	    b start_word
- 747              	await_end_comment_word:
- 748 0546 FFF7FEFF 	    bl usb_serial_getchar
- 749 054a 0A28     	    cmp r0, '\n'
- 750 054c FBD1     	    bne await_end_comment_word
- 751 054e ECE7     	    b getchar_for_word
- 752              	end_word:
- 753 0550 4BF8045B 	    __pushreg r5
- 754 0554 5DF804CB 	    __end_c_call
- 755 0558 5CF804AB 	__end_defnative word
- 755      DAF80090 
- 755      48470000 
- 755      00000000 
- 756              	
- 757              	/* ( buff-addr len -- number unconverted-char-count ) */
- 758              	__defnative "NUMBER",,number
- 759 0568 3BE90300 	    ldmdb r11!, {r0, r1} // r0,r1 <- buff_addr,len
- 760 056c 0025     	    movs r5, #0 // r5 = sign: 0 = positive, nz = negative
- 761 056e 0022     	    movs r2, #0 // r2 = number
- 762 0570 164C2468 	    __loadvar "BASE", r4 // r4 = base
- 763 0574 01B3     	    cbz r1, end_number
- 764 0576 0378     	    ldrb r3, [r0]
- 765 0578 2D2B     	    cmp r3, '-'  // first char '-'? skip over it and set flag
- 766 057a 03D1     	    bne is_hex_number
- 767 057c 0125     	    movs r5, #1
- 768 057e 0130     	    adds r0, #1
- 769 0580 0139     	    subs r1, #1
- 770 0582 04E0     	    b next_number
- 771              	is_hex_number:
- 772 0584 242B     	    cmp r3, '$'  // first char '$'? skip over it and override base
- 773 0586 02BF     	    ittt eq
- 774 0588 1024     	    moveq r4, #16
- 775 058a 0130     	    addeq r0, #1
- 776 058c 0139     	    subeq r1, #1
- 777              	next_number:
- 778 058e 99B1     	    cbz r1, end_number
- 779 0590 10F8013B 	    ldrb r3, [r0], #1 // r3 = character to convert
- 780 0594 302B     	    cmp r3, '0'
- 781 0596 0FD3     	    blo end_number
- 782 0598 392B     	    cmp r3, '9'
- 783 059a 01D8     	    bhi convert_az_number
- 784 059c 303B     	    subs r3, '0'
- 785 059e 05E0     	    b check_number
- 786              	convert_az_number:
- 787 05a0 612B     	    cmp r3, 'a'
- 788 05a2 28BF     	    it hs
- 789 05a4 203B     	    subhs r3, #0x20 // converts lower case to upper case
- 790 05a6 412B     	    cmp r3, 'A'
- 791 05a8 06D3     	    blo end_number
- 792 05aa 373B     	    subs r3, 'A' - 10
- 793              	check_number:
- 794 05ac A342     	    cmp r3, r4
- 795 05ae 3EBF     	    ittt lo
- 796 05b0 02FB0432 	    mlalo r2, r2, r4, r3 // num <- num * base + digit
- 797 05b4 0139     	    sublo r1, #1
- 798 05b6 EAE7     	    blo next_number
- 799              	end_number:
- 800 05b8 012D     	    cmp r5, #1
- 801 05ba 08BF     	    it eq
- 802 05bc 5242     	    rsbeq r2, #0
- 803 05be EBE80221 	    __pushreg2 r2, r1
- 804 05c2 5CF804AB 	__end_defnative number
- 804      DAF80090 
- 804      48470000 
- 804      0000
- 805              	
- 806              	/*
- 807              	 * Finds the given definition in the dictionary by word name,
- 808              	 * returning its address (forth_name_<label>), or 0 if not found.
- 809              	 * Note that if len > F_LENMASK, the results of this function are
- 810              	 * undefined.
- 811              	 *
- 812              	 * The format of a definition is:
- 813              	 *   forth_name_<label>:
- 814              	 *     .4byte <pointer to next definition>
- 815              	 *     .4byte <pointer to forth_<label>>
- 816              	 *     .byte len+flags
- 817              	 *     .ascii <name, with enough padding at end for alignment>
- 818              	 *   forth_<label>:
- 819              	 */
- 820              	/* ( buff-addr len -- 0 | defn-addr ) */
- 821              	__defnative "FIND",,find
- 822 05d0 3BE90300 	    ldmdb r11!, {r0, r1} // r0,r1 <- buff-addr,len
- 823 05d4 0F4A1268 	    __loadvar "LATEST", r2 // r2 <- current definition address
- 824              	check_current_find:
- 825 05d8 AAB1     	    cbz r2, end_find
- 826 05da 1368     	    ldr r3, [r2] // r3 <- next definition address
- 827 05dc 147A     	    ldrb r4, [r2, #8] // r4 <- definition name length + flags
- 828 05de 14F03F04 	    ands r4, F_HIDDEN | F_LENMASK
- 829 05e2 8C42     	    cmp r4, r1 // skip hidden entries and entries not matching the string length
- 830 05e4 1CBF     	    itt ne
- 831 05e6 1A46     	    movne r2, r3
- 832 05e8 F6E7     	    bne check_current_find
- 833 05ea 0546     	    mov r5, r0 // r5 <- ptr to buffer
- 834 05ec 12F10906 	    adds r6, r2, #9 // r6 <- ptr to name
- 835              	check_name_find:
- 836 05f0 15F8017B 	    ldrb r7, [r5], #1
- 837 05f4 16F8019B 	    ldrb r9, [r6], #1
- 838 05f8 4F45     	    cmp r7, r9
- 839 05fa 1CBF     	    itt ne
- 840 05fc 1A46     	    movne r2, r3
- 841 05fe EBE7     	    bne check_current_find
- 842 0600 013C     	    subs r4, #1
- 843 0602 04B1     	    cbz r4, end_find
- 844 0604 F4E7     	    b check_name_find
- 845              	end_find:
- 846 0606 4BF8042B 	    __pushreg r2
- 847 060a 5CF804AB 	__end_defnative find
- 847      DAF80090 
- 847      48470000 
- 847      0000
- 848              	
- 849              	/* ( defn-addr -- code-addr ) */
- 850              	__defnative ">CFA",,to_code_field_addr
- 851 0618 5BF8040C 	    __peekreg r0
- 852 061c 4068     	    ldr r0, [r0, #4]
- 853 061e 4BF8040C 	    __putreg r0
- 854 0622 5CF804AB 	__end_defnative to_code_field_addr
- 854      DAF80090 
- 854      4847
- 855              	
- 856              	/*
- 857              	 * Returns the data field address for a definition. For a
- 858              	 * native definition, this is the beginning of the native
- 859              	 * routine. For a non-native definition, this is the word
- 860              	 * immediately after the do_colon word.
- 861              	 */
- 862              	/* ( defn-addr -- data-addr ) */
- 863              	__defnative ">DFA",,to_data_field_addr
- 864 062c 5BF8040C 	    __peekreg r0
- 865 0630 4068     	    ldr r0, [r0, #4]
- 866 0632 0430     	    adds r0, #4
- 867 0634 4BF8040C 	    __putreg r0
- 868 0638 5CF804AB 	__end_defnative to_data_field_addr
- 868      DAF80090 
- 868      4847
- 869              	
- 870              	/*
- 871              	 * Creates the header for a definition and places it at
- 872              	 * HERE, updating HERE and LATEST. The header is the link
- 873              	 * to the next definition, and the name (and name length).
- 874              	 * the flags are always zero.
- 875              	 */
- 876              	/* ( buff-addr len -- ) */
- 877              	__defnative "CREATE",,create
- 878 0642 3BE90300 	    ldmdb r11!, {r0, r1} // r0,r1 <- buff-addr,len
- 879 0646 134A1268 	    __loadvar "HERE", r2 // r2 <- HERE
- 880 064a 134B1B68 	    __loadvar "LATEST", r3 // r3 <- LATEST
- 881 064e 124C2260 	    __storevar r2, "LATEST", r4 // update LATEST to HERE
- 882 0652 42F8083B 	    str r3, [r2], #8 // Write link. Skip over the pointer to code for now
- 883 0656 02F8011B 	    strb r1, [r2], #1 // writes the len byte
- 884 065a 11F00304 	    ands r4, r1, #3 // r4 = amount of padding required at end.
- 885              	    // Because of the len byte, the amount of padding to get to
- 886              	    // 4-byte alignment based on the last 2 bits of the length are:
- 887              	    // 0: 3 bytes
- 888              	    // 1: 2 bytes
- 889              	    // 2: 1 byte
- 890              	    // 3: 0 bytes
- 891 065e C4F10304 	    rsb r4, #3 // so r4 = 3-(len&3)
- 892              	copy_name_create:
- 893 0662 29B1     	    cbz r1, pad_name_create
- 894 0664 10F8015B 	    ldrb r5, [r0], #1
- 895 0668 02F8015B 	    strb r5, [r2], #1
- 896 066c 0139     	    subs r1, #1
- 897 066e F8E7     	    b copy_name_create
- 898              	pad_name_create:
- 899 0670 94F0000F 	    teq r4, #0
- 900 0674 1EBF     	    ittt ne
- 901 0676 02F8011B 	    strbne r1, [r2], #1 // r1 was zero!
- 902 067a 013C     	    subne r4, #1
- 903 067c F8E7     	    bne pad_name_create
- 904 067e 06480068 	    __loadvar "LATEST", r0 // r0 <- beginning of the header
- 905 0682 4260     	    str r2, [r0, #4] // now we can write the code address
- 906 0684 03480260 	    __storevar r2, "HERE", r0 // and update HERE
- 907 0688 5CF804AB 	__end_defnative create
- 907      DAF80090 
- 907      48470000 
- 907      00000000 
- 907      00000000 
- 908              	
- 909              	/*
- 910              	 * Stores a value into HERE, and increments HERE by 4. The
- 911              	 * implication is that HERE has special semantics: it points to
- 912              	 * available memory, but the content of that memory is undefined.
- 913              	 * Thus, it makes sense that once we write to the memory at
- 914              	 * HERE, we should increment HERE to point to the next available
- 915              	 * location.
- 916              	 */
- 917              	/* ( x -- ) */
- 918              	__defnative "HERE!",,store_to_here
- 919 069c 5BF8040D 	    __popreg r0
- 920 06a0 0449     	    ldr r1, =forth_var_HERE
- 921 06a2 0A68     	    ldr r2, [r1] // r2 <- HERE
- 922 06a4 42F8040B 	    str r0, [r2], #4
- 923 06a8 0A60     	    str r2, [r1] // update HERE
- 924 06aa 5CF804AB 	__end_defnative store_to_here
- 924      DAF80090 
- 924      48470000 
- 924      0000
- 925              	
- 926              	/* Switch to immediate mode, immediately. */
- 927              	__defnative "[",F_IMMED,immediate_mode
- 928 06b8 0020     	    movs r0, #0
- 929 06ba 03490860 	    __storevar r0, "STATE", r1
- 930 06be 5CF804AB 	__end_defnative immediate_mode
- 930      DAF80090 
- 930      48470000 
- 930      0000
- 931              	
- 932              	/* Switch to compile mode. */
- 933              	__defnative "]",,compile_mode
- 934 06cc 0120     	    movs r0, #1
- 935 06ce 03490860 	    __storevar r0, "STATE", r1
- 936 06d2 5CF804AB 	__end_defnative compile_mode
- 936      DAF80090 
- 936      48470000 
- 936      0000
- 937              	
- 938              	/* ( defn-addr -- ) */
- 939              	__defnative "TOGGLE_HIDDEN",,toggle_hidden
- 940 06e0 5BF8040D 	    __popreg r0
- 941 06e4 10F8081F 	    ldrb r1, [r0, #8]!
- 942 06e8 91F02001 	    eors r1, F_HIDDEN
- 943 06ec 0170     	    strb r1, [r0]
- 944 06ee 5CF804AB 	__end_defnative toggle_hidden
- 944      DAF80090 
- 944      4847
- 945              	
- 946              	__defnative "TOGGLE_IMMEDIATE",,toggle_immediate
- 947 06f8 05480068 	    __loadvar "LATEST", r0
- 948 06fc 10F8081F 	    ldrb r1, [r0, #8]!
- 949 0700 91F08001 	    eors r1, F_IMMED
- 950 0704 0170     	    strb r1, [r0]
- 951 0706 5CF804AB 	__end_defnative toggle_immediate
- 951      DAF80090 
- 951      48470000 
- 951      0000
- 952              	
- 953              	/*
- 954              	 * Add the offset in the next word to the instruction pointer
- 955              	 * of the caller, so that when this word returns, the caller
- 956              	 * is executing there.
- 957              	 */
- 958              	__defnative "BRANCH",,branch
- 959 0714 01BC     	    pop {r0}
- 960 0716 50F8041B 	    ldr r1, [r0], #4 // r1 <- offset, ptr += 4
- 961 071a 4FEA8101 	    lsl r1, #2 // r1 *= 4
- 962 071e 0918     	    adds r1, r0 // so offset zero just goes to next word
- 963 0720 02B4     	    push {r1}
- 964 0722 5CF804AB 	__end_defnative branch
- 964      DAF80090 
- 964      4847
- 965              	
- 966              	/*
- 967              	 * If the parameter on the stack is zero, add the offset in the
- 968              	 * next word to the instruction pointer of the caller, so that
- 969              	 * when this word returns, the caller is executing there.
- 970              	 * Otherwise, do nothing.
- 971              	 */
- 972              	/* ( x -- ) */
- 973              	__defnative "0BRANCH",,brancheq
- 974 072c 5BF8042D 	    __popreg r2
- 975 0730 01BC     	    pop {r0}
- 976 0732 50F8041B 	    ldr r1, [r0], #4 // r1 <- offset, ptr += 4
- 977 0736 92F0000F 	    teq r2, #0
- 978 073a 04BF     	    itt eq  // add offset only if parameter was zero
- 979 073c 8900     	    lsleq r1, #2 // r1 *= 4
- 980 073e 0918     	    addeq r1, r0 // so offset zero just goes to next word
- 981 0740 02B4     	    push {r1}
- 982 0742 5CF804AB 	__end_defnative brancheq
- 982      DAF80090 
- 982      4847
- 983              	
- 984              	/* Compile a definition. */
- 985              	__defword ":",,compile
- 986 051c 00000000 	    __word word
- 987 0520 00000000 	    __word create
- 988 0524 00000000 	    __word literal
- 989 0528 00000000 	    __word do_colon
- 990 052c 00000000 	    __word store_to_here
- 991 0530 00000000 	    __word latest
- 992 0534 00000000 	    __word fetch
- 993 0538 00000000 	    __word toggle_hidden
- 994 053c 00000000 	    __word compile_mode
- 995 0540 00000000 	__end_defword compile
- 996              	
- 997              	/* End compilation of a definition. */
- 998 0544 0C050000 	__defword ";",F_IMMED,end_compile
- 998      00000000 
- 998      813B0000 
- 998      00000000 
- 999 0554 00000000 	    __word literal
- 1000 0558 00000000 	    __word exit
- 1001 055c 00000000 	    __word store_to_here
- 1002 0560 00000000 	    __word latest
- 1003 0564 00000000 	    __word fetch
- 1004 0568 00000000 	    __word toggle_hidden
- 1005 056c 00000000 	    __word immediate_mode
- 1006 0570 00000000 	__end_defword end_compile
- 1007              	
- 1008              	/* Toggle hidden on the next word. */
- 1009 0574 44050000 	__defword "HIDE",,hide
- 1009      00000000 
- 1009      04484944 
- 1009      45000000 
- 1009      00000000 
- 1010 0588 00000000 	    __word word
- 1011 058c 00000000 	    __word find
- 1012 0590 00000000 	    __word toggle_hidden
- 1013 0594 00000000 	__end_defword hide
- 1014              	
- 1015              	/* Gets the code field address of the next word. */
- 1016              	/* ( -- code-addr ) */
- 1017 0598 74050000 	__defword "'",,code_field_addr_of_next_word
- 1017      00000000 
- 1017      01270000 
- 1017      00000000 
- 1018 05a8 00000000 	    __word word
- 1019 05ac 00000000 	    __word find
- 1020 05b0 00000000 	    __word to_code_field_addr
- 1021 05b4 00000000 	__end_defword code_field_addr_of_next_word
- 1022              	
- 1023 05b8 98050000 	__defword "TESTING",,testing
- 1023      00000000 
- 1023      07544553 
- 1023      54494E47 
- 1023      00000000 
- 1024 05cc 00000000 	    __word word
- 1025 05d0 00000000 	    __word number
- 1026 05d4 00000000 	    __word quit
- 1027 05d8 00000000 	__end_defword testing
+ 622 0442 4DF804CD 	    __begin_c_call
+ 623              	    // Want r0 = dest, r1 = src, r2 = len.
+ 624 0446 7BE90202 	    __popreg2 r2, r0
+ 625 044a 5BF8041D 	    __popreg r1
+ 626 044e FFF7FEFF 	    bl memcpy
+ 627 0452 5DF804CB 	    __end_c_call
+ 628 0456 5CF804AB 	__end_defnative memcpy
+ 628      DAF80090 
+ 628      4847
+ 629              	
+ 630              	/* Block move with overlapping regions allowed. */
+ 631              	/* ( src-addr dest-addr len -- ) */
+ 632              	__defnative "MEMMOVE",,memmove
+ 633              	    // Want r0 = dest, r1 = src, r2 = len.
+ 634 0460 7BE90202 	    __popreg2 r2, r0
+ 635 0464 5BF8041D 	    __popreg r1
+ 636 0468 002A     	    cmp r2, #0
+ 637 046a 06DB     	    blt end_memmove
+ 638              	loop_memmove:
+ 639 046c 2AB1     	    cbz r2, end_memmove
+ 640 046e 11F8013B 	    ldrb r3, [r1], #1
+ 641 0472 02F8013B 	    strb r3, [r2], #1
+ 642 0476 013A     	    subs r2, #1
+ 643 0478 F8E7     	    b loop_memmove
+ 644              	end_memmove:
+ 645 047a 5CF804AB 	__end_defnative memmove
+ 645      DAF80090 
+ 645      4847
+ 646              	
+ 647              	/* Pop param stack and push onto return stack */
+ 648              	/* ( addr -- ) */
+ 649              	__defnative ">R",,param_to_return
+ 650 0484 5BF8040D 	    __popreg r0
+ 651 0488 01B4     	    push {r0}
+ 652 048a 5CF804AB 	__end_defnative param_to_return
+ 652      DAF80090 
+ 652      4847
+ 653              	
+ 654              	/* Pop return stack and push onto param stack */
+ 655              	/* ( -- addr ) */
+ 656              	__defnative "R>",,return_to_param
+ 657 0494 01BC     	    pop {r0}
+ 658 0496 4BF8040B 	    __pushreg r0
+ 659 049a 5CF804AB 	__end_defnative return_to_param
+ 659      DAF80090 
+ 659      4847
+ 660              	
+ 661              	/* Fetch top of return stack, push onto param stack */
+ 662              	/* ( -- addr ) */
+ 663              	__defnative "R\@",,fetch_return
+ 664 04a4 0098     	    ldr r0, [sp]
+ 665 04a6 4BF8040B 	    __pushreg r0
+ 666 04aa 5CF804AB 	__end_defnative fetch_return
+ 666      DAF80090 
+ 666      4847
+ 667              	
+ 668              	/* Replace top of return stack with popped value from param stack */
+ 669              	/* ( addr -- ) */
+ 670              	__defnative "R!",,store_return
+ 671 04b4 5BF8040D 	    __popreg r0
+ 672 04b8 0090     	    str r0, [sp]
+ 673 04ba 5CF804AB 	__end_defnative store_return
+ 673      DAF80090 
+ 673      4847
+ 674              	
+ 675              	/* Waits for a byte from serial. */
+ 676              	/* ( -- k ) */
+ 677              	__defnative "KEY",,key
+ 678 04c4 4DF804CD 	    __begin_c_call
+ 679              	await_key:
+ 680 04c8 FFF7FEFF 	    bl usb_serial_getchar
+ 681 04cc 10F1010F 	    cmn r0, #1
+ 682 04d0 FAD0     	    beq await_key
+ 683 04d2 4BF8040B 	    __pushreg r0
+ 684 04d6 5DF804CB 	    __end_c_call
+ 685 04da 5CF804AB 	__end_defnative key
+ 685      DAF80090 
+ 685      4847
+ 686              	
+ 687              	/* Outputs a byte to serial. */
+ 688              	/* ( k -- ) */
+ 689              	__defnative "EMIT",,emit
+ 690 04e4 4DF804CD 	    __begin_c_call
+ 691 04e8 5BF8040D 	    __popreg r0
+ 692 04ec FFF7FEFF 	    bl usb_serial_putchar
+ 693 04f0 5DF804CB 	    __end_c_call
+ 694 04f4 5CF804AB 	__end_defnative emit
+ 694      DAF80090 
+ 694      4847
+ 695              	
+ 696              	/*
+ 697              	 * Waits for a "word" from serial. A word starts with any non-whitespace
+ 698              	 * character except backslash, and continues to any whitespace character.
+ 699              	 * Characters between backslash and newline (inclusive) are ignored.
+ 700              	 * The maximum size of a word if F_LENMASK. We accept characters after that,
+ 701              	 * but ignore them.
+ 702              	 */
+ 703              	/* ( -- buff-addr len ) */
+ 704              	    .section .data
+ 706              	    .align 2
+ 707              	    .global forth_word_buffer
+ 708              	forth_word_buffer:
+ 709 03dc 00000000 	    .space F_LENMASK
+ 709      00000000 
+ 709      00000000 
+ 709      00000000 
+ 709      00000000 
+ 711              	
+ 712 03fb 00C80300 	__defnative "WORD",,word
+ 712      00000000 
+ 712      0004574F 
+ 712      52440000 
+ 712      00000000 
+ 713 04fe 4DF804CD 	    __begin_c_call
+ 714 0502 1A4C     	    ldr r4, =forth_word_buffer
+ 715 0504 4BF8044B 	    __pushreg r4
+ 716 0508 0025     	    movs r5, #0
+ 717              	await_word:
+ 718 050a FFF7FEFF 	    bl usb_serial_getchar
+ 719 050e 10F1010F 	    cmn r0, #1
+ 720 0512 FAD0     	    beq await_word
+ 721 0514 2028     	    cmp r0, ' '
+ 722 0516 F8D0     	    beq await_word
+ 723 0518 0928     	    cmp r0, '\t'
+ 724 051a F6D0     	    beq await_word
+ 725 051c 0A28     	    cmp r0, '\n'
+ 726 051e F4D0     	    beq await_word
+ 727 0520 0D28     	    cmp r0, '\r'
+ 728 0522 F2D0     	    beq await_word
+ 729              	start_word:
+ 730 0524 5C28     	    cmp r0, '\\'
+ 731 0526 12D0     	    beq await_end_comment_word
+ 732 0528 1F2D     	    cmp r5, F_LENMASK // We ignore anything that would overflow the buffer
+ 733 052a 02D0     	    beq getchar_for_word
+ 734 052c 04F8010B 	    strb r0, [r4], #1
+ 735 0530 0135     	    adds r5, #1
+ 736              	getchar_for_word:
+ 737 0532 FFF7FEFF 	    bl usb_serial_getchar
+ 738 0536 10F1010F 	    cmn r0, #1
+ 739 053a FAD0     	    beq getchar_for_word
+ 740 053c 2028     	    cmp r0, ' '
+ 741 053e 0BD0     	    beq end_word
+ 742 0540 0928     	    cmp r0, '\t'
+ 743 0542 09D0     	    beq end_word
+ 744 0544 0A28     	    cmp r0, '\n'
+ 745 0546 07D0     	    beq end_word
+ 746 0548 0D28     	    cmp r0, '\r'
+ 747 054a 05D0     	    beq end_word
+ 748 054c EAE7     	    b start_word
+ 749              	await_end_comment_word:
+ 750 054e FFF7FEFF 	    bl usb_serial_getchar
+ 751 0552 0A28     	    cmp r0, '\n'
+ 752 0554 FBD1     	    bne await_end_comment_word
+ 753 0556 ECE7     	    b getchar_for_word
+ 754              	end_word:
+ 755 0558 4BF8045B 	    __pushreg r5
+ 756 055c 5DF804CB 	    __end_c_call
+ 757 0560 5CF804AB 	__end_defnative word
+ 757      DAF80090 
+ 757      48470000 
+ 757      00000000 
+ 758              	
+ 759              	/* ( buff-addr len -- number unconverted-char-count ) */
+ 760              	__defnative "NUMBER",,number
+ 761 0570 3BE90300 	    ldmdb r11!, {r0, r1} // r0,r1 <- buff_addr,len
+ 762 0574 0025     	    movs r5, #0 // r5 = sign: 0 = positive, nz = negative
+ 763 0576 0022     	    movs r2, #0 // r2 = number
+ 764 0578 164C2468 	    __loadvar "BASE", r4 // r4 = base
+ 765 057c 01B3     	    cbz r1, end_number
+ 766 057e 0378     	    ldrb r3, [r0]
+ 767 0580 2D2B     	    cmp r3, '-'  // first char '-'? skip over it and set flag
+ 768 0582 03D1     	    bne is_hex_number
+ 769 0584 0125     	    movs r5, #1
+ 770 0586 0130     	    adds r0, #1
+ 771 0588 0139     	    subs r1, #1
+ 772 058a 04E0     	    b next_number
+ 773              	is_hex_number:
+ 774 058c 242B     	    cmp r3, '$'  // first char '$'? skip over it and override base
+ 775 058e 02BF     	    ittt eq
+ 776 0590 1024     	    moveq r4, #16
+ 777 0592 0130     	    addeq r0, #1
+ 778 0594 0139     	    subeq r1, #1
+ 779              	next_number:
+ 780 0596 99B1     	    cbz r1, end_number
+ 781 0598 10F8013B 	    ldrb r3, [r0], #1 // r3 = character to convert
+ 782 059c 302B     	    cmp r3, '0'
+ 783 059e 0FD3     	    blo end_number
+ 784 05a0 392B     	    cmp r3, '9'
+ 785 05a2 01D8     	    bhi convert_az_number
+ 786 05a4 303B     	    subs r3, '0'
+ 787 05a6 05E0     	    b check_number
+ 788              	convert_az_number:
+ 789 05a8 612B     	    cmp r3, 'a'
+ 790 05aa 28BF     	    it hs
+ 791 05ac 203B     	    subhs r3, #0x20 // converts lower case to upper case
+ 792 05ae 412B     	    cmp r3, 'A'
+ 793 05b0 06D3     	    blo end_number
+ 794 05b2 373B     	    subs r3, 'A' - 10
+ 795              	check_number:
+ 796 05b4 A342     	    cmp r3, r4
+ 797 05b6 3EBF     	    ittt lo
+ 798 05b8 02FB0432 	    mlalo r2, r2, r4, r3 // num <- num * base + digit
+ 799 05bc 0139     	    sublo r1, #1
+ 800 05be EAE7     	    blo next_number
+ 801              	end_number:
+ 802 05c0 012D     	    cmp r5, #1
+ 803 05c2 08BF     	    it eq
+ 804 05c4 5242     	    rsbeq r2, #0
+ 805 05c6 EBE80221 	    __pushreg2 r2, r1
+ 806 05ca 5CF804AB 	__end_defnative number
+ 806      DAF80090 
+ 806      48470000 
+ 806      0000
+ 807              	
+ 808              	/*
+ 809              	 * Finds the given definition in the dictionary by word name,
+ 810              	 * returning its address (forth_name_<label>), or 0 if not found.
+ 811              	 * Note that if len > F_LENMASK, the results of this function are
+ 812              	 * undefined.
+ 813              	 *
+ 814              	 * The format of a definition is:
+ 815              	 *   forth_name_<label>:
+ 816              	 *     .4byte <pointer to next definition>
+ 817              	 *     .4byte <pointer to forth_<label>>
+ 818              	 *     .byte len+flags
+ 819              	 *     .ascii <name, with enough padding at end for alignment>
+ 820              	 *   forth_<label>:
+ 821              	 */
+ 822              	/* ( buff-addr len -- 0 | defn-addr ) */
+ 823              	__defnative "FIND",,find
+ 824 05d8 3BE90300 	    ldmdb r11!, {r0, r1} // r0,r1 <- buff-addr,len
+ 825 05dc 0F4A1268 	    __loadvar "LATEST", r2 // r2 <- current definition address
+ 826              	check_current_find:
+ 827 05e0 AAB1     	    cbz r2, end_find
+ 828 05e2 1368     	    ldr r3, [r2] // r3 <- next definition address
+ 829 05e4 147A     	    ldrb r4, [r2, #8] // r4 <- definition name length + flags
+ 830 05e6 14F03F04 	    ands r4, F_HIDDEN | F_LENMASK
+ 831 05ea 8C42     	    cmp r4, r1 // skip hidden entries and entries not matching the string length
+ 832 05ec 1CBF     	    itt ne
+ 833 05ee 1A46     	    movne r2, r3
+ 834 05f0 F6E7     	    bne check_current_find
+ 835 05f2 0546     	    mov r5, r0 // r5 <- ptr to buffer
+ 836 05f4 12F10906 	    adds r6, r2, #9 // r6 <- ptr to name
+ 837              	check_name_find:
+ 838 05f8 15F8017B 	    ldrb r7, [r5], #1
+ 839 05fc 16F8019B 	    ldrb r9, [r6], #1
+ 840 0600 4F45     	    cmp r7, r9
+ 841 0602 1CBF     	    itt ne
+ 842 0604 1A46     	    movne r2, r3
+ 843 0606 EBE7     	    bne check_current_find
+ 844 0608 013C     	    subs r4, #1
+ 845 060a 04B1     	    cbz r4, end_find
+ 846 060c F4E7     	    b check_name_find
+ 847              	end_find:
+ 848 060e 4BF8042B 	    __pushreg r2
+ 849 0612 5CF804AB 	__end_defnative find
+ 849      DAF80090 
+ 849      48470000 
+ 849      0000
+ 850              	
+ 851              	/* ( defn-addr -- code-addr ) */
+ 852              	__defnative ">CFA",,to_code_field_addr
+ 853 0620 5BF8040C 	    __peekreg r0
+ 854 0624 4068     	    ldr r0, [r0, #4]
+ 855 0626 4BF8040C 	    __putreg r0
+ 856 062a 5CF804AB 	__end_defnative to_code_field_addr
+ 856      DAF80090 
+ 856      4847
+ 857              	
+ 858              	/*
+ 859              	 * Returns the data field address for a definition. For a
+ 860              	 * native definition, this is the beginning of the native
+ 861              	 * routine. For a non-native definition, this is the word
+ 862              	 * immediately after the do_colon word.
+ 863              	 */
+ 864              	/* ( defn-addr -- data-addr ) */
+ 865              	__defnative ">DFA",,to_data_field_addr
+ 866 0634 5BF8040C 	    __peekreg r0
+ 867 0638 4068     	    ldr r0, [r0, #4]
+ 868 063a 0430     	    adds r0, #4
+ 869 063c 4BF8040C 	    __putreg r0
+ 870 0640 5CF804AB 	__end_defnative to_data_field_addr
+ 870      DAF80090 
+ 870      4847
+ 871              	
+ 872              	/*
+ 873              	 * Creates the header for a definition and places it at
+ 874              	 * HERE, updating HERE and LATEST. The header is the link
+ 875              	 * to the next definition, and the name (and name length).
+ 876              	 * the flags are always zero.
+ 877              	 */
+ 878              	/* ( buff-addr len -- ) */
+ 879              	__defnative "CREATE",,create
+ 880 064a 3BE90300 	    ldmdb r11!, {r0, r1} // r0,r1 <- buff-addr,len
+ 881 064e 134A1268 	    __loadvar "HERE", r2 // r2 <- HERE
+ 882 0652 134B1B68 	    __loadvar "LATEST", r3 // r3 <- LATEST
+ 883 0656 124C2260 	    __storevar r2, "LATEST", r4 // update LATEST to HERE
+ 884 065a 42F8083B 	    str r3, [r2], #8 // Write link. Skip over the pointer to code for now
+ 885 065e 02F8011B 	    strb r1, [r2], #1 // writes the len byte
+ 886 0662 11F00304 	    ands r4, r1, #3 // r4 = amount of padding required at end.
+ 887              	    // Because of the len byte, the amount of padding to get to
+ 888              	    // 4-byte alignment based on the last 2 bits of the length are:
+ 889              	    // 0: 3 bytes
+ 890              	    // 1: 2 bytes
+ 891              	    // 2: 1 byte
+ 892              	    // 3: 0 bytes
+ 893 0666 C4F10304 	    rsb r4, #3 // so r4 = 3-(len&3)
+ 894              	copy_name_create:
+ 895 066a 29B1     	    cbz r1, pad_name_create
+ 896 066c 10F8015B 	    ldrb r5, [r0], #1
+ 897 0670 02F8015B 	    strb r5, [r2], #1
+ 898 0674 0139     	    subs r1, #1
+ 899 0676 F8E7     	    b copy_name_create
+ 900              	pad_name_create:
+ 901 0678 94F0000F 	    teq r4, #0
+ 902 067c 1EBF     	    ittt ne
+ 903 067e 02F8011B 	    strbne r1, [r2], #1 // r1 was zero!
+ 904 0682 013C     	    subne r4, #1
+ 905 0684 F8E7     	    bne pad_name_create
+ 906 0686 06480068 	    __loadvar "LATEST", r0 // r0 <- beginning of the header
+ 907 068a 4260     	    str r2, [r0, #4] // now we can write the code address
+ 908 068c 03480260 	    __storevar r2, "HERE", r0 // and update HERE
+ 909 0690 5CF804AB 	__end_defnative create
+ 909      DAF80090 
+ 909      48470000 
+ 909      00000000 
+ 909      00000000 
+ 910              	
+ 911              	/*
+ 912              	 * Stores a value into HERE, and increments HERE by 4. The
+ 913              	 * implication is that HERE has special semantics: it points to
+ 914              	 * available memory, but the content of that memory is undefined.
+ 915              	 * Thus, it makes sense that once we write to the memory at
+ 916              	 * HERE, we should increment HERE to point to the next available
+ 917              	 * location.
+ 918              	 */
+ 919              	/* ( x -- ) */
+ 920              	__defnative "HERE!",,store_to_here
+ 921 06a4 5BF8040D 	    __popreg r0
+ 922 06a8 0449     	    ldr r1, =forth_var_HERE
+ 923 06aa 0A68     	    ldr r2, [r1] // r2 <- HERE
+ 924 06ac 42F8040B 	    str r0, [r2], #4
+ 925 06b0 0A60     	    str r2, [r1] // update HERE
+ 926 06b2 5CF804AB 	__end_defnative store_to_here
+ 926      DAF80090 
+ 926      48470000 
+ 926      0000
+ 927              	
+ 928              	/* Switch to immediate mode, immediately. */
+ 929              	__defnative "[",F_IMMED,immediate_mode
+ 930 06c0 0020     	    movs r0, #0
+ 931 06c2 03490860 	    __storevar r0, "STATE", r1
+ 932 06c6 5CF804AB 	__end_defnative immediate_mode
+ 932      DAF80090 
+ 932      48470000 
+ 932      0000
+ 933              	
+ 934              	/* Switch to compile mode. */
+ 935              	__defnative "]",,compile_mode
+ 936 06d4 0120     	    movs r0, #1
+ 937 06d6 03490860 	    __storevar r0, "STATE", r1
+ 938 06da 5CF804AB 	__end_defnative compile_mode
+ 938      DAF80090 
+ 938      48470000 
+ 938      0000
+ 939              	
+ 940              	/* ( defn-addr -- ) */
+ 941              	__defnative "TOGGLE_HIDDEN",,toggle_hidden
+ 942 06e8 5BF8040D 	    __popreg r0
+ 943 06ec 10F8081F 	    ldrb r1, [r0, #8]!
+ 944 06f0 91F02001 	    eors r1, F_HIDDEN
+ 945 06f4 0170     	    strb r1, [r0]
+ 946 06f6 5CF804AB 	__end_defnative toggle_hidden
+ 946      DAF80090 
+ 946      4847
+ 947              	
+ 948              	__defnative "TOGGLE_IMMEDIATE",,toggle_immediate
+ 949 0700 05480068 	    __loadvar "LATEST", r0
+ 950 0704 10F8081F 	    ldrb r1, [r0, #8]!
+ 951 0708 91F08001 	    eors r1, F_IMMED
+ 952 070c 0170     	    strb r1, [r0]
+ 953 070e 5CF804AB 	__end_defnative toggle_immediate
+ 953      DAF80090 
+ 953      48470000 
+ 953      0000
+ 954              	
+ 955              	/*
+ 956              	 * Add the offset in the next word to the instruction pointer
+ 957              	 * of the caller, so that when this word returns, the caller
+ 958              	 * is executing there.
+ 959              	 */
+ 960              	__defnative "BRANCH",,branch
+ 961 071c 01BC     	    pop {r0}
+ 962 071e 50F8041B 	    ldr r1, [r0], #4 // r1 <- offset, ptr += 4
+ 963 0722 4FEA8101 	    lsl r1, #2 // r1 *= 4
+ 964 0726 0918     	    adds r1, r0 // so offset zero just goes to next word
+ 965 0728 02B4     	    push {r1}
+ 966 072a 5CF804AB 	__end_defnative branch
+ 966      DAF80090 
+ 966      4847
+ 967              	
+ 968              	/*
+ 969              	 * If the parameter on the stack is zero, add the offset in the
+ 970              	 * next word to the instruction pointer of the caller, so that
+ 971              	 * when this word returns, the caller is executing there.
+ 972              	 * Otherwise, do nothing.
+ 973              	 */
+ 974              	/* ( x -- ) */
+ 975              	__defnative "0BRANCH",,brancheq
+ 976 0734 5BF8042D 	    __popreg r2
+ 977 0738 01BC     	    pop {r0}
+ 978 073a 50F8041B 	    ldr r1, [r0], #4 // r1 <- offset, ptr += 4
+ 979 073e 92F0000F 	    teq r2, #0
+ 980 0742 04BF     	    itt eq  // add offset only if parameter was zero
+ 981 0744 8900     	    lsleq r1, #2 // r1 *= 4
+ 982 0746 0918     	    addeq r1, r0 // so offset zero just goes to next word
+ 983 0748 02B4     	    push {r1}
+ 984 074a 5CF804AB 	__end_defnative brancheq
+ 984      DAF80090 
+ 984      4847
+ 985              	
+ 986              	/* Compile a definition. */
+ 987              	__defword ":",,compile
+ 988 051c 00000000 	    __word word
+ 989 0520 00000000 	    __word create
+ 990 0524 00000000 	    __word literal
+ 991 0528 00000000 	    __word do_colon
+ 992 052c 00000000 	    __word store_to_here
+ 993 0530 00000000 	    __word latest
+ 994 0534 00000000 	    __word fetch
+ 995 0538 00000000 	    __word toggle_hidden
+ 996 053c 00000000 	    __word compile_mode
+ 997 0540 00000000 	__end_defword compile
+ 998              	
+ 999              	/* End compilation of a definition. */
+ 1000 0544 0C050000 	__defword ";",F_IMMED,end_compile
+ 1000      00000000 
+ 1000      813B0000 
+ 1000      00000000 
+ 1001 0554 00000000 	    __word literal
+ 1002 0558 00000000 	    __word exit
+ 1003 055c 00000000 	    __word store_to_here
+ 1004 0560 00000000 	    __word latest
+ 1005 0564 00000000 	    __word fetch
+ 1006 0568 00000000 	    __word toggle_hidden
+ 1007 056c 00000000 	    __word immediate_mode
+ 1008 0570 00000000 	__end_defword end_compile
+ 1009              	
+ 1010              	/* Toggle hidden on the next word. */
+ 1011 0574 44050000 	__defword "HIDE",,hide
+ 1011      00000000 
+ 1011      04484944 
+ 1011      45000000 
+ 1011      00000000 
+ 1012 0588 00000000 	    __word word
+ 1013 058c 00000000 	    __word find
+ 1014 0590 00000000 	    __word toggle_hidden
+ 1015 0594 00000000 	__end_defword hide
+ 1016              	
+ 1017              	/* Gets the code field address of the next word. */
+ 1018              	/* ( -- code-addr ) */
+ 1019 0598 74050000 	__defword "'",,code_field_addr_of_next_word
+ 1019      00000000 
+ 1019      01270000 
+ 1019      00000000 
+ 1020 05a8 00000000 	    __word word
+ 1021 05ac 00000000 	    __word find
+ 1022 05b0 00000000 	    __word to_code_field_addr
+ 1023 05b4 00000000 	__end_defword code_field_addr_of_next_word
+ 1024              	
+ 1025 05b8 98050000 	__defword "TESTING",,testing
+ 1025      00000000 
+ 1025      07544553 
+ 1025      54494E47 
+ 1025      00000000 
+ 1026 05cc 00000000 	    __word word
+ 1027 05d0 00000000 	    __word number
+ 1028 05d4 00000000 	    __word quit
+ 1029 05d8 00000000 	__end_defword testing
 DEFINED SYMBOLS
 ../src/forth_system.S:43     *ABS*:00000080 F_IMMED
 ../src/forth_system.S:44     *ABS*:00000040 F_UNUSED
 ../src/forth_system.S:45     *ABS*:00000020 F_HIDDEN
 ../src/forth_system.S:46     *ABS*:0000001f F_LENMASK
-../src/forth_system.S:1023   .data:000005b8 link
+../src/forth_system.S:1025   .data:000005b8 link
 ../src/forth_system.S:240    .data:00000000 forth_name_base
                             .data:00000000 $d
 ../src/forth_system.S:240    .data:00000010 forth_base
@@ -1217,7 +1219,7 @@ DEFINED SYMBOLS
 ../src/forth_system.S:240    .text:00000018 $t
 ../src/forth_system.S:242    .text:0000002a $d
 ../src/forth_system.S:242    .text:0000002c $d
-../src/forth_system.S:1023   .data:000005b8 forth_name_testing
+../src/forth_system.S:1025   .data:000005b8 forth_name_testing
 ../src/forth_system.S:243    .data:00000030 forth_name_here
 ../src/forth_system.S:243    .data:00000040 forth_here
 ../src/forth_system.S:243    .data:0000003d forth_end_name_here
@@ -1419,137 +1421,137 @@ DEFINED SYMBOLS
 ../src/forth_system.S:621    .data:00000360 forth_memcpy
 ../src/forth_system.S:621    .data:00000360 forth_end_name_memcpy
 ../src/forth_system.S:621    .text:00000442 forth_code_memcpy
-../src/forth_system.S:630    .data:00000364 forth_name_memmove
-../src/forth_system.S:630    .data:00000374 forth_memmove
-../src/forth_system.S:630    .data:00000374 forth_end_name_memmove
-../src/forth_system.S:630    .text:00000458 forth_code_memmove
-../src/forth_system.S:642    .text:00000472 end_memmove
-../src/forth_system.S:636    .text:00000464 loop_memmove
-../src/forth_system.S:647    .data:00000378 forth_name_param_to_return
-../src/forth_system.S:647    .data:00000384 forth_param_to_return
-../src/forth_system.S:647    .data:00000383 forth_end_name_param_to_return
-../src/forth_system.S:647    .text:0000047c forth_code_param_to_return
-../src/forth_system.S:654    .data:00000388 forth_name_return_to_param
-../src/forth_system.S:654    .data:00000394 forth_return_to_param
-../src/forth_system.S:654    .data:00000393 forth_end_name_return_to_param
-../src/forth_system.S:654    .text:0000048c forth_code_return_to_param
-../src/forth_system.S:661    .data:00000398 forth_name_fetch_return
-../src/forth_system.S:661    .data:000003a4 forth_fetch_return
-../src/forth_system.S:661    .data:000003a3 forth_end_name_fetch_return
-../src/forth_system.S:661    .text:0000049c forth_code_fetch_return
-../src/forth_system.S:668    .data:000003a8 forth_name_store_return
-../src/forth_system.S:668    .data:000003b4 forth_store_return
-../src/forth_system.S:668    .data:000003b3 forth_end_name_store_return
-../src/forth_system.S:668    .text:000004ac forth_code_store_return
-../src/forth_system.S:675    .data:000003b8 forth_name_key
-../src/forth_system.S:675    .data:000003c4 forth_key
-../src/forth_system.S:675    .data:000003c4 forth_end_name_key
-../src/forth_system.S:675    .text:000004bc forth_code_key
-../src/forth_system.S:677    .text:000004c0 await_key
-../src/forth_system.S:687    .data:000003c8 forth_name_emit
-../src/forth_system.S:687    .data:000003d8 forth_emit
-../src/forth_system.S:687    .data:000003d5 forth_end_name_emit
-../src/forth_system.S:687    .text:000004dc forth_code_emit
-../src/forth_system.S:706    .data:000003dc forth_word_buffer
-../src/forth_system.S:710    .data:000003fc forth_name_word
-../src/forth_system.S:710    .data:0000040c forth_word
-../src/forth_system.S:710    .data:00000409 forth_end_name_word
-../src/forth_system.S:702    .text:000004f6 forth_code_word
-../src/forth_system.S:715    .text:00000502 await_word
-../src/forth_system.S:727    .text:0000051c start_word
-../src/forth_system.S:747    .text:00000546 await_end_comment_word
-../src/forth_system.S:734    .text:0000052a getchar_for_word
-../src/forth_system.S:752    .text:00000550 end_word
-../src/forth_system.S:755    .text:00000562 $d
-../src/forth_system.S:755    .text:00000564 $d
-../src/forth_system.S:758    .data:00000410 forth_name_number
-../src/forth_system.S:758    .data:00000420 forth_number
-../src/forth_system.S:758    .data:0000041f forth_end_name_number
-../src/forth_system.S:758    .text:00000568 forth_code_number
-../src/forth_system.S:759    .text:00000568 $t
-../src/forth_system.S:799    .text:000005b8 end_number
-../src/forth_system.S:771    .text:00000584 is_hex_number
-../src/forth_system.S:777    .text:0000058e next_number
-../src/forth_system.S:786    .text:000005a0 convert_az_number
-../src/forth_system.S:793    .text:000005ac check_number
-../src/forth_system.S:804    .text:000005cc $d
-../src/forth_system.S:821    .data:00000424 forth_name_find
-../src/forth_system.S:821    .data:00000434 forth_find
-../src/forth_system.S:821    .data:00000431 forth_end_name_find
-../src/forth_system.S:821    .text:000005d0 forth_code_find
-../src/forth_system.S:822    .text:000005d0 $t
-../src/forth_system.S:824    .text:000005d8 check_current_find
-../src/forth_system.S:845    .text:00000606 end_find
-../src/forth_system.S:835    .text:000005f0 check_name_find
-../src/forth_system.S:847    .text:00000614 $d
-../src/forth_system.S:850    .data:00000438 forth_name_to_code_field_addr
-../src/forth_system.S:850    .data:00000448 forth_to_code_field_addr
-../src/forth_system.S:850    .data:00000445 forth_end_name_to_code_field_addr
-../src/forth_system.S:850    .text:00000618 forth_code_to_code_field_addr
-../src/forth_system.S:851    .text:00000618 $t
-../src/forth_system.S:863    .data:0000044c forth_name_to_data_field_addr
-../src/forth_system.S:863    .data:0000045c forth_to_data_field_addr
-../src/forth_system.S:863    .data:00000459 forth_end_name_to_data_field_addr
-../src/forth_system.S:863    .text:0000062c forth_code_to_data_field_addr
-../src/forth_system.S:877    .data:00000460 forth_name_create
-../src/forth_system.S:877    .data:00000470 forth_create
-../src/forth_system.S:877    .data:0000046f forth_end_name_create
-../src/forth_system.S:877    .text:00000642 forth_code_create
-../src/forth_system.S:892    .text:00000662 copy_name_create
-../src/forth_system.S:898    .text:00000670 pad_name_create
-../src/forth_system.S:907    .text:00000692 $d
-../src/forth_system.S:907    .text:00000694 $d
-../src/forth_system.S:918    .data:00000474 forth_name_store_to_here
-../src/forth_system.S:918    .data:00000484 forth_store_to_here
-../src/forth_system.S:918    .data:00000482 forth_end_name_store_to_here
-../src/forth_system.S:918    .text:0000069c forth_code_store_to_here
-../src/forth_system.S:919    .text:0000069c $t
-../src/forth_system.S:924    .text:000006b4 $d
-../src/forth_system.S:927    .data:00000488 forth_name_immediate_mode
-../src/forth_system.S:927    .data:00000494 forth_immediate_mode
-../src/forth_system.S:927    .data:00000492 forth_end_name_immediate_mode
-../src/forth_system.S:927    .text:000006b8 forth_code_immediate_mode
-../src/forth_system.S:928    .text:000006b8 $t
-../src/forth_system.S:930    .text:000006c8 $d
-../src/forth_system.S:933    .data:00000498 forth_name_compile_mode
-../src/forth_system.S:933    .data:000004a4 forth_compile_mode
-../src/forth_system.S:933    .data:000004a2 forth_end_name_compile_mode
-../src/forth_system.S:933    .text:000006cc forth_code_compile_mode
-../src/forth_system.S:934    .text:000006cc $t
-../src/forth_system.S:936    .text:000006dc $d
-../src/forth_system.S:939    .data:000004a8 forth_name_toggle_hidden
-../src/forth_system.S:939    .data:000004c0 forth_toggle_hidden
-../src/forth_system.S:939    .data:000004be forth_end_name_toggle_hidden
-../src/forth_system.S:939    .text:000006e0 forth_code_toggle_hidden
-../src/forth_system.S:940    .text:000006e0 $t
-../src/forth_system.S:946    .data:000004c4 forth_name_toggle_immediate
-../src/forth_system.S:946    .data:000004e0 forth_toggle_immediate
-../src/forth_system.S:946    .data:000004dd forth_end_name_toggle_immediate
-../src/forth_system.S:946    .text:000006f8 forth_code_toggle_immediate
-../src/forth_system.S:951    .text:00000710 $d
-../src/forth_system.S:958    .data:000004e4 forth_name_branch
-../src/forth_system.S:958    .data:000004f4 forth_branch
-../src/forth_system.S:958    .data:000004f3 forth_end_name_branch
-../src/forth_system.S:958    .text:00000714 forth_code_branch
-../src/forth_system.S:959    .text:00000714 $t
-../src/forth_system.S:973    .data:000004f8 forth_name_brancheq
-../src/forth_system.S:973    .data:00000508 forth_brancheq
-../src/forth_system.S:973    .data:00000508 forth_end_name_brancheq
-../src/forth_system.S:973    .text:0000072c forth_code_brancheq
-../src/forth_system.S:985    .data:0000050c forth_name_compile
-../src/forth_system.S:985    .data:00000518 forth_compile
-../src/forth_system.S:985    .data:00000516 forth_end_name_compile
-../src/forth_system.S:998    .data:00000544 forth_name_end_compile
-../src/forth_system.S:998    .data:00000550 forth_end_compile
-../src/forth_system.S:998    .data:0000054e forth_end_name_end_compile
-../src/forth_system.S:1009   .data:00000574 forth_name_hide
-../src/forth_system.S:1009   .data:00000584 forth_hide
-../src/forth_system.S:1009   .data:00000581 forth_end_name_hide
-../src/forth_system.S:1017   .data:00000598 forth_name_code_field_addr_of_next_word
-../src/forth_system.S:1017   .data:000005a4 forth_code_field_addr_of_next_word
-../src/forth_system.S:1017   .data:000005a2 forth_end_name_code_field_addr_of_next_word
-../src/forth_system.S:1023   .data:000005c8 forth_testing
-../src/forth_system.S:1023   .data:000005c8 forth_end_name_testing
+../src/forth_system.S:632    .data:00000364 forth_name_memmove
+../src/forth_system.S:632    .data:00000374 forth_memmove
+../src/forth_system.S:632    .data:00000374 forth_end_name_memmove
+../src/forth_system.S:632    .text:00000460 forth_code_memmove
+../src/forth_system.S:644    .text:0000047a end_memmove
+../src/forth_system.S:638    .text:0000046c loop_memmove
+../src/forth_system.S:649    .data:00000378 forth_name_param_to_return
+../src/forth_system.S:649    .data:00000384 forth_param_to_return
+../src/forth_system.S:649    .data:00000383 forth_end_name_param_to_return
+../src/forth_system.S:649    .text:00000484 forth_code_param_to_return
+../src/forth_system.S:656    .data:00000388 forth_name_return_to_param
+../src/forth_system.S:656    .data:00000394 forth_return_to_param
+../src/forth_system.S:656    .data:00000393 forth_end_name_return_to_param
+../src/forth_system.S:656    .text:00000494 forth_code_return_to_param
+../src/forth_system.S:663    .data:00000398 forth_name_fetch_return
+../src/forth_system.S:663    .data:000003a4 forth_fetch_return
+../src/forth_system.S:663    .data:000003a3 forth_end_name_fetch_return
+../src/forth_system.S:663    .text:000004a4 forth_code_fetch_return
+../src/forth_system.S:670    .data:000003a8 forth_name_store_return
+../src/forth_system.S:670    .data:000003b4 forth_store_return
+../src/forth_system.S:670    .data:000003b3 forth_end_name_store_return
+../src/forth_system.S:670    .text:000004b4 forth_code_store_return
+../src/forth_system.S:677    .data:000003b8 forth_name_key
+../src/forth_system.S:677    .data:000003c4 forth_key
+../src/forth_system.S:677    .data:000003c4 forth_end_name_key
+../src/forth_system.S:677    .text:000004c4 forth_code_key
+../src/forth_system.S:679    .text:000004c8 await_key
+../src/forth_system.S:689    .data:000003c8 forth_name_emit
+../src/forth_system.S:689    .data:000003d8 forth_emit
+../src/forth_system.S:689    .data:000003d5 forth_end_name_emit
+../src/forth_system.S:689    .text:000004e4 forth_code_emit
+../src/forth_system.S:708    .data:000003dc forth_word_buffer
+../src/forth_system.S:712    .data:000003fc forth_name_word
+../src/forth_system.S:712    .data:0000040c forth_word
+../src/forth_system.S:712    .data:00000409 forth_end_name_word
+../src/forth_system.S:704    .text:000004fe forth_code_word
+../src/forth_system.S:717    .text:0000050a await_word
+../src/forth_system.S:729    .text:00000524 start_word
+../src/forth_system.S:749    .text:0000054e await_end_comment_word
+../src/forth_system.S:736    .text:00000532 getchar_for_word
+../src/forth_system.S:754    .text:00000558 end_word
+../src/forth_system.S:757    .text:0000056a $d
+../src/forth_system.S:757    .text:0000056c $d
+../src/forth_system.S:760    .data:00000410 forth_name_number
+../src/forth_system.S:760    .data:00000420 forth_number
+../src/forth_system.S:760    .data:0000041f forth_end_name_number
+../src/forth_system.S:760    .text:00000570 forth_code_number
+../src/forth_system.S:761    .text:00000570 $t
+../src/forth_system.S:801    .text:000005c0 end_number
+../src/forth_system.S:773    .text:0000058c is_hex_number
+../src/forth_system.S:779    .text:00000596 next_number
+../src/forth_system.S:788    .text:000005a8 convert_az_number
+../src/forth_system.S:795    .text:000005b4 check_number
+../src/forth_system.S:806    .text:000005d4 $d
+../src/forth_system.S:823    .data:00000424 forth_name_find
+../src/forth_system.S:823    .data:00000434 forth_find
+../src/forth_system.S:823    .data:00000431 forth_end_name_find
+../src/forth_system.S:823    .text:000005d8 forth_code_find
+../src/forth_system.S:824    .text:000005d8 $t
+../src/forth_system.S:826    .text:000005e0 check_current_find
+../src/forth_system.S:847    .text:0000060e end_find
+../src/forth_system.S:837    .text:000005f8 check_name_find
+../src/forth_system.S:849    .text:0000061c $d
+../src/forth_system.S:852    .data:00000438 forth_name_to_code_field_addr
+../src/forth_system.S:852    .data:00000448 forth_to_code_field_addr
+../src/forth_system.S:852    .data:00000445 forth_end_name_to_code_field_addr
+../src/forth_system.S:852    .text:00000620 forth_code_to_code_field_addr
+../src/forth_system.S:853    .text:00000620 $t
+../src/forth_system.S:865    .data:0000044c forth_name_to_data_field_addr
+../src/forth_system.S:865    .data:0000045c forth_to_data_field_addr
+../src/forth_system.S:865    .data:00000459 forth_end_name_to_data_field_addr
+../src/forth_system.S:865    .text:00000634 forth_code_to_data_field_addr
+../src/forth_system.S:879    .data:00000460 forth_name_create
+../src/forth_system.S:879    .data:00000470 forth_create
+../src/forth_system.S:879    .data:0000046f forth_end_name_create
+../src/forth_system.S:879    .text:0000064a forth_code_create
+../src/forth_system.S:894    .text:0000066a copy_name_create
+../src/forth_system.S:900    .text:00000678 pad_name_create
+../src/forth_system.S:909    .text:0000069a $d
+../src/forth_system.S:909    .text:0000069c $d
+../src/forth_system.S:920    .data:00000474 forth_name_store_to_here
+../src/forth_system.S:920    .data:00000484 forth_store_to_here
+../src/forth_system.S:920    .data:00000482 forth_end_name_store_to_here
+../src/forth_system.S:920    .text:000006a4 forth_code_store_to_here
+../src/forth_system.S:921    .text:000006a4 $t
+../src/forth_system.S:926    .text:000006bc $d
+../src/forth_system.S:929    .data:00000488 forth_name_immediate_mode
+../src/forth_system.S:929    .data:00000494 forth_immediate_mode
+../src/forth_system.S:929    .data:00000492 forth_end_name_immediate_mode
+../src/forth_system.S:929    .text:000006c0 forth_code_immediate_mode
+../src/forth_system.S:930    .text:000006c0 $t
+../src/forth_system.S:932    .text:000006d0 $d
+../src/forth_system.S:935    .data:00000498 forth_name_compile_mode
+../src/forth_system.S:935    .data:000004a4 forth_compile_mode
+../src/forth_system.S:935    .data:000004a2 forth_end_name_compile_mode
+../src/forth_system.S:935    .text:000006d4 forth_code_compile_mode
+../src/forth_system.S:936    .text:000006d4 $t
+../src/forth_system.S:938    .text:000006e4 $d
+../src/forth_system.S:941    .data:000004a8 forth_name_toggle_hidden
+../src/forth_system.S:941    .data:000004c0 forth_toggle_hidden
+../src/forth_system.S:941    .data:000004be forth_end_name_toggle_hidden
+../src/forth_system.S:941    .text:000006e8 forth_code_toggle_hidden
+../src/forth_system.S:942    .text:000006e8 $t
+../src/forth_system.S:948    .data:000004c4 forth_name_toggle_immediate
+../src/forth_system.S:948    .data:000004e0 forth_toggle_immediate
+../src/forth_system.S:948    .data:000004dd forth_end_name_toggle_immediate
+../src/forth_system.S:948    .text:00000700 forth_code_toggle_immediate
+../src/forth_system.S:953    .text:00000718 $d
+../src/forth_system.S:960    .data:000004e4 forth_name_branch
+../src/forth_system.S:960    .data:000004f4 forth_branch
+../src/forth_system.S:960    .data:000004f3 forth_end_name_branch
+../src/forth_system.S:960    .text:0000071c forth_code_branch
+../src/forth_system.S:961    .text:0000071c $t
+../src/forth_system.S:975    .data:000004f8 forth_name_brancheq
+../src/forth_system.S:975    .data:00000508 forth_brancheq
+../src/forth_system.S:975    .data:00000508 forth_end_name_brancheq
+../src/forth_system.S:975    .text:00000734 forth_code_brancheq
+../src/forth_system.S:987    .data:0000050c forth_name_compile
+../src/forth_system.S:987    .data:00000518 forth_compile
+../src/forth_system.S:987    .data:00000516 forth_end_name_compile
+../src/forth_system.S:1000   .data:00000544 forth_name_end_compile
+../src/forth_system.S:1000   .data:00000550 forth_end_compile
+../src/forth_system.S:1000   .data:0000054e forth_end_name_end_compile
+../src/forth_system.S:1011   .data:00000574 forth_name_hide
+../src/forth_system.S:1011   .data:00000584 forth_hide
+../src/forth_system.S:1011   .data:00000581 forth_end_name_hide
+../src/forth_system.S:1019   .data:00000598 forth_name_code_field_addr_of_next_word
+../src/forth_system.S:1019   .data:000005a4 forth_code_field_addr_of_next_word
+../src/forth_system.S:1019   .data:000005a2 forth_end_name_code_field_addr_of_next_word
+../src/forth_system.S:1025   .data:000005c8 forth_testing
+../src/forth_system.S:1025   .data:000005c8 forth_end_name_testing
 
 UNDEFINED SYMBOLS
 memcpy
