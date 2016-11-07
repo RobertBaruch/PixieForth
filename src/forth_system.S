@@ -245,7 +245,7 @@ __defvar "STATE",,state,0 // the Forth state: 0 = interpreting, 1 = compiling.
  * Accepts control from C.
  * r0 (first parameter) is the pointer to the parameter stack.
  * r1 (second parameter) is the address of the Forth routine to jump to,
- *     which is forth_<x>, not code_forth_<x>.
+ *     which is forth_<x>, not forth_code_<x> or forth_name_<x>.
  * Because we don't trust the return stack or the parameter stack, we
  * store SP in r8 for later restoration, and are very careful NEVER to clobber r8!
  * TODO: change this to a struct so we can pass and return all sorts of things,
@@ -255,7 +255,14 @@ __new_func forth_enter
     push {r2-r12, lr}
     mov r8, sp
     mov r11, r0 // r11 <- parameter stack addr
-    mov r12, r1 // r12 <- addr of next word
+    ldr r0, =forth_quit
+    push {r0}
+    push {r1}
+    // Because machine stack grows backwards in memory, this
+    // is laid out in memory as follows:
+    // <addr of program> <forth_quit>
+    //       SP^             SP+4^
+    mov r12, sp
     __next
 __end_func forth_enter
 
@@ -969,11 +976,9 @@ __end_defnative toggle_immediate
  * is executing there.
  */
 __defnative "BRANCH",,branch
-    pop {r0}
-    ldr r1, [r0], #4 // r1 <- offset, ptr += 4
-    lsl r1, #2 // r1 *= 4
-    adds r1, r0 // so offset zero just goes to next word
-    push {r1}
+    ldr r0, [r12], #4 // r1 <- offset, ptr += 4
+    lsl r0, #2 // r1 *= 4
+    adds r12, r0 // so offset zero just goes to next word
 __end_defnative branch
 
 /*
@@ -984,14 +989,12 @@ __end_defnative branch
  */
 /* ( x -- ) */
 __defnative "0BRANCH",,brancheq
-    __popreg r2
-    pop {r0}
-    ldr r1, [r0], #4 // r1 <- offset, ptr += 4
-    teq r2, #0
+    __popreg r1
+    ldr r0, [r12], #4 // r1 <- offset, ptr += 4
+    teq r1, #0
     itt eq  // add offset only if parameter was zero
-    lsleq r1, #2 // r1 *= 4
-    addeq r1, r0 // so offset zero just goes to next word
-    push {r1}
+    lsleq r0, #2 // r1 *= 4
+    addeq r12, r0 // so offset zero just goes to next word
 __end_defnative brancheq
 
 /* Compile a definition. */
