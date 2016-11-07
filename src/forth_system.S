@@ -238,10 +238,8 @@ forth_var_\name\():
 .endm
 
 __defvar "BASE",,base,10 // current base for interpreting text numbers
-// The initial value must be the last name in the builtins.
-__defvar "LATEST",,latest,forth_name_testing // the addr of the last definition.
-__defvar "HERE",,here // the addr of free data
-__defvar "STATE",,state // the Forth state: 0 = interpreting, 1 = compiling.
+__defvar "HERE",,here,_sheap // the addr of free data
+__defvar "STATE",,state,0 // the Forth state: 0 = interpreting, 1 = compiling.
 
 /*
  * Accepts control from C.
@@ -256,7 +254,6 @@ __defvar "STATE",,state // the Forth state: 0 = interpreting, 1 = compiling.
 __new_func forth_enter
     push {r2-r12, lr}
     mov r8, sp
-    // push {r1}
     mov r11, r0 // r11 <- parameter stack addr
     mov r12, r1 // r12 <- addr of next word
     __next
@@ -627,21 +624,37 @@ __defnative "MEMCOPY",,memcpy
     __end_c_call
 __end_defnative memcpy
 
-/* Block move with overlapping regions allowed. */
+/*
+ * Block move with overlapping regions allowed. Because memcpy
+ * does a forward copy, it is okay to use it if and only if
+ * dest >= src + len or dest <= src.
+ */
+// TODO: Make this more time-efficient
 /* ( src-addr dest-addr len -- ) */
 __defnative "MEMMOVE",,memmove
+    __begin_c_call
     // Want r0 = dest, r1 = src, r2 = len.
     __popreg2 r2, r0
     __popreg r1
-    cmp r2, #0
-    blt end_memmove
-loop_memmove:
+    cmp r0, r1
+    ble loop_fwd_memmove // fwd if dest <= src
+    adds r3, r1, r2 // r3 <- src + len
+    cmp r0, r3
+    bge loop_fwd_memmove  // fwd if dest >= src + len
+
+    adds r0, r2
+    adds r1, r2
+loop_bwd_memmove:
     cbz r2, end_memmove
-    ldrb r3, [r1], #1
-    strb r3, [r2], #1
+    ldrb r3, [r1, #-1]!
+    strb r3, [r0, #-1]!
     subs r2, #1
-    b loop_memmove
+    b loop_bwd_memmove
+
+loop_fwd_memmove:
+    bl memcpy
 end_memmove:
+    __end_c_call
 __end_defnative memmove
 
 /* Pop param stack and push onto return stack */
@@ -825,12 +838,11 @@ __defnative "FIND",,find
     __loadvar "LATEST", r2 // r2 <- current definition address
 check_current_find:
     cbz r2, end_find
-    ldr r3, [r2] // r3 <- next definition address
     ldrb r4, [r2, #8] // r4 <- definition name length + flags
     ands r4, F_HIDDEN | F_LENMASK
     cmp r4, r1 // skip hidden entries and entries not matching the string length
     itt ne
-    movne r2, r3
+    ldrne r2, [r2]
     bne check_current_find
     mov r5, r0 // r5 <- ptr to buffer
     adds r6, r2, #9 // r6 <- ptr to name
@@ -839,7 +851,7 @@ check_name_find:
     ldrb r9, [r6], #1
     cmp r7, r9
     itt ne
-    movne r2, r3
+    ldrne r2, [r2]
     bne check_current_find
     subs r4, #1
     cbz r4, end_find
@@ -910,11 +922,10 @@ __end_defnative create
 
 /*
  * Stores a value into HERE, and increments HERE by 4. The
- * implication is that HERE has special semantics: it points to
- * available memory, but the content of that memory is undefined.
- * Thus, it makes sense that once we write to the memory at
- * HERE, we should increment HERE to point to the next available
- * location.
+ * implication is that HERE has special semantics: by definition
+ * it points to available memory. Thus, it makes sense that once we
+ * write to the memory at HERE, we should increment HERE to point to
+ * the next available location.
  */
 /* ( x -- ) */
 __defnative "HERE!",,store_to_here
@@ -1027,3 +1038,9 @@ __defword "TESTING",,testing
     __word number
     __word quit
 __end_defword testing
+
+/*
+ * The initial value of LATEST must be the last name in the builtins. All
+ * new builtins, therefore, must be defined before this one.
+ */
+__defvar "LATEST",,latest,forth_name_latest // the addr of the last definition.

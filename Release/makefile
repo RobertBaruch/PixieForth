@@ -56,7 +56,7 @@ all: PixieForth.elf secondary-outputs
 PixieForth.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross ARM C++ Linker'
-	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -O3 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g -T "F:\kalkulyator-workspace-v2\PixieForth\src\mk64fn1m0vll12.ld" -Xlinker --gc-sections -L"F:\kalkulyator-workspace-v2\TeensyCore3\Release" -Wl,-Map,"PixieForth.map" --specs=nosys.specs -o "PixieForth.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -O3 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g -T "F:\kalkulyator-workspace-v2\PixieForth\src\frdm_k64f.ld" -Xlinker --gc-sections -L"F:\kalkulyator-workspace-v2\TeensyCore3\Release" -Xlinker -defsym=__heap_size__=0x30000 -Wl,-Map,"PixieForth.map" --specs=nosys.specs -o "PixieForth.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

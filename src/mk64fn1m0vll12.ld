@@ -66,7 +66,6 @@ SECTIONS
 	_etext = .;
 
 	.usbdescriptortable (NOLOAD) : {
-		/* . = ORIGIN(RAM); */
 		. = ALIGN(512);
 		*(.usbdescriptortable*)
 	} > RAM

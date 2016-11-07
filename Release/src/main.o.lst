@@ -16,15 +16,266 @@
   16              		.text
   17              	.Ltext0:
   18              		.cfi_sections	.debug_frame
-  19              		.section	.text.startup.main,"ax",%progbits
+  19              		.section	.text._ZN5Print5writeEPKc,"axG",%progbits,_ZN5Print5writeEPKc,comdat
   20              		.align	2
-  21              		.global	main
+  21              		.weak	_ZN5Print5writeEPKc
   22              		.thumb
   23              		.thumb_func
-  25              	main:
+  25              	_ZN5Print5writeEPKc:
   26              		.fnstart
-  27              	.LFB454:
-  28              		.file 1 "../src/main.cpp"
+  27              	.LFB88:
+  28              		.file 1 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/Print.h"
+   1:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** /* Teensyduino Core Library
+   2:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * http://www.pjrc.com/teensy/
+   3:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
+   4:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
+   5:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * Permission is hereby granted, free of charge, to any person obtaining
+   6:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * a copy of this software and associated documentation files (the
+   7:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * "Software"), to deal in the Software without restriction, including
+   8:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * without limitation the rights to use, copy, modify, merge, publish,
+   9:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * distribute, sublicense, and/or sell copies of the Software, and to
+  10:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * permit persons to whom the Software is furnished to do so, subject to
+  11:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * the following conditions:
+  12:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
+  13:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * 1. The above copyright notice and this permission notice shall be
+  14:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * included in all copies or substantial portions of the Software.
+  15:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
+  16:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * 2. If the Software is incorporated into a build system that allows
+  17:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * selection among a list of target devices, then similar target
+  18:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * devices manufactured by PJRC.COM must be included in the list of
+  19:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * target devices and selectable in the same manner.
+  20:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
+  21:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  22:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  23:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  24:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+  25:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  26:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  27:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  28:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * SOFTWARE.
+  29:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  */
+  30:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  31:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #ifndef Print_h
+  32:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define Print_h
+  33:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  34:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <inttypes.h>
+  35:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <stdio.h> // for size_t - gives sprintf and other stuff to all sketches & libs
+  36:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <stdarg.h>
+  37:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "core_id.h"
+  38:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "WString.h"
+  39:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "Printable.h"
+  40:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  41:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define DEC 10
+  42:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define HEX 16
+  43:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define OCT 8
+  44:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define BIN 2
+  45:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define BYTE 0
+  46:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  47:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** class __FlashStringHelper;
+  48:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  49:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** class Print
+  50:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** {
+  51:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****   public:
+  52:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	Print() : write_error(0) {}
+  53:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(uint8_t b) = 0;
+  54:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t write(const char *str)			{ return write((const uint8_t *)str, strlen(str)); }
+  29              		.loc 1 54 0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              	.LVL0:
+  34 0000 70B5     		push	{r4, r5, r6, lr}
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 4, -16
+  37              		.cfi_offset 5, -12
+  38              		.cfi_offset 6, -8
+  39              		.cfi_offset 14, -4
+  40              		.loc 1 54 0
+  41 0002 0446     		mov	r4, r0
+  42 0004 0846     		mov	r0, r1
+  43              	.LVL1:
+  44 0006 0D46     		mov	r5, r1
+  45 0008 FFF7FEFF 		bl	strlen
+  46              	.LVL2:
+  47 000c 2368     		ldr	r3, [r4]
+  48 000e 0246     		mov	r2, r0
+  49 0010 2946     		mov	r1, r5
+  50 0012 2046     		mov	r0, r4
+  51 0014 5B68     		ldr	r3, [r3, #4]
+  52 0016 BDE87040 		pop	{r4, r5, r6, lr}
+  53              		.cfi_restore 14
+  54              		.cfi_restore 6
+  55              		.cfi_restore 5
+  56              		.cfi_restore 4
+  57              		.cfi_def_cfa_offset 0
+  58              	.LVL3:
+  59 001a 1847     		bx	r3
+  60              	.LVL4:
+  61              		.cfi_endproc
+  62              	.LFE88:
+  63              		.cantunwind
+  64              		.fnend
+  66              		.section	.text._ZN5Print7printlnEPKc,"axG",%progbits,_ZN5Print7printlnEPKc,comdat
+  67              		.align	2
+  68              		.weak	_ZN5Print7printlnEPKc
+  69              		.thumb
+  70              		.thumb_func
+  72              	_ZN5Print7printlnEPKc:
+  73              		.fnstart
+  74              	.LFB106:
+  55:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(const uint8_t *buffer, size_t size);
+  56:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t write(const char *buffer, size_t size)	{ return write((const uint8_t *)buffer, size); }
+  57:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const String &s);
+  58:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(char c)				{ return write((uint8_t)c); }
+  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const char s[])			{ return write(s); }
+  60:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
+  61:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  62:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(uint8_t b)				{ return printNumber(b, 10, 0); }
+  63:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(int n)				{ return print((long)n); }
+  64:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned int n)			{ return printNumber(n, 10, 0); }
+  65:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(long n);
+  66:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned long n)			{ return printNumber(n, 10, 0); }
+  67:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  68:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned char n, int base)		{ return printNumber(n, base, 0); }
+  69:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(int n, int base)			{ return (base == 10) ? print(n) : printNumber(n, base, 0); }
+  70:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned int n, int base)		{ return printNumber(n, base, 0); }
+  71:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(long n, int base)			{ return (base == 10) ? print(n) : printNumber(n, base, 0); }
+  72:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned long n, int base)		{ return printNumber(n, base, 0); }
+  73:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  74:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(double n, int digits = 2)		{ return printFloat(n, digits); }
+  75:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const Printable &obj)		{ return obj.printTo(*this); }
+  76:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(void);
+  77:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const String &s)			{ return print(s) + println(); }
+  78:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(char c)				{ return print(c) + println(); }
+  79:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const char s[])			{ return print(s) + println(); }
+  75              		.loc 1 79 0
+  76              		.cfi_startproc
+  77              		@ args = 0, pretend = 0, frame = 0
+  78              		@ frame_needed = 0, uses_anonymous_args = 0
+  79              	.LVL5:
+  80 0000 38B5     		push	{r3, r4, r5, lr}
+  81              		.save {r3, r4, r5, lr}
+  82              		.cfi_def_cfa_offset 16
+  83              		.cfi_offset 3, -16
+  84              		.cfi_offset 4, -12
+  85              		.cfi_offset 5, -8
+  86              		.cfi_offset 14, -4
+  87              		.loc 1 79 0
+  88 0002 0446     		mov	r4, r0
+  89              	.LVL6:
+  90              	.LBB40:
+  91              	.LBB41:
+  92              	.LBB42:
+  54:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(const uint8_t *buffer, size_t size);
+  93              		.loc 1 54 0
+  94 0004 0846     		mov	r0, r1
+  95              	.LVL7:
+  96              	.LBE42:
+  97              	.LBE41:
+  98              	.LBE40:
+  99              		.loc 1 79 0
+ 100 0006 0D46     		mov	r5, r1
+ 101              	.LBB45:
+ 102              	.LBB44:
+ 103              	.LBB43:
+  54:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(const uint8_t *buffer, size_t size);
+ 104              		.loc 1 54 0
+ 105 0008 FFF7FEFF 		bl	strlen
+ 106              	.LVL8:
+ 107 000c 2368     		ldr	r3, [r4]
+ 108 000e 0246     		mov	r2, r0
+ 109 0010 2946     		mov	r1, r5
+ 110 0012 5B68     		ldr	r3, [r3, #4]
+ 111 0014 2046     		mov	r0, r4
+ 112 0016 9847     		blx	r3
+ 113              	.LVL9:
+ 114 0018 0546     		mov	r5, r0
+ 115              	.LVL10:
+ 116              	.LBE43:
+ 117              	.LBE44:
+ 118              	.LBE45:
+ 119              		.loc 1 79 0
+ 120 001a 2046     		mov	r0, r4
+ 121 001c FFF7FEFF 		bl	_ZN5Print7printlnEv
+ 122              	.LVL11:
+ 123 0020 2844     		add	r0, r0, r5
+ 124 0022 38BD     		pop	{r3, r4, r5, pc}
+ 125              		.cfi_endproc
+ 126              	.LFE106:
+ 127              		.fnend
+ 129              		.section	.text._ZN5Print7printlnEmi,"axG",%progbits,_ZN5Print7printlnEmi,comdat
+ 130              		.align	2
+ 131              		.weak	_ZN5Print7printlnEmi
+ 132              		.thumb
+ 133              		.thumb_func
+ 135              	_ZN5Print7printlnEmi:
+ 136              		.fnstart
+ 137              	.LFB117:
+  80:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const __FlashStringHelper *f)	{ return print(f) + println(); }
+  81:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  82:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(uint8_t b)			{ return print(b) + println(); }
+  83:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(int n)				{ return print(n) + println(); }
+  84:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(unsigned int n)			{ return print(n) + println(); }
+  85:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(long n)				{ return print(n) + println(); }
+  86:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(unsigned long n)			{ return print(n) + println(); }
+  87:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+  88:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(unsigned char n, int base)	{ return print(n, base) + println(); }
+  89:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(int n, int base)			{ return print(n, base) + println(); }
+  90:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(unsigned int n, int base)	{ return print(n, base) + println(); }
+  91:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(long n, int base)		{ return print(n, base) + println(); }
+  92:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(unsigned long n, int base)	{ return print(n, base) + println(); }
+ 138              		.loc 1 92 0
+ 139              		.cfi_startproc
+ 140              		@ args = 0, pretend = 0, frame = 0
+ 141              		@ frame_needed = 0, uses_anonymous_args = 0
+ 142              	.LVL12:
+ 143 0000 38B5     		push	{r3, r4, r5, lr}
+ 144              		.save {r3, r4, r5, lr}
+ 145              		.cfi_def_cfa_offset 16
+ 146              		.cfi_offset 3, -16
+ 147              		.cfi_offset 4, -12
+ 148              		.cfi_offset 5, -8
+ 149              		.cfi_offset 14, -4
+ 150              	.LBB46:
+ 151              	.LBB47:
+  72:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+ 152              		.loc 1 72 0
+ 153 0002 D2B2     		uxtb	r2, r2
+ 154              	.LVL13:
+ 155 0004 0023     		movs	r3, #0
+ 156              	.LBE47:
+ 157              	.LBE46:
+ 158              		.loc 1 92 0
+ 159 0006 0546     		mov	r5, r0
+ 160              	.LVL14:
+ 161              	.LBB49:
+ 162              	.LBB48:
+  72:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+ 163              		.loc 1 72 0
+ 164 0008 FFF7FEFF 		bl	_ZN5Print11printNumberEmhh
+ 165              	.LVL15:
+ 166 000c 0446     		mov	r4, r0
+ 167              	.LVL16:
+ 168              	.LBE48:
+ 169              	.LBE49:
+ 170              		.loc 1 92 0
+ 171 000e 2846     		mov	r0, r5
+ 172 0010 FFF7FEFF 		bl	_ZN5Print7printlnEv
+ 173              	.LVL17:
+ 174 0014 2044     		add	r0, r0, r4
+ 175 0016 38BD     		pop	{r3, r4, r5, pc}
+ 176              		.cfi_endproc
+ 177              	.LFE117:
+ 178              		.fnend
+ 180              		.section	.text.startup.main,"ax",%progbits
+ 181              		.align	2
+ 182              		.global	main
+ 183              		.thumb
+ 184              		.thumb_func
+ 186              	main:
+ 187              		.fnstart
+ 188              	.LFB454:
+ 189              		.file 2 "../src/main.cpp"
    1:../src/main.cpp **** #include "WProgram.h"
    2:../src/main.cpp **** #include <stdint.h>
    3:../src/main.cpp **** #include <usb_serial.h>
@@ -38,140 +289,70 @@
   11:../src/main.cpp **** 
   12:../src/main.cpp **** extern "C" int main(void)
   13:../src/main.cpp **** {
-  29              		.loc 1 13 0
-  30              		.cfi_startproc
-  31              		@ args = 0, pretend = 0, frame = 0
-  32              		@ frame_needed = 0, uses_anonymous_args = 0
-  33 0000 70B5     		push	{r4, r5, r6, lr}
-  34              		.save {r4, r5, r6, lr}
-  35              		.cfi_def_cfa_offset 16
-  36              		.cfi_offset 4, -16
-  37              		.cfi_offset 5, -12
-  38              		.cfi_offset 6, -8
-  39              		.cfi_offset 14, -4
+ 190              		.loc 2 13 0
+ 191              		.cfi_startproc
+ 192              		@ args = 0, pretend = 0, frame = 0
+ 193              		@ frame_needed = 0, uses_anonymous_args = 0
+ 194 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 195              		.save {r3, r4, r5, r6, r7, r8, r9, lr}
+ 196              		.cfi_def_cfa_offset 32
+ 197              		.cfi_offset 3, -32
+ 198              		.cfi_offset 4, -28
+ 199              		.cfi_offset 5, -24
+ 200              		.cfi_offset 6, -20
+ 201              		.cfi_offset 7, -16
+ 202              		.cfi_offset 8, -12
+ 203              		.cfi_offset 9, -8
+ 204              		.cfi_offset 14, -4
   14:../src/main.cpp ****   delay(2000); // delay for USB to get enumerated
-  40              		.loc 1 14 0
-  41 0002 4FF4FA60 		mov	r0, #2000
-  42 0006 FFF7FEFF 		bl	delay
-  43              	.LVL0:
+ 205              		.loc 2 14 0
+ 206 0004 4FF4FA60 		mov	r0, #2000
+ 207 0008 FFF7FEFF 		bl	delay
+ 208              	.LVL18:
   15:../src/main.cpp **** 
   16:../src/main.cpp ****   sp = data_stack;
-  44              		.loc 1 16 0
-  45 000a 124B     		ldr	r3, .L5
-  46 000c 124A     		ldr	r2, .L5+4
+ 209              		.loc 2 16 0
+ 210 000c 3E4B     		ldr	r3, .L11
+ 211 000e 3F4A     		ldr	r2, .L11+4
   17:../src/main.cpp **** 
   18:../src/main.cpp ****   // Make sure you set your terminal to send and receive LF
   19:../src/main.cpp ****   // as the newline character, and to local echo.
   20:../src/main.cpp ****   Serial.println();
-  47              		.loc 1 20 0
-  48 000e 1348     		ldr	r0, .L5+8
+ 212              		.loc 2 20 0
+ 213 0010 3F48     		ldr	r0, .L11+8
   16:../src/main.cpp **** 
-  49              		.loc 1 16 0
-  50 0010 1A60     		str	r2, [r3]
-  51              		.loc 1 20 0
-  52 0012 FFF7FEFF 		bl	_ZN5Print7printlnEv
-  53              	.LVL1:
-  54              	.LBB20:
-  55              	.LBB21:
-  56              	.LBB22:
-  57              	.LBB23:
-  58              	.LBB24:
-  59              	.LBB25:
-  60              		.file 2 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/usb_serial.h"
-   1:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** /* Teensyduino Core Library
-   2:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * http://www.pjrc.com/teensy/
-   3:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
-   4:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  *
-   5:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * Permission is hereby granted, free of charge, to any person obtaining
-   6:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * a copy of this software and associated documentation files (the
-   7:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * "Software"), to deal in the Software without restriction, including
-   8:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * without limitation the rights to use, copy, modify, merge, publish,
-   9:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * distribute, sublicense, and/or sell copies of the Software, and to
-  10:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * permit persons to whom the Software is furnished to do so, subject to
-  11:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * the following conditions:
-  12:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  *
-  13:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * 1. The above copyright notice and this permission notice shall be
-  14:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * included in all copies or substantial portions of the Software.
-  15:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  *
-  16:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * 2. If the Software is incorporated into a build system that allows
-  17:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * selection among a list of target devices, then similar target
-  18:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * devices manufactured by PJRC.COM must be included in the list of
-  19:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * target devices and selectable in the same manner.
-  20:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  *
-  21:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  22:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  23:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-  24:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-  25:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-  26:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-  27:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  28:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  * SOFTWARE.
-  29:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****  */
-  30:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** 
-  31:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #ifndef USBserial_h_
-  32:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #define USBserial_h_
-  33:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** 
-  34:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #include "usb_desc.h"
-  35:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** 
-  36:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #if (defined(CDC_STATUS_INTERFACE) && defined(CDC_DATA_INTERFACE)) || defined(USB_DISABLED)
-  37:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** 
-  38:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #include <inttypes.h>
-  39:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** 
-  40:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #if F_CPU >= 20000000 && !defined(USB_DISABLED)
-  41:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** 
-  42:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** // C language implementation
-  43:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #ifdef __cplusplus
-  44:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** extern "C" {
-  45:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #endif
-  46:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** int usb_serial_getchar(void);
-  47:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** int usb_serial_peekchar(void);
-  48:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** int usb_serial_available(void);
-  49:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** int usb_serial_read(void *buffer, uint32_t size);
-  50:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** void usb_serial_flush_input(void);
-  51:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** int usb_serial_putchar(uint8_t c);
-  52:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** int usb_serial_write(const void *buffer, uint32_t size);
-  53:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** int usb_serial_write_buffer_free(void);
-  54:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** void usb_serial_flush_output(void);
-  55:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** extern uint32_t usb_cdc_line_coding[2];
-  56:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** extern volatile uint32_t usb_cdc_line_rtsdtr_millis;
-  57:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** extern volatile uint32_t systick_millis_count;
-  58:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** extern volatile uint8_t usb_cdc_line_rtsdtr;
-  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** extern volatile uint8_t usb_cdc_transmit_flush_timer;
-  60:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** extern volatile uint8_t usb_configuration;
-  61:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #ifdef __cplusplus
-  62:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** }
-  63:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #endif
-  64:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** 
-  65:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #define USB_SERIAL_DTR  0x01
-  66:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #define USB_SERIAL_RTS  0x02
-  67:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** 
-  68:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** // C++ interface
-  69:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #ifdef __cplusplus
-  70:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** #include "Stream.h"
-  71:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** class usb_serial_class : public Stream
-  72:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** {
-  73:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h **** public:
-  74:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         void begin(long) { /* TODO: call a function that tries to wait for enumeration */ };
-  75:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         void end() { /* TODO: flush output and shut down USB port */ };
-  76:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual int available() { return usb_serial_available(); }
-  77:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual int read() { return usb_serial_getchar(); }
-  78:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual int peek() { return usb_serial_peekchar(); }
-  79:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual void flush() { usb_serial_flush_output(); }  // TODO: actually wait for data to lea
-  80:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual void clear(void) { usb_serial_flush_input(); }
-  81:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual size_t write(uint8_t c) { return usb_serial_putchar(c); }
-  82:F:\kalkulyator-workspace-v2\TeensyCore3\src\usb_serial.h ****         virtual size_t write(const uint8_t *buffer, size_t size) { return usb_serial_write(buffer, 
-  61              		.loc 2 82 0
-  62 0016 1021     		movs	r1, #16
-  63 0018 1148     		ldr	r0, .L5+12
-  64              	.LBE25:
-  65              	.LBE24:
-  66              	.LBE23:
-  67              	.LBE22:
-  68              	.LBE21:
-  69              	.LBE20:
-  70              	.LBB31:
-  71              	.LBB32:
-  72              		.file 3 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/core_pins.h"
+ 214              		.loc 2 16 0
+ 215 0012 1A60     		str	r2, [r3]
+ 216              		.loc 2 20 0
+ 217 0014 FFF7FEFF 		bl	_ZN5Print7printlnEv
+ 218              	.LVL19:
+  21:../src/main.cpp ****   Serial.println("PIXIEFORTH READY");
+ 219              		.loc 2 21 0
+ 220 0018 3E49     		ldr	r1, .L11+12
+ 221 001a 3D48     		ldr	r0, .L11+8
+  22:../src/main.cpp ****   Serial.println();
+  23:../src/main.cpp ****   Serial.print("HEAP START     : ");
+  24:../src/main.cpp ****   Serial.println((uint32_t)&_sheap, 16);
+ 222              		.loc 2 24 0
+ 223 001c 3E4F     		ldr	r7, .L11+16
+  25:../src/main.cpp ****   Serial.print("HEAP END       : ");
+  26:../src/main.cpp ****   Serial.println((uint32_t)&_eheap, 16);
+ 224              		.loc 2 26 0
+ 225 001e DFF82491 		ldr	r9, .L11+60
+  27:../src/main.cpp ****   Serial.print("RAM END        : ");
+  28:../src/main.cpp ****   Serial.println((uint32_t)&_estack, 16);
+ 226              		.loc 2 28 0
+ 227 0022 3E4C     		ldr	r4, .L11+20
+ 228              	.LBB50:
+ 229              	.LBB51:
+  66:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+ 230              		.loc 1 66 0
+ 231 0024 DFF82081 		ldr	r8, .L11+64
+ 232              	.LBE51:
+ 233              	.LBE50:
+ 234              	.LBB53:
+ 235              	.LBB54:
+ 236              		.file 3 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/core_pins.h"
    1:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** /* Teensyduino Core Library
    2:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h ****  * http://www.pjrc.com/teensy/
    3:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
@@ -2204,12 +2385,12 @@
 2030:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 		if (val) {
 2031:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			if (pin == 0) {
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN0_PORTSET = CORE_PIN0_BITMASK;
-  73              		.loc 3 2032 0
-  74 001a 124E     		ldr	r6, .L5+16
-  75              	.LBE32:
-  76              	.LBE31:
-  77              	.LBB35:
-  78              	.LBB36:
+ 237              		.loc 3 2032 0
+ 238 0028 3D4E     		ldr	r6, .L11+24
+ 239              	.LBE54:
+ 240              	.LBE53:
+ 241              	.LBB57:
+ 242              	.LBB58:
 2033:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
 2034:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN1_PORTSET = CORE_PIN1_BITMASK;
 2035:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 2) {
@@ -2346,223 +2527,365 @@
 2166:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 		} else {
 2167:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			if (pin == 0) {
 2168:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 				CORE_PIN0_PORTCLEAR = CORE_PIN0_BITMASK;
-  79              		.loc 3 2168 0
-  80 001c 124D     		ldr	r5, .L5+20
-  81              	.LBE36:
-  82              	.LBE35:
-  83              	.LBB38:
-  84              	.LBB30:
-  85              	.LBB29:
-  86              	.LBB28:
-  87              	.LBB27:
-  88              	.LBB26:
-  89              		.loc 2 82 0
-  90 001e FFF7FEFF 		bl	usb_serial_write
-  91              	.LVL2:
-  92              	.LBE26:
-  93              	.LBE27:
-  94              	.LBE28:
-  95              	.LBE29:
-  96              		.file 4 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/Print.h"
-   1:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** /* Teensyduino Core Library
-   2:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * http://www.pjrc.com/teensy/
-   3:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * Copyright (c) 2013 PJRC.COM, LLC.
-   4:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
-   5:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * Permission is hereby granted, free of charge, to any person obtaining
-   6:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * a copy of this software and associated documentation files (the
-   7:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * "Software"), to deal in the Software without restriction, including
-   8:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * without limitation the rights to use, copy, modify, merge, publish,
-   9:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * distribute, sublicense, and/or sell copies of the Software, and to
-  10:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * permit persons to whom the Software is furnished to do so, subject to
-  11:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * the following conditions:
-  12:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
-  13:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * 1. The above copyright notice and this permission notice shall be
-  14:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * included in all copies or substantial portions of the Software.
-  15:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
-  16:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * 2. If the Software is incorporated into a build system that allows
-  17:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * selection among a list of target devices, then similar target
-  18:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * devices manufactured by PJRC.COM must be included in the list of
-  19:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * target devices and selectable in the same manner.
-  20:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  *
-  21:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  22:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  23:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-  24:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-  25:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-  26:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-  27:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  28:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  * SOFTWARE.
-  29:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****  */
-  30:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  31:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #ifndef Print_h
-  32:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define Print_h
-  33:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  34:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <inttypes.h>
-  35:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <stdio.h> // for size_t - gives sprintf and other stuff to all sketches & libs
-  36:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include <stdarg.h>
-  37:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "core_id.h"
-  38:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "WString.h"
-  39:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #include "Printable.h"
-  40:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  41:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define DEC 10
-  42:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define HEX 16
-  43:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define OCT 8
-  44:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define BIN 2
-  45:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** #define BYTE 0
-  46:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  47:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** class __FlashStringHelper;
-  48:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  49:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** class Print
-  50:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** {
-  51:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h ****   public:
-  52:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	Print() : write_error(0) {}
-  53:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(uint8_t b) = 0;
-  54:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t write(const char *str)			{ return write((const uint8_t *)str, strlen(str)); }
-  55:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	virtual size_t write(const uint8_t *buffer, size_t size);
-  56:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t write(const char *buffer, size_t size)	{ return write((const uint8_t *)buffer, size); }
-  57:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const String &s);
-  58:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(char c)				{ return write((uint8_t)c); }
-  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const char s[])			{ return write(s); }
-  60:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
-  61:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  62:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(uint8_t b)				{ return printNumber(b, 10, 0); }
-  63:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(int n)				{ return print((long)n); }
-  64:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned int n)			{ return printNumber(n, 10, 0); }
-  65:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(long n);
-  66:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned long n)			{ return printNumber(n, 10, 0); }
-  67:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  68:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned char n, int base)		{ return printNumber(n, base, 0); }
-  69:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(int n, int base)			{ return (base == 10) ? print(n) : printNumber(n, base, 0); }
-  70:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned int n, int base)		{ return printNumber(n, base, 0); }
-  71:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(long n, int base)			{ return (base == 10) ? print(n) : printNumber(n, base, 0); }
-  72:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(unsigned long n, int base)		{ return printNumber(n, base, 0); }
-  73:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
-  74:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(double n, int digits = 2)		{ return printFloat(n, digits); }
-  75:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const Printable &obj)		{ return obj.printTo(*this); }
-  76:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(void);
-  77:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const String &s)			{ return print(s) + println(); }
-  78:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(char c)				{ return print(c) + println(); }
-  79:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t println(const char s[])			{ return print(s) + println(); }
-  97              		.loc 4 79 0
-  98 0022 0E48     		ldr	r0, .L5+8
-  99 0024 FFF7FEFF 		bl	_ZN5Print7printlnEv
- 100              	.LVL3:
- 101              	.LBE30:
- 102              	.LBE38:
-  21:../src/main.cpp ****   Serial.println("PIXIEFORTH READY");
-  22:../src/main.cpp ****   Serial.println();
- 103              		.loc 1 22 0
- 104 0028 0C48     		ldr	r0, .L5+8
- 105 002a FFF7FEFF 		bl	_ZN5Print7printlnEv
- 106              	.LVL4:
-  23:../src/main.cpp **** 
-  24:../src/main.cpp ****   run_unit_tests();
- 107              		.loc 1 24 0
- 108 002e FFF7FEFF 		bl	_Z14run_unit_testsv
- 109              	.LVL5:
-  25:../src/main.cpp **** 
-  26:../src/main.cpp ****   pinMode(0, OUTPUT);
- 110              		.loc 1 26 0
- 111 0032 0121     		movs	r1, #1
- 112 0034 0020     		movs	r0, #0
- 113 0036 FFF7FEFF 		bl	pinMode
- 114              	.LVL6:
- 115              	.L2:
-  27:../src/main.cpp ****   while (1) {
-  28:../src/main.cpp ****     delay(1000);
- 116              		.loc 1 28 0 discriminator 1
- 117 003a 4FF47A70 		mov	r0, #1000
- 118              	.LBB39:
- 119              	.LBB33:
+ 243              		.loc 3 2168 0
+ 244 002a 3E4D     		ldr	r5, .L11+28
+ 245              	.LBE58:
+ 246              	.LBE57:
+  21:../src/main.cpp ****   Serial.println();
+ 247              		.loc 2 21 0
+ 248 002c FFF7FEFF 		bl	_ZN5Print7printlnEPKc
+ 249              	.LVL20:
+  22:../src/main.cpp ****   Serial.print("HEAP START     : ");
+ 250              		.loc 2 22 0
+ 251 0030 3748     		ldr	r0, .L11+8
+ 252 0032 FFF7FEFF 		bl	_ZN5Print7printlnEv
+ 253              	.LVL21:
+ 254              	.LBB60:
+ 255              	.LBB61:
+  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
+ 256              		.loc 1 59 0
+ 257 0036 3C49     		ldr	r1, .L11+32
+ 258 0038 3548     		ldr	r0, .L11+8
+ 259 003a FFF7FEFF 		bl	_ZN5Print5writeEPKc
+ 260              	.LVL22:
+ 261              	.LBE61:
+ 262              	.LBE60:
+  24:../src/main.cpp ****   Serial.print("HEAP END       : ");
+ 263              		.loc 2 24 0
+ 264 003e 3946     		mov	r1, r7
+ 265 0040 1022     		movs	r2, #16
+ 266 0042 3348     		ldr	r0, .L11+8
+ 267 0044 FFF7FEFF 		bl	_ZN5Print7printlnEmi
+ 268              	.LVL23:
+ 269              	.LBB62:
+ 270              	.LBB63:
+  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
+ 271              		.loc 1 59 0
+ 272 0048 3849     		ldr	r1, .L11+36
+ 273 004a 3148     		ldr	r0, .L11+8
+ 274 004c FFF7FEFF 		bl	_ZN5Print5writeEPKc
+ 275              	.LVL24:
+ 276              	.LBE63:
+ 277              	.LBE62:
+  26:../src/main.cpp ****   Serial.print("RAM END        : ");
+ 278              		.loc 2 26 0
+ 279 0050 1022     		movs	r2, #16
+ 280 0052 4946     		mov	r1, r9
+ 281 0054 2E48     		ldr	r0, .L11+8
+ 282 0056 FFF7FEFF 		bl	_ZN5Print7printlnEmi
+ 283              	.LVL25:
+ 284              	.LBB64:
+ 285              	.LBB65:
+  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
+ 286              		.loc 1 59 0
+ 287 005a 3549     		ldr	r1, .L11+40
+ 288 005c 2C48     		ldr	r0, .L11+8
+ 289 005e FFF7FEFF 		bl	_ZN5Print5writeEPKc
+ 290              	.LVL26:
+ 291              	.LBE65:
+ 292              	.LBE64:
+ 293              		.loc 2 28 0
+ 294 0062 2146     		mov	r1, r4
+ 295 0064 1022     		movs	r2, #16
+ 296 0066 2A48     		ldr	r0, .L11+8
+ 297 0068 FFF7FEFF 		bl	_ZN5Print7printlnEmi
+ 298              	.LVL27:
+  29:../src/main.cpp ****   Serial.print("AVAILABLE HEAP : ");
+  30:../src/main.cpp ****   Serial.print((uint32_t)&_eheap - (uint32_t)&_sheap, 16);
+ 299              		.loc 2 30 0
+ 300 006c C7EB0907 		rsb	r7, r7, r9
+ 301              	.LBB66:
+ 302              	.LBB67:
+  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
+ 303              		.loc 1 59 0
+ 304 0070 3049     		ldr	r1, .L11+44
+ 305 0072 2748     		ldr	r0, .L11+8
+ 306 0074 FFF7FEFF 		bl	_ZN5Print5writeEPKc
+ 307              	.LVL28:
+ 308              	.LBE67:
+ 309              	.LBE66:
+ 310              	.LBB68:
+ 311              	.LBB69:
+  72:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+ 312              		.loc 1 72 0
+ 313 0078 0023     		movs	r3, #0
+ 314 007a 1022     		movs	r2, #16
+ 315 007c 3946     		mov	r1, r7
+ 316 007e 2448     		ldr	r0, .L11+8
+ 317 0080 FFF7FEFF 		bl	_ZN5Print11printNumberEmhh
+ 318              	.LVL29:
+ 319              	.LBE69:
+ 320              	.LBE68:
+ 321              	.LBB70:
+ 322              	.LBB71:
+  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
+ 323              		.loc 1 59 0
+ 324 0084 2C49     		ldr	r1, .L11+48
+ 325 0086 2248     		ldr	r0, .L11+8
+ 326 0088 FFF7FEFF 		bl	_ZN5Print5writeEPKc
+ 327              	.LVL30:
+ 328              	.LBE71:
+ 329              	.LBE70:
+ 330              	.LBB72:
+ 331              	.LBB52:
+  66:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+ 332              		.loc 1 66 0
+ 333 008c A8FB0731 		umull	r3, r1, r8, r7
+ 334 0090 0A22     		movs	r2, #10
+ 335 0092 0023     		movs	r3, #0
+ 336 0094 8909     		lsrs	r1, r1, #6
+ 337 0096 1E48     		ldr	r0, .L11+8
+ 338 0098 FFF7FEFF 		bl	_ZN5Print11printNumberEmhh
+ 339              	.LVL31:
+ 340              	.LBE52:
+ 341              	.LBE72:
+  31:../src/main.cpp ****   Serial.print(" (");
+  32:../src/main.cpp ****   Serial.print(((uint32_t)&_eheap - (uint32_t)&_sheap)/1000);
+  33:../src/main.cpp ****   Serial.println(" kiB)");
+ 342              		.loc 2 33 0
+ 343 009c 2749     		ldr	r1, .L11+52
+ 344 009e 1C48     		ldr	r0, .L11+8
+ 345 00a0 FFF7FEFF 		bl	_ZN5Print7printlnEPKc
+ 346              	.LVL32:
+  34:../src/main.cpp ****   Serial.print("AVAILABLE STACK: ");
+  35:../src/main.cpp ****   Serial.print((uint32_t)&_estack - (uint32_t)&_eheap, 16);
+ 347              		.loc 2 35 0
+ 348 00a4 C9EB0404 		rsb	r4, r9, r4
+ 349              	.LBB73:
+ 350              	.LBB74:
+  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
+ 351              		.loc 1 59 0
+ 352 00a8 2549     		ldr	r1, .L11+56
+ 353 00aa 1948     		ldr	r0, .L11+8
+ 354 00ac FFF7FEFF 		bl	_ZN5Print5writeEPKc
+ 355              	.LVL33:
+ 356              	.LBE74:
+ 357              	.LBE73:
+ 358              	.LBB75:
+ 359              	.LBB76:
+  72:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+ 360              		.loc 1 72 0
+ 361 00b0 0023     		movs	r3, #0
+ 362 00b2 1022     		movs	r2, #16
+ 363 00b4 2146     		mov	r1, r4
+ 364 00b6 1648     		ldr	r0, .L11+8
+ 365 00b8 FFF7FEFF 		bl	_ZN5Print11printNumberEmhh
+ 366              	.LVL34:
+ 367              	.LBE76:
+ 368              	.LBE75:
+ 369              	.LBB77:
+ 370              	.LBB78:
+  59:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 	size_t print(const __FlashStringHelper *f)	{ return write((const char *)f); }
+ 371              		.loc 1 59 0
+ 372 00bc 1E49     		ldr	r1, .L11+48
+ 373 00be 1448     		ldr	r0, .L11+8
+ 374 00c0 FFF7FEFF 		bl	_ZN5Print5writeEPKc
+ 375              	.LVL35:
+ 376              	.LBE78:
+ 377              	.LBE77:
+ 378              	.LBB79:
+ 379              	.LBB80:
+  66:F:\kalkulyator-workspace-v2\TeensyCore3\src\Print.h **** 
+ 380              		.loc 1 66 0
+ 381 00c4 A8FB0431 		umull	r3, r1, r8, r4
+ 382 00c8 0A22     		movs	r2, #10
+ 383 00ca 0023     		movs	r3, #0
+ 384 00cc 8909     		lsrs	r1, r1, #6
+ 385 00ce 1048     		ldr	r0, .L11+8
+ 386 00d0 FFF7FEFF 		bl	_ZN5Print11printNumberEmhh
+ 387              	.LVL36:
+ 388              	.LBE80:
+ 389              	.LBE79:
+  36:../src/main.cpp ****   Serial.print(" (");
+  37:../src/main.cpp ****   Serial.print(((uint32_t)&_estack - (uint32_t)&_eheap)/1000);
+  38:../src/main.cpp ****   Serial.println(" kiB)");
+ 390              		.loc 2 38 0
+ 391 00d4 1949     		ldr	r1, .L11+52
+ 392 00d6 0E48     		ldr	r0, .L11+8
+ 393 00d8 FFF7FEFF 		bl	_ZN5Print7printlnEPKc
+ 394              	.LVL37:
+  39:../src/main.cpp ****   Serial.println();
+ 395              		.loc 2 39 0
+ 396 00dc 0C48     		ldr	r0, .L11+8
+ 397 00de FFF7FEFF 		bl	_ZN5Print7printlnEv
+ 398              	.LVL38:
+  40:../src/main.cpp **** 
+  41:../src/main.cpp ****   run_unit_tests();
+ 399              		.loc 2 41 0
+ 400 00e2 FFF7FEFF 		bl	_Z14run_unit_testsv
+ 401              	.LVL39:
+  42:../src/main.cpp **** 
+  43:../src/main.cpp ****   pinMode(0, OUTPUT);
+ 402              		.loc 2 43 0
+ 403 00e6 0121     		movs	r1, #1
+ 404 00e8 0020     		movs	r0, #0
+ 405 00ea FFF7FEFF 		bl	pinMode
+ 406              	.LVL40:
+ 407              	.L8:
+  44:../src/main.cpp ****   while (1) {
+  45:../src/main.cpp ****     delay(1000);
+ 408              		.loc 2 45 0 discriminator 1
+ 409 00ee 4FF47A70 		mov	r0, #1000
+ 410              	.LBB81:
+ 411              	.LBB55:
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
- 120              		.loc 3 2032 0 discriminator 1
- 121 003e 4FF08064 		mov	r4, #67108864
- 122              	.LBE33:
- 123              	.LBE39:
- 124              		.loc 1 28 0 discriminator 1
- 125 0042 FFF7FEFF 		bl	delay
- 126              	.LVL7:
- 127              	.LBB40:
- 128              	.LBB34:
+ 412              		.loc 3 2032 0 discriminator 1
+ 413 00f2 4FF08064 		mov	r4, #67108864
+ 414              	.LBE55:
+ 415              	.LBE81:
+ 416              		.loc 2 45 0 discriminator 1
+ 417 00f6 FFF7FEFF 		bl	delay
+ 418              	.LVL41:
+ 419              	.LBB82:
+ 420              	.LBB56:
 2032:F:\kalkulyator-workspace-v2\TeensyCore3\src\core_pins.h **** 			} else if (pin == 1) {
- 129              		.loc 3 2032 0 discriminator 1
- 130 0046 3460     		str	r4, [r6]
- 131              	.LVL8:
- 132              	.LBE34:
- 133              	.LBE40:
-  29:../src/main.cpp ****     digitalWriteFast(0, HIGH);
-  30:../src/main.cpp ****     delay(100);
- 134              		.loc 1 30 0 discriminator 1
- 135 0048 6420     		movs	r0, #100
- 136 004a FFF7FEFF 		bl	delay
- 137              	.LVL9:
- 138              	.LBB41:
- 139              	.LBB37:
- 140              		.loc 3 2168 0 discriminator 1
- 141 004e 2C60     		str	r4, [r5]
- 142 0050 F3E7     		b	.L2
- 143              	.L6:
- 144 0052 00BF     		.align	2
- 145              	.L5:
- 146 0054 00000000 		.word	.LANCHOR0
- 147 0058 00000000 		.word	.LANCHOR1
- 148 005c 00000000 		.word	Serial
- 149 0060 00000000 		.word	.LC0
- 150 0064 04F10F40 		.word	1074786564
- 151 0068 08F10F40 		.word	1074786568
- 152              	.LBE37:
- 153              	.LBE41:
- 154              		.cfi_endproc
- 155              	.LFE454:
- 156              		.fnend
- 158              		.global	data_stack
- 159              		.global	sp
- 160              		.section	.bss.sp,"aw",%nobits
- 161              		.align	2
- 162              		.set	.LANCHOR0,. + 0
- 165              	sp:
- 166 0000 00000000 		.space	4
- 167              		.section	.rodata.str1.4,"aMS",%progbits,1
- 168              		.align	2
- 169              	.LC0:
- 170 0000 50495849 		.ascii	"PIXIEFORTH READY\000"
- 170      45464F52 
- 170      54482052 
- 170      45414459 
- 170      00
- 171              		.section	.bss.data_stack,"aw",%nobits
- 172              		.align	2
- 173              		.set	.LANCHOR1,. + 0
- 176              	data_stack:
- 177 0000 00000000 		.space	4096
- 177      00000000 
- 177      00000000 
- 177      00000000 
- 177      00000000 
- 178              		.text
- 179              	.Letext0:
- 180              		.file 5 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\lib\\gcc\\arm-none-eabi\\5.4
- 181              		.file 6 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\mach
- 182              		.file 7 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\sys\
- 183              		.file 8 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/pins_arduino.h"
+ 421              		.loc 3 2032 0 discriminator 1
+ 422 00fa 3460     		str	r4, [r6]
+ 423              	.LVL42:
+ 424              	.LBE56:
+ 425              	.LBE82:
+  46:../src/main.cpp ****     digitalWriteFast(0, HIGH);
+  47:../src/main.cpp ****     delay(100);
+ 426              		.loc 2 47 0 discriminator 1
+ 427 00fc 6420     		movs	r0, #100
+ 428 00fe FFF7FEFF 		bl	delay
+ 429              	.LVL43:
+ 430              	.LBB83:
+ 431              	.LBB59:
+ 432              		.loc 3 2168 0 discriminator 1
+ 433 0102 2C60     		str	r4, [r5]
+ 434 0104 F3E7     		b	.L8
+ 435              	.L12:
+ 436 0106 00BF     		.align	2
+ 437              	.L11:
+ 438 0108 00000000 		.word	.LANCHOR0
+ 439 010c 00000000 		.word	.LANCHOR1
+ 440 0110 00000000 		.word	Serial
+ 441 0114 00000000 		.word	.LC0
+ 442 0118 00000000 		.word	_sheap
+ 443 011c 00000000 		.word	_estack
+ 444 0120 04F10F40 		.word	1074786564
+ 445 0124 08F10F40 		.word	1074786568
+ 446 0128 14000000 		.word	.LC1
+ 447 012c 28000000 		.word	.LC2
+ 448 0130 3C000000 		.word	.LC3
+ 449 0134 50000000 		.word	.LC4
+ 450 0138 64000000 		.word	.LC5
+ 451 013c 68000000 		.word	.LC6
+ 452 0140 70000000 		.word	.LC7
+ 453 0144 00000000 		.word	_eheap
+ 454 0148 D34D6210 		.word	274877907
+ 455              	.LBE59:
+ 456              	.LBE83:
+ 457              		.cfi_endproc
+ 458              	.LFE454:
+ 459              		.fnend
+ 461              		.global	data_stack
+ 462              		.global	sp
+ 463              		.section	.bss.sp,"aw",%nobits
+ 464              		.align	2
+ 465              		.set	.LANCHOR0,. + 0
+ 468              	sp:
+ 469 0000 00000000 		.space	4
+ 470              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 471              		.align	2
+ 472              	.LC0:
+ 473 0000 50495849 		.ascii	"PIXIEFORTH READY\000"
+ 473      45464F52 
+ 473      54482052 
+ 473      45414459 
+ 473      00
+ 474 0011 000000   		.space	3
+ 475              	.LC1:
+ 476 0014 48454150 		.ascii	"HEAP START     : \000"
+ 476      20535441 
+ 476      52542020 
+ 476      2020203A 
+ 476      2000
+ 477 0026 0000     		.space	2
+ 478              	.LC2:
+ 479 0028 48454150 		.ascii	"HEAP END       : \000"
+ 479      20454E44 
+ 479      20202020 
+ 479      2020203A 
+ 479      2000
+ 480 003a 0000     		.space	2
+ 481              	.LC3:
+ 482 003c 52414D20 		.ascii	"RAM END        : \000"
+ 482      454E4420 
+ 482      20202020 
+ 482      2020203A 
+ 482      2000
+ 483 004e 0000     		.space	2
+ 484              	.LC4:
+ 485 0050 41564149 		.ascii	"AVAILABLE HEAP : \000"
+ 485      4C41424C 
+ 485      45204845 
+ 485      4150203A 
+ 485      2000
+ 486 0062 0000     		.space	2
+ 487              	.LC5:
+ 488 0064 202800   		.ascii	" (\000"
+ 489 0067 00       		.space	1
+ 490              	.LC6:
+ 491 0068 206B6942 		.ascii	" kiB)\000"
+ 491      2900
+ 492 006e 0000     		.space	2
+ 493              	.LC7:
+ 494 0070 41564149 		.ascii	"AVAILABLE STACK: \000"
+ 494      4C41424C 
+ 494      45205354 
+ 494      41434B3A 
+ 494      2000
+ 495              		.section	.bss.data_stack,"aw",%nobits
+ 496              		.align	2
+ 497              		.set	.LANCHOR1,. + 0
+ 500              	data_stack:
+ 501 0000 00000000 		.space	4096
+ 501      00000000 
+ 501      00000000 
+ 501      00000000 
+ 501      00000000 
+ 502              		.text
+ 503              	.Letext0:
+ 504              		.file 4 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\lib\\gcc\\arm-none-eabi\\5.4
+ 505              		.file 5 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\mach
+ 506              		.file 6 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\sys\
+ 507              		.file 7 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/pins_arduino.h"
+ 508              		.file 8 "F:\\kalkulyator-workspace-v2\\TeensyCore3\\src/usb_serial.h"
+ 509              		.file 9 "F:\\kalkulyator-workspace-v2\\PixieForth\\src/forth_system.h"
+ 510              		.file 10 "c:\\program files (x86)\\gnu tools arm embedded\\5.4 2016q3\\arm-none-eabi\\include\\str
 DEFINED SYMBOLS
                             *ABS*:00000000 main.cpp
-C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:20     .text.startup.main:00000000 $t
-C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:25     .text.startup.main:00000000 main
-C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:146    .text.startup.main:00000054 $d
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:20     .text._ZN5Print5writeEPKc:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:25     .text._ZN5Print5writeEPKc:00000000 _ZN5Print5writeEPKc
+.ARM.exidx.text._ZN5Print5writeEPKc:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:67     .text._ZN5Print7printlnEPKc:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:72     .text._ZN5Print7printlnEPKc:00000000 _ZN5Print7printlnEPKc
+.ARM.exidx.text._ZN5Print7printlnEPKc:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:130    .text._ZN5Print7printlnEmi:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:135    .text._ZN5Print7printlnEmi:00000000 _ZN5Print7printlnEmi
+.ARM.exidx.text._ZN5Print7printlnEmi:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:181    .text.startup.main:00000000 $t
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:186    .text.startup.main:00000000 main
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:438    .text.startup.main:00000108 $d
      .ARM.exidx.text.startup.main:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:176    .bss.data_stack:00000000 data_stack
-C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:165    .bss.sp:00000000 sp
-C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:161    .bss.sp:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:168    .rodata.str1.4:00000000 $d
-C:\Users\Robert\AppData\Local\Temp\ccYCYRXf.s:172    .bss.data_stack:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:500    .bss.data_stack:00000000 data_stack
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:468    .bss.sp:00000000 sp
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:464    .bss.sp:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:471    .rodata.str1.4:00000000 $d
+C:\Users\Robert\AppData\Local\Temp\cclmLROG.s:496    .bss.data_stack:00000000 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS
-delay
+strlen
 _ZN5Print7printlnEv
-usb_serial_write
+__aeabi_unwind_cpp_pr0
+_ZN5Print11printNumberEmhh
+delay
 _Z14run_unit_testsv
 pinMode
 Serial
-__aeabi_unwind_cpp_pr0
+_sheap
+_estack
+_eheap

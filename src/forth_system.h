@@ -14,6 +14,10 @@
 extern "C" {
 #endif
 
+extern uint32_t _sheap;
+extern uint32_t _eheap;
+extern uint32_t _estack;
+
 extern uint32_t *sp;
 extern uint32_t data_stack[];
 
@@ -25,6 +29,9 @@ extern uint32_t forth_2swap;
 extern uint32_t forth_add;
 extern uint32_t forth_addstore;
 extern uint32_t forth_and;
+extern uint32_t forth_base;
+extern uint32_t forth_compile_mode;
+extern uint32_t forth_create;
 extern uint32_t forth_dec;
 extern uint32_t forth_dec4;
 extern uint32_t forth_div;
@@ -35,12 +42,16 @@ extern uint32_t forth_eq;
 extern uint32_t forth_eqz;
 extern uint32_t forth_fetch;
 extern uint32_t forth_fetch_char;
+extern uint32_t forth_find;
 extern uint32_t forth_ge;
 extern uint32_t forth_gez;
 extern uint32_t forth_gt;
 extern uint32_t forth_gtz;
+extern uint32_t forth_here;
+extern uint32_t forth_immediate_mode;
 extern uint32_t forth_inc;
 extern uint32_t forth_inc4;
+extern uint32_t forth_latest;
 extern uint32_t forth_le;
 extern uint32_t forth_lez;
 extern uint32_t forth_literal;
@@ -54,16 +65,24 @@ extern uint32_t forth_ne;
 extern uint32_t forth_nez;
 extern uint32_t forth_not;
 extern uint32_t forth_nrot;
+extern uint32_t forth_number;
 extern uint32_t forth_or;
 extern uint32_t forth_over;
 extern uint32_t forth_quit;
 extern uint32_t forth_rot;
 extern uint32_t forth_store;
 extern uint32_t forth_store_char;
+extern uint32_t forth_store_to_here;
 extern uint32_t forth_sub;
 extern uint32_t forth_substore;
 extern uint32_t forth_swap;
+extern uint32_t forth_to_code_field_addr;
+extern uint32_t forth_to_data_field_addr;
 extern uint32_t forth_xor;
+
+extern uint32_t forth_var_HERE;
+extern uint32_t forth_var_LATEST;
+extern uint32_t forth_var_STATE;
 
 #ifdef __cplusplus
 }

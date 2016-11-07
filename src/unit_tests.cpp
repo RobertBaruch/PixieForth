@@ -10,16 +10,22 @@
 #include <usb_serial.h>
 #include <kinetis.h>
 
+extern uint32_t forth_name_base;
+extern uint32_t forth_name_latest;
+
+static uint32_t prev_var_here;
+static uint32_t prev_var_latest;
+
 struct Test {
   const char* name;
   const uint32_t setup_stack_size; // in 4-byte words
   const uint32_t* setup_stack;
-  const uint32_t* program;
+  const uint32_t* program; // effectively the body (data) of a do-colon.
   const uint32_t expected_stack_size; // in 4-byte words
   const uint32_t* expected_stack;
 };
 
-Test tests[] = {
+static Test tests[] = {
     {
         "QUIT",
         0, (uint32_t[]) { },
@@ -27,6 +33,33 @@ Test tests[] = {
           (uint32_t) &forth_quit
         },
         0, (uint32_t[] ) { }
+    },
+    {
+        "BASE",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_base,
+          (uint32_t)&forth_quit
+        },
+        1, (uint32_t[] ) { 10 }
+    },
+    {
+        "HERE",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_here,
+          (uint32_t)&forth_quit
+        },
+        1, (uint32_t[] ) { (uint32_t)&_sheap }
+    },
+    {
+        "LATEST",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_latest,
+          (uint32_t)&forth_quit
+        },
+        1, (uint32_t[] ) { (uint32_t)&forth_name_latest }
     },
     {
         "LIT",
@@ -607,16 +640,230 @@ Test tests[] = {
     },
     {
         "MEMCPY",
-        9, (uint32_t[]) { 1, 2, 3, 4, 5, 6, (uint32_t)(data_stack+6), (uint32_t)(data_stack+3), 12 },
+        9, (uint32_t[]) { 1, 2, 3, 4, 5, 6, (uint32_t)data_stack, (uint32_t)(data_stack+3), 12 },
         (uint32_t[]) {
           (uint32_t)&forth_memcpy,
           (uint32_t)&forth_quit
         },
         6, (uint32_t[] ) { 1, 2, 3, 1, 2, 3 }
     },
+    {
+        "MEMMOVE (overlap)",
+        9, (uint32_t[]) { 1, 2, 3, 4, 5, 6, (uint32_t)data_stack, (uint32_t)(data_stack+1), 12 },
+        (uint32_t[]) {
+          (uint32_t)&forth_memmove,
+          (uint32_t)&forth_quit
+        },
+        6, (uint32_t[] ) { 1, 1, 2, 3, 5, 6 }
+    },
+    {
+        "MEMMOVE (nonoverlap)",
+        9, (uint32_t[]) { 1, 2, 3, 4, 5, 6, (uint32_t)(data_stack+1), (uint32_t)data_stack, 12 },
+        (uint32_t[]) {
+          (uint32_t)&forth_memmove,
+          (uint32_t)&forth_quit
+        },
+        6, (uint32_t[] ) { 2, 3, 4, 4, 5, 6 }
+    },
+    {
+        "NUMBER", // "12"
+        3, (uint32_t[]) { 0x00003231, (uint32_t)data_stack, 2 },
+        (uint32_t[]) {
+          (uint32_t)&forth_number,
+          (uint32_t)&forth_quit
+        },
+        3, (uint32_t[] ) { 0x00003231, 12, 0 }
+    },
+    {
+        "NUMBER (neg)", // "-12"
+        3, (uint32_t[]) { 0x0032312D, (uint32_t)data_stack, 3 },
+        (uint32_t[]) {
+          (uint32_t)&forth_number,
+          (uint32_t)&forth_quit
+        },
+        3, (uint32_t[] ) { 0x0032312D, (uint32_t)-12, 0 }
+    },
+    {
+        "NUMBER (hex)", // "$1aB"
+        3, (uint32_t[]) { 0x42613124, (uint32_t)data_stack, 4 },
+        (uint32_t[]) {
+          (uint32_t)&forth_number,
+          (uint32_t)&forth_quit
+        },
+        3, (uint32_t[] ) { 0x42613124, 0x1ab, 0 }
+    },
+    {
+        "NUMBER (bad)", // "1a"
+        3, (uint32_t[]) { 0x00006131, (uint32_t)data_stack, 2 },
+        (uint32_t[]) {
+          (uint32_t)&forth_number,
+          (uint32_t)&forth_quit
+        },
+        3, (uint32_t[] ) { 0x00006131, 1, 1 }
+    },
+    {
+        "FIND (+)", // "BASE"
+        3, (uint32_t[]) { 0x45534142, (uint32_t)data_stack, 4 },
+        (uint32_t[]) {
+          (uint32_t)&forth_find,
+          (uint32_t)&forth_quit
+        },
+        2, (uint32_t[] ) { 0x45534142, (uint32_t)&forth_name_base }
+    },
+    {
+        "FIND (-)", // "BASF"
+        3, (uint32_t[]) { 0x46534142, (uint32_t)data_stack, 4 },
+        (uint32_t[]) {
+          (uint32_t)&forth_find,
+          (uint32_t)&forth_quit
+        },
+        2, (uint32_t[] ) { 0x46534142, 0 }
+    },
+    {
+        ">CFA",
+        1, (uint32_t[]) { (uint32_t)&forth_name_base },
+        (uint32_t[]) {
+          (uint32_t)&forth_to_code_field_addr,
+          (uint32_t)&forth_quit
+        },
+        1, (uint32_t[] ) { (uint32_t)&forth_base }
+    },
+    {
+        ">DFA",
+        1, (uint32_t[]) { (uint32_t)&forth_name_base },
+        (uint32_t[]) {
+          (uint32_t)&forth_to_data_field_addr,
+          (uint32_t)&forth_quit
+        },
+        1, (uint32_t[] ) { 4 + (uint32_t)&forth_base }
+    },
+    {
+        "CREATE", // "BBBB"
+        3, (uint32_t[]) { 0x42424242, (uint32_t)data_stack, 4 },
+        (uint32_t[]) {
+          (uint32_t)&forth_create,
+          (uint32_t)&forth_quit
+        },
+        1, (uint32_t[] ) { 0x42424242 }
+    },
+    {
+        "HERE!",
+        1, (uint32_t[]) { 1 },
+        (uint32_t[]) {
+          (uint32_t)&forth_store_to_here,
+          (uint32_t)&forth_quit
+        },
+        0, (uint32_t[] ) { }
+    },
+    {
+        "[",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_immediate_mode,
+          (uint32_t)&forth_quit
+        },
+        0, (uint32_t[] ) { }
+    },
+    {
+        "]",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_compile_mode,
+          (uint32_t)&forth_quit
+        },
+        0, (uint32_t[] ) { }
+    },
 };
 
-void fail_unit_test(int i) {
+static bool additional_verification_create() {
+  if (prev_var_latest == forth_var_LATEST) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected LATEST to change, but did not");
+    return false;
+  }
+  if (prev_var_here == forth_var_HERE) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected HERE to change, but did not");
+    return false;
+  }
+  if (forth_var_LATEST != prev_var_here) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected LATEST to be HERE, but was not");
+    Serial.print("    HERE: ");
+    Serial.println(forth_var_HERE, 16);
+    Serial.print("    LATEST: ");
+    Serial.println(forth_var_LATEST, 16);
+    return false;
+  }
+  if (*(uint32_t *)forth_var_LATEST != prev_var_latest) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected [LATEST] to be prev LATEST, but was not");
+    Serial.print("    [LATEST]: ");
+    Serial.println(*(uint32_t *)forth_var_LATEST, 16);
+    Serial.print("    prev LATEST: ");
+    Serial.println(prev_var_latest, 16);
+    return false;
+  }
+  if (*((uint8_t *)forth_var_LATEST + 8) != 4) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected len to be 4 but was ");
+    Serial.print(*((uint8_t *)forth_var_LATEST + 8), 16);
+    Serial.println(".");
+    return false;
+  }
+  char *name_ptr = ((char *)forth_var_LATEST) + 9;
+  if (memcmp(name_ptr, "BBBB", 4)) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected name to be 42 42 42 42 but was ");
+    Serial.print(*name_ptr, 16);
+    Serial.print(" ");
+    Serial.print(*(name_ptr + 1), 16);
+    Serial.print(" ");
+    Serial.print(*(name_ptr + 2), 16);
+    Serial.print(" ");
+    Serial.print(*(name_ptr + 3), 16);
+    Serial.println(".");
+    return false;
+  }
+  return true;
+}
+
+static bool additional_verification_store_to_here() {
+  if (forth_var_HERE != prev_var_here + 4) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected HERE to be incremented by 4 but was not");
+    Serial.print("    HERE: ");
+    Serial.println(forth_var_HERE, 16);
+    Serial.print("    previous HERE: ");
+    Serial.println(prev_var_here, 16);
+    return false;
+  }
+  return true;
+}
+
+static bool additional_verification_immediate_mode() {
+  if (forth_var_STATE != 0) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected STATE to be 0 but was ");
+    Serial.print(forth_var_STATE, 16);
+    Serial.println(".");
+    return false;
+  }
+  return true;
+}
+
+static bool additional_verification_compile_mode() {
+  if (forth_var_STATE != 1) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected STATE to be 1 but was ");
+    Serial.print(forth_var_STATE, 16);
+    Serial.println(".");
+    return false;
+  }
+  return true;
+}
+
+static void fail_unit_test(int i) {
   Serial.println("[FAIL]");
   Serial.print("  expected stack (");
   Serial.print(tests[i].expected_stack_size);
@@ -663,6 +910,8 @@ void run_unit_tests() {
     for (int j = 0; j < tests[i].setup_stack_size; j++, sp++, setup_ptr++) {
       *sp = *setup_ptr;
     }
+    prev_var_here = forth_var_HERE;
+    prev_var_latest = forth_var_LATEST;
 
     __disable_irq();
     uint32_t count_start = ARM_DWT_CYCCNT;
@@ -680,8 +929,20 @@ void run_unit_tests() {
     } else if (memcmp(data_stack, tests[i].expected_stack, actual_stack_size * 4)) {
       fail_unit_test(i);
     } else {
-      Serial.print("[PASS] cycles: ");
-      Serial.println(cycle_count);
+      bool pass = true;
+      if (!strcmp(tests[i].name, "CREATE")) {
+        pass = additional_verification_create();
+      } else if (!strcmp(tests[i].name, "HERE!")) {
+        pass = additional_verification_store_to_here();
+      } else if (!strcmp(tests[i].name, "[")) {
+        pass = additional_verification_immediate_mode();
+      } else if (!strcmp(tests[i].name, "]")) {
+        pass = additional_verification_compile_mode();
+      }
+      if (pass) {
+        Serial.print("[PASS] cycles: ");
+        Serial.println(cycle_count);
+      }
     }
 
     if (i == 0) base_cycle_count = cycle_count;

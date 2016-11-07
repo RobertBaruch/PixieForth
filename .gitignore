@@ -33,6 +33,7 @@
 # Build artifacts
 *.objdump
 *.map
+*.lst
 
 # =========================
 # Operating System Files
