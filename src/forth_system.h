@@ -32,6 +32,7 @@ extern uint32_t forth_and;
 extern uint32_t forth_base;
 extern uint32_t forth_branch;
 extern uint32_t forth_brancheq;
+extern uint32_t forth_code_field_addr_of_next_word;
 extern uint32_t forth_compile_mode;
 extern uint32_t forth_create;
 extern uint32_t forth_dec;
@@ -55,6 +56,8 @@ extern uint32_t forth_here;
 extern uint32_t forth_immediate_mode;
 extern uint32_t forth_inc;
 extern uint32_t forth_inc4;
+extern uint32_t forth_interpret;
+extern uint32_t forth_key;
 extern uint32_t forth_latest;
 extern uint32_t forth_le;
 extern uint32_t forth_lez;
@@ -82,11 +85,14 @@ extern uint32_t forth_substore;
 extern uint32_t forth_swap;
 extern uint32_t forth_to_code_field_addr;
 extern uint32_t forth_to_data_field_addr;
+extern uint32_t forth_word;
 extern uint32_t forth_xor;
 
 extern uint32_t forth_var_HERE;
 extern uint32_t forth_var_LATEST;
 extern uint32_t forth_var_STATE;
+extern uint32_t forth_var_STDIN;
+extern uint32_t forth_var_STDIN_COUNT;
 
 #ifdef __cplusplus
 }

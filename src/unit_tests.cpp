@@ -12,9 +12,13 @@
 
 extern uint32_t forth_name_base;
 extern uint32_t forth_name_latest;
+extern char forth_word_buffer;
 
+static char *forth_word_buffer_ptr = &forth_word_buffer;
 static uint32_t original_var_here;
 static uint32_t original_var_latest;
+static const char* original_var_stdin;
+static uint32_t original_var_stdin_count;
 
 struct Test {
   const char* name;
@@ -23,6 +27,8 @@ struct Test {
   const uint32_t* program; // effectively the body of a word.
   const uint32_t expected_stack_size; // in 4-byte words
   const uint32_t* expected_stack;
+  const char* stdin_buff;
+  uint32_t state;
 };
 
 /*
@@ -840,7 +846,7 @@ static Test tests[] = {
         1, (uint32_t[] ) { 0x42424242 }
     },
     {
-        "HERE!",
+        ",",
         1, (uint32_t[]) { 1 },
         (uint32_t[]) {
           (uint32_t)&forth_do_colon,
@@ -905,9 +911,251 @@ static Test tests[] = {
         },
         1, (uint32_t[] ) { 3 }
     },
+    {
+        "KEY",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_key,
+          (uint32_t)&forth_exit
+        },
+        1, (uint32_t[] ) { '0' },
+        "01"
+    },
+    {
+        "KEY (EOF)",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_key,
+          (uint32_t)&forth_exit
+        },
+        1, (uint32_t[] ) { 0xffffffff },
+        ""
+    },
+    {
+        "WORD",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_word,
+          (uint32_t)&forth_exit
+        },
+        2, (uint32_t[] ) { (uint32_t) &forth_word_buffer, 4 },
+        "0123 "
+    },
+    {
+        "WORD (whitespace)",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_word,
+          (uint32_t)&forth_exit
+        },
+        2, (uint32_t[] ) { (uint32_t) &forth_word_buffer, 4 },
+        " \t\r\n0123 "
+    },
+    {
+        "WORD (backslash)",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_word,
+          (uint32_t)&forth_exit
+        },
+        2, (uint32_t[] ) { (uint32_t) &forth_word_buffer, 4 },
+        " \\m \n0123 "
+    },
+    {
+        "'",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_code_field_addr_of_next_word,
+          (uint32_t)&forth_exit
+        },
+        1, (uint32_t[] ) { (uint32_t) &forth_add },
+        "+"
+    },
+    {
+        "INTERPRET (number)",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_interpret,
+          (uint32_t)&forth_exit
+        },
+        1, (uint32_t[] ) { 123 },
+        "123"
+    },
+    {
+        "INTERPRET (native word)",
+        2, (uint32_t[]) { 1, 2 },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_interpret,
+          (uint32_t)&forth_exit
+        },
+        1, (uint32_t[] ) { 3 },
+        "+"
+    },
+    {
+        "INTERPRET (forth word)",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_interpret,
+          (uint32_t)&forth_exit
+        },
+        1, (uint32_t[] ) { (uint32_t) &forth_add },
+        "' +"
+    },
+    {
+        "INTERPRET (comp num)",
+        0, (uint32_t[]) { },
+        (uint32_t[]) {
+          (uint32_t)&forth_do_colon,
+          (uint32_t)&forth_interpret,
+          (uint32_t)&forth_exit
+        },
+        0, (uint32_t[] ) { },
+        "123",
+        1 // compile mode
+    },
 };
 
-static bool additional_verification_create() {
+static bool additional_verification_key(int testnum) {
+  if (forth_var_STDIN != (uint32_t) tests[testnum].stdin_buff + 1) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected STDIN to be key_buff + 1, but was not");
+    Serial.print("    STDIN: ");
+    Serial.println(forth_var_STDIN, 16);
+    Serial.print("    key_buff: ");
+    Serial.println((uint32_t) tests[testnum].stdin_buff, 16);
+    return false;
+  }
+  if (forth_var_STDIN_COUNT != 1) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected STDIN_COUNT to be 1 but was ");
+    Serial.println(forth_var_STDIN_COUNT, 16);
+    return false;
+  }
+  return true;
+}
+
+static bool additional_verification_key_eof(int testnum) {
+  if (forth_var_STDIN != (uint32_t) tests[testnum].stdin_buff) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected STDIN to be key_buff, but was not");
+    Serial.print("    STDIN: ");
+    Serial.println(forth_var_STDIN, 16);
+    Serial.print("    key_buff: ");
+    Serial.println((uint32_t) tests[testnum].stdin_buff, 16);
+    return false;
+  }
+  if (forth_var_STDIN_COUNT != 0) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected STDIN_COUNT to be 0 but was ");
+    Serial.println(forth_var_STDIN_COUNT, 16);
+    return false;
+  }
+  return true;
+}
+
+static bool additional_verification_word(int testnum) {
+  if (forth_var_STDIN != (uint32_t) tests[testnum].stdin_buff + 5) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected STDIN to be key_buff + 5, but was not");
+    Serial.print("    STDIN: ");
+    Serial.println(forth_var_STDIN, 16);
+    Serial.print("    key_buff: ");
+    Serial.println((uint32_t) tests[testnum].stdin_buff, 16);
+    return false;
+  }
+  if (forth_var_STDIN_COUNT != 0) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected STDIN_COUNT to be 0 but was ");
+    Serial.println(forth_var_STDIN_COUNT, 16);
+    return false;
+  }
+  if (memcmp(tests[testnum].stdin_buff, forth_word_buffer_ptr, 4)) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected word buff to be 30 31 32 33 but was ");
+    Serial.print(forth_word_buffer_ptr[0], 16);
+    Serial.print(" ");
+    Serial.print(forth_word_buffer_ptr[1], 16);
+    Serial.print(" ");
+    Serial.print(forth_word_buffer_ptr[2], 16);
+    Serial.print(" ");
+    Serial.println(forth_word_buffer_ptr[3], 16);
+    return false;
+  }
+  return true;
+}
+
+static bool additional_verification_word_whitespace(int testnum) {
+  if (forth_var_STDIN != (uint32_t) tests[testnum].stdin_buff + 9) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected STDIN to be key_buff + 9, but was not");
+    Serial.print("    STDIN: ");
+    Serial.println(forth_var_STDIN, 16);
+    Serial.print("    key_buff: ");
+    Serial.println((uint32_t) tests[testnum].stdin_buff, 16);
+    return false;
+  }
+  if (forth_var_STDIN_COUNT != 0) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected STDIN_COUNT to be 0 but was ");
+    Serial.println(forth_var_STDIN_COUNT, 16);
+    return false;
+  }
+  if (memcmp(tests[testnum].stdin_buff + 4, forth_word_buffer_ptr, 4)) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected word buff to be 30 31 32 33 but was ");
+    Serial.print(forth_word_buffer_ptr[0], 16);
+    Serial.print(" ");
+    Serial.print(forth_word_buffer_ptr[1], 16);
+    Serial.print(" ");
+    Serial.print(forth_word_buffer_ptr[2], 16);
+    Serial.print(" ");
+    Serial.println(forth_word_buffer_ptr[3], 16);
+    return false;
+  }
+  return true;
+}
+
+static bool additional_verification_word_backslash(int testnum) {
+  if (forth_var_STDIN != (uint32_t) tests[testnum].stdin_buff + 10) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected STDIN to be key_buff + 10, but was not");
+    Serial.print("    STDIN: ");
+    Serial.println(forth_var_STDIN, 16);
+    Serial.print("    key_buff: ");
+    Serial.println((uint32_t) tests[testnum].stdin_buff, 16);
+    return false;
+  }
+  if (forth_var_STDIN_COUNT != 0) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected STDIN_COUNT to be 0 but was ");
+    Serial.println(forth_var_STDIN_COUNT, 16);
+    return false;
+  }
+  if (memcmp(tests[testnum].stdin_buff + 5, forth_word_buffer_ptr, 4)) {
+    Serial.println("[FAIL]");
+    Serial.print("  expected word buff to be 30 31 32 33 but was ");
+    Serial.print(forth_word_buffer_ptr[0], 16);
+    Serial.print(" ");
+    Serial.print(forth_word_buffer_ptr[1], 16);
+    Serial.print(" ");
+    Serial.print(forth_word_buffer_ptr[2], 16);
+    Serial.print(" ");
+    Serial.println(forth_word_buffer_ptr[3], 16);
+    return false;
+  }
+  return true;
+}
+
+static bool additional_verification_create(int testnum) {
   if (original_var_latest == forth_var_LATEST) {
     Serial.println("[FAIL]");
     Serial.println("  expected LATEST to change, but did not");
@@ -960,7 +1208,7 @@ static bool additional_verification_create() {
   return true;
 }
 
-static bool additional_verification_store_to_here() {
+static bool additional_verification_store_to_here(int testnum) {
   if (forth_var_HERE != original_var_here + 4) {
     Serial.println("[FAIL]");
     Serial.println("  expected HERE to be incremented by 4 but was not");
@@ -973,7 +1221,7 @@ static bool additional_verification_store_to_here() {
   return true;
 }
 
-static bool additional_verification_immediate_mode() {
+static bool additional_verification_immediate_mode(int testnum) {
   if (forth_var_STATE != 0) {
     Serial.println("[FAIL]");
     Serial.print("  expected STATE to be 0 but was ");
@@ -984,7 +1232,7 @@ static bool additional_verification_immediate_mode() {
   return true;
 }
 
-static bool additional_verification_compile_mode() {
+static bool additional_verification_compile_mode(int testnum) {
   if (forth_var_STATE != 1) {
     Serial.println("[FAIL]");
     Serial.print("  expected STATE to be 1 but was ");
@@ -995,13 +1243,42 @@ static bool additional_verification_compile_mode() {
   return true;
 }
 
-static void fail_unit_test(int i) {
+static bool additional_verification_interpret_compnum(int testnum) {
+  if (forth_var_HERE != original_var_here + 8) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected HERE to be incremented by 8 but was not");
+    Serial.print("    HERE: ");
+    Serial.println(forth_var_HERE, 16);
+    Serial.print("    previous HERE: ");
+    Serial.println(original_var_here, 16);
+    return false;
+  }
+  if (*(uint32_t*) (forth_var_HERE - 8) != (uint32_t) &forth_literal) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected HERE-8 to be LIT but was not");
+    Serial.print("    HERE-8: ");
+    Serial.println(*(uint32_t*) (forth_var_HERE - 8), 16);
+    Serial.print("    LIT: ");
+    Serial.println((uint32_t) &forth_literal, 16);
+    return false;
+  }
+  if (*(uint32_t*) (forth_var_HERE - 4) != 123) {
+    Serial.println("[FAIL]");
+    Serial.println("  expected HERE-4 to be 123 but was not");
+    Serial.print("    HERE-4: ");
+    Serial.println(*(uint32_t*) (forth_var_HERE - 4), 16);
+    return false;
+  }
+  return true;
+}
+
+static void fail_unit_test(int testnum) {
   Serial.println("[FAIL]");
   Serial.print("  expected stack (");
-  Serial.print(tests[i].expected_stack_size);
+  Serial.print(tests[testnum].expected_stack_size);
   Serial.print("): -- ");
-  for (int j = 0; j < tests[i].expected_stack_size; j++) {
-    Serial.print(tests[i].expected_stack[j], 16);
+  for (int j = 0; j < tests[testnum].expected_stack_size; j++) {
+    Serial.print(tests[testnum].expected_stack[j], 16);
     Serial.print(" ");
   }
   Serial.println();
@@ -1033,11 +1310,13 @@ void run_unit_tests() {
   uint32_t base_cycle_count = 0;
   original_var_here = forth_var_HERE;
   original_var_latest = forth_var_LATEST;
+  original_var_stdin = (const char *) forth_var_STDIN;
+  original_var_stdin_count = forth_var_STDIN_COUNT;
 
   for (int i = 0; i < sizeof(tests)/sizeof(Test); i++) {
     Serial.print(tests[i].name);
     Serial.print("...");
-    for (int j = 0; j < 20 - strlen(tests[i].name); j++) Serial.print(' ');
+    for (int j = 0; j < 30 - strlen(tests[i].name); j++) Serial.print(' ');
 
     sp = data_stack;
     const uint32_t *setup_ptr = tests[i].setup_stack;
@@ -1048,7 +1327,14 @@ void run_unit_tests() {
     // Reset the system
     forth_var_HERE = original_var_here;
     forth_var_LATEST = original_var_latest;
-    forth_var_STATE = 0; // force immediate mode
+    forth_var_STATE = tests[i].state;
+    if (tests[i].stdin_buff != nullptr) {
+      forth_var_STDIN = (uint32_t) tests[i].stdin_buff;
+      forth_var_STDIN_COUNT = strlen(tests[i].stdin_buff);
+    } else {
+      forth_var_STDIN = (uint32_t) original_var_stdin;
+      forth_var_STDIN_COUNT = original_var_stdin_count;
+    }
 
     __disable_irq();
     uint32_t count_start = ARM_DWT_CYCCNT;
@@ -1070,14 +1356,27 @@ void run_unit_tests() {
     } else {
       bool pass = true;
       if (!strcmp(tests[i].name, "CREATE")) {
-        pass = additional_verification_create();
+        pass = additional_verification_create(i);
       } else if (!strcmp(tests[i].name, "HERE!")) {
-        pass = additional_verification_store_to_here();
+        pass = additional_verification_store_to_here(i);
       } else if (!strcmp(tests[i].name, "[")) {
-        pass = additional_verification_immediate_mode();
+        pass = additional_verification_immediate_mode(i);
       } else if (!strcmp(tests[i].name, "]")) {
-        pass = additional_verification_compile_mode();
+        pass = additional_verification_compile_mode(i);
+      } else if (!strcmp(tests[i].name, "KEY")) {
+        pass = additional_verification_key(i);
+      } else if (!strcmp(tests[i].name, "KEY (EOF)")) {
+        pass = additional_verification_key_eof(i);
+      } else if (!strcmp(tests[i].name, "WORD")) {
+        pass = additional_verification_word(i);
+      } else if (!strcmp(tests[i].name, "WORD (whitespace)")) {
+        pass = additional_verification_word_whitespace(i);
+      } else if (!strcmp(tests[i].name, "WORD (backslash)")) {
+        pass = additional_verification_word_backslash(i);
+      } else if (!strcmp(tests[i].name, "INTERPRET (comp num)")) {
+        pass = additional_verification_interpret_compnum(i);
       }
+
       if (pass) {
         Serial.print("[PASS] cycles: ");
         Serial.println(cycle_count);
