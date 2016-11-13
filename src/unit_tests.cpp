@@ -134,7 +134,7 @@ static Test tests[] {
         {
             Data {
               (uint32_t)&forth_do_colon,
-              (uint32_t)&forth_literal,
+              (uint32_t)&forth_lit,
               0x1234abcd,
               (uint32_t)&forth_exit
             },
@@ -1194,8 +1194,8 @@ static Test tests[] {
             { 1, Data { 0x42424242 } },
             0, // stdin_left
             { 0, "" }, // word_buff
-            0,
-            forth_var_HERE
+            0, // state
+            forth_var_HERE // latest
         }
     },
     {
@@ -1241,6 +1241,48 @@ static Test tests[] {
             0, // stdin_left
             { 0, "" }, // word_buff
             1 // state
+        }
+    },
+    {
+        "HIDDEN", // create "BBBB", hide it
+        {
+            Data {
+              (uint32_t)&forth_do_colon,
+              (uint32_t)&forth_create,
+              (uint32_t)&forth_latest,
+              (uint32_t)&forth_toggle_hidden,
+              (uint32_t)&forth_exit
+            },
+            { 3, Data { 0x42424242, (uint32_t)data_stack, 4 } }
+        },
+        {
+            { 1, Data { 0x42424242 } },
+            0, // stdin_left
+            { 0, "" }, // word_buff
+            0, // state
+            forth_var_HERE // latest
+        }
+    },
+    {
+        "HIDDEN (toggle)", // create "BBBB", hide it, unhide it
+        {
+            Data {
+              (uint32_t)&forth_do_colon,
+              (uint32_t)&forth_create,
+              (uint32_t)&forth_latest,
+              (uint32_t)&forth_toggle_hidden,
+              (uint32_t)&forth_latest,
+              (uint32_t)&forth_toggle_hidden,
+              (uint32_t)&forth_exit
+            },
+            { 3, Data { 0x42424242, (uint32_t)data_stack, 4 } }
+        },
+        {
+            { 1, Data { 0x42424242 } },
+            0, // stdin_left
+            { 0, "" }, // word_buff
+            0, // state
+            forth_var_HERE // latest
         }
     },
     {
@@ -1420,21 +1462,6 @@ static Test tests[] {
         }
     },
     {
-        "'",
-        {
-            Data {
-              (uint32_t)&forth_do_colon,
-              (uint32_t)&forth_code_field_addr_of_next_word,
-              (uint32_t)&forth_exit
-            },
-            empty_stack,
-            { 1, "+" }
-        },
-        {
-            { 1, Data { (uint32_t) &forth_add } },
-        }
-    },
-    {
         "INTERPRET (number)",
         {
             Data {
@@ -1499,10 +1526,122 @@ static Test tests[] {
             1 // state
         }
     },
+    {
+        "INTERPRET (comp word)",
+        {
+            Data {
+              (uint32_t)&forth_do_colon,
+              (uint32_t)&forth_interpret,
+              (uint32_t)&forth_exit
+            },
+            empty_stack,
+            { 1, "+" },
+            { },
+            1 // compile mode
+        },
+        {
+            empty_stack,
+            0, // stdin_left
+            { 0, "" }, // word_buff
+            1 // state
+        }
+    },
+    {
+        ":",
+        {
+            Data {
+              (uint32_t)&forth_do_colon,
+              (uint32_t)&forth_compile_def,
+              (uint32_t)&forth_exit
+            },
+            empty_stack,
+            { 3, "123" },
+            { }
+        },
+        {
+            empty_stack,
+            0, // stdin_left
+            { 0, "" }, // word_buff
+            1, // state = compile_mode
+            forth_var_HERE // latest
+        }
+    },
+    {
+        ";",
+        {
+            Data {
+              (uint32_t)&forth_do_colon,
+              (uint32_t)&forth_compile_def,
+              (uint32_t)&forth_end_compile_def,
+              (uint32_t)&forth_exit
+            },
+            empty_stack,
+            { 3, "123" },
+            { }
+        },
+        {
+            empty_stack,
+            0, // stdin_left
+            { 0, "" }, // word_buff
+            0, // state
+            forth_var_HERE // latest
+        }
+    },
+    {
+        "'",
+        {
+            Data {
+              (uint32_t)&forth_do_colon,
+              (uint32_t)&forth_code_field_addr_of_next_word,
+              (uint32_t)&forth_exit
+            },
+            empty_stack,
+            { 1, "+" }
+        },
+        {
+            { 1, Data { (uint32_t) &forth_add } },
+        }
+    },
+    {
+        "LITERAL",
+        {
+            Data {
+              (uint32_t)&forth_do_colon,
+              (uint32_t)&forth_literal,
+              (uint32_t)&forth_exit
+            },
+            { 1, Data { (uint32_t) &forth_add } },
+        },
+        {
+            empty_stack
+        }
+    },
 };
 
 static Buff *get_expected_user_mem(const char *test_name) {
   if (!strcmp(test_name, "CREATE")) {
+    static char create_data[] { 0, 0, 0, 0, 0, 0, 0, 0, 4, 'B', 'B', 'B', 'B', 0, 0, 0 };
+    static Buff create_user_mem = { 16, create_data };
+
+    if (*(uint32_t *)create_user_mem.data == 0) {
+      *(uint32_t *)create_user_mem.data = original_var_latest;
+      *(uint32_t *)(create_user_mem.data + 4) = original_var_here + 16;
+    }
+    return &create_user_mem;
+  }
+
+  if (!strcmp(test_name, "HIDDEN")) {
+    static char create_data[] { 0, 0, 0, 0, 0, 0, 0, 0, 0x24, 'B', 'B', 'B', 'B', 0, 0, 0 };
+    static Buff create_user_mem = { 16, create_data };
+
+    if (*(uint32_t *)create_user_mem.data == 0) {
+      *(uint32_t *)create_user_mem.data = original_var_latest;
+      *(uint32_t *)(create_user_mem.data + 4) = original_var_here + 16;
+    }
+    return &create_user_mem;
+  }
+
+  if (!strcmp(test_name, "HIDDEN (toggle)")) {
     static char create_data[] { 0, 0, 0, 0, 0, 0, 0, 0, 4, 'B', 'B', 'B', 'B', 0, 0, 0 };
     static Buff create_user_mem = { 16, create_data };
 
@@ -1521,10 +1660,53 @@ static Buff *get_expected_user_mem(const char *test_name) {
   }
 
   if (!strcmp(test_name, "INTERPRET (comp num)")) {
-    static uint32_t interpret_comp_num_data[] = { (uint32_t) &forth_literal, 123 };
+    static uint32_t interpret_comp_num_data[] = { (uint32_t) &forth_lit, 123 };
     static Buff interpret_comp_num_user_mem = { 8, (char *)&interpret_comp_num_data };
 
     return &interpret_comp_num_user_mem;
+  }
+
+  if (!strcmp(test_name, "INTERPRET (comp word)")) {
+    static uint32_t interpret_comp_word_data[] = { (uint32_t) &forth_add };
+    static Buff interpret_comp_word_user_mem = { 4, (char *)&interpret_comp_word_data };
+
+    return &interpret_comp_word_user_mem;
+  }
+
+  if (!strcmp(test_name, ":")) {
+    static char create_data[] { 0, 0, 0, 0, 0, 0, 0, 0, 0x23, '1', '2', '3', 0, 0, 0, 0 };
+    static Buff create_user_mem = { 16, create_data };
+
+    if (*(uint32_t *)create_user_mem.data == 0) {
+      *(uint32_t *)create_user_mem.data = original_var_latest;
+      *(uint32_t *)(create_user_mem.data + 4) = original_var_here + 12;
+      *(uint32_t *)(create_user_mem.data + 12) = (uint32_t)&forth_do_colon;
+    }
+    return &create_user_mem;
+  }
+
+  if (!strcmp(test_name, ";")) {
+    static char create_data[] { 0, 0, 0, 0, 0, 0, 0, 0, 3, '1', '2', '3', 0, 0, 0, 0, 0, 0, 0, 0 };
+    static Buff create_user_mem = { 20, create_data };
+
+    if (*(uint32_t *)create_user_mem.data == 0) {
+      *(uint32_t *)create_user_mem.data = original_var_latest;
+      *(uint32_t *)(create_user_mem.data + 4) = original_var_here + 12;
+      *(uint32_t *)(create_user_mem.data + 12) = (uint32_t)&forth_do_colon;
+      *(uint32_t *)(create_user_mem.data + 16) = (uint32_t)&forth_exit;
+    }
+    return &create_user_mem;
+  }
+
+  if (!strcmp(test_name, "LITERAL")) {
+    static uint32_t literal_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+    static Buff literal_user_mem = { 8, (char *)&literal_data };
+
+    if (*(uint32_t *)literal_user_mem.data == 0) {
+      *(uint32_t *)literal_user_mem.data = (uint32_t)&forth_lit;
+      *(uint32_t *)(literal_user_mem.data + 4) = (uint32_t)&forth_add;
+    }
+    return &literal_user_mem;
   }
 
   return nullptr;

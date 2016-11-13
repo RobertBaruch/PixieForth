@@ -58,9 +58,9 @@
  *     .byte <len of name>
  *     .ascii <name, with enough padding at end for alignment>
  *   forth_<label>: (the code field address)
- *     .4byte <address of forth_do_colon>
+ *     .4byte <code field address of do_colon = forth_do_colon>
  *                  (the data field address)
- *     .4byte <words in the definition>
+ *     .4byte <code field addresses of words in the definition>
  *     ... <more words>
  *     .4byte forth_exit
  */
@@ -294,10 +294,10 @@ __defnative "EXIT",,exit
 __end_defnative exit
 
 /* ( -- x ) */
-__defnative "LIT",,literal
+__defnative "LIT",,lit
     ldr r0, [r12], #4
     __pushreg r0
-__end_defnative literal
+__end_defnative lit
 
 /* ( x -- ) */
 __defnative "DROP",,drop
@@ -1144,28 +1144,26 @@ __defnative "SPACE",,emit_space
 __end_defnative emit_space
 
 /* Compile a definition. */
-__defword ":",,compile
+__defword ":",,compile_def
     __word word
     __word create
-    __word literal
+    __word lit
     __word do_colon
     __word store_to_here
     __word latest
-    __word fetch
     __word toggle_hidden
     __word compile_mode
-__end_defword compile
+__end_defword compile_def
 
 /* End compilation of a definition. */
-__defword ";",F_IMMED,end_compile
-    __word literal
+__defword ";",F_IMMED,end_compile_def
+    __word lit
     __word exit
     __word store_to_here
     __word latest
-    __word fetch
     __word toggle_hidden
     __word immediate_mode
-__end_defword end_compile
+__end_defword end_compile_def
 
 /* Toggle hidden on the next word. */
 __defword "HIDE",,hide
@@ -1181,6 +1179,15 @@ __defword "'",,code_field_addr_of_next_word
     __word find
     __word to_code_field_addr
 __end_defword code_field_addr_of_next_word
+
+/* Compile LIT <x>. */
+/* ( x -- ) */
+__defword "LITERAL",F_IMMED,literal
+    __word lit
+    __word lit
+    __word store_to_here
+    __word store_to_here
+__end_defword literal
 
 /*
  * Get a word, find it in the dictionary, get its code address,
@@ -1202,12 +1209,13 @@ __defnative "INTERPRET",,interpret
 
     // Found in dictionary. See if it's an immediate word, or if
     // we're in immediate mode. If so, execute it immediately.
-    ldr r2, [r0, #8] // r2 <- len + flags
+    ldrb r2, [r0, #8] // r2 <- len + flags
     tst r2, F_IMMED
     bne .L_execute_word
     __loadvar "STATE", r2 // r2 <- state
     cbz r2, .L_execute_word
     // Add to currently compiling definition
+    ldr r0, [r0, #4]
     bl _forth_store_to_here
     __next
 
@@ -1231,7 +1239,7 @@ __defnative "INTERPRET",,interpret
 .L_compile_number:
     // Append LIT and then the number
     mov r1, r0 // r1 <- number
-    ldr r0, =forth_literal
+    ldr r0, =forth_lit
     bl _forth_store_to_here
     mov r0, r1
     bl _forth_store_to_here
