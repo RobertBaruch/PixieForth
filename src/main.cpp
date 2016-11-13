@@ -1,9 +1,11 @@
 #include "WProgram.h"
-#include <stdint.h>
+#include <cstdint>
 #include <usb_serial.h>
 #include <forth_system.h>
 
 extern void run_unit_tests();
+extern void interpret();
+extern const char *bootstrap;
 
 static constexpr int stack_size = 1024;
 uint32_t *sp;
@@ -38,7 +40,12 @@ extern "C" int main(void)
   Serial.println(" kiB)");
   Serial.println();
 
-  run_unit_tests();
+  // run_unit_tests();
+  forth_var_STDIN = (uint32_t)bootstrap;
+  forth_var_STDIN_COUNT = strlen(bootstrap);
+  while (true) {
+    interpret();
+  }
 
   pinMode(0, OUTPUT);
   while (1) {
@@ -49,3 +56,16 @@ extern "C" int main(void)
   }
 }
 
+static uint32_t interpret_loop[] = { (uint32_t)&forth_do_colon, (uint32_t)&forth_interpret, (uint32_t)&forth_exit };
+void interpret() {
+  sp = forth_enter(sp, interpret_loop);
+}
+
+const char *bootstrap = R"END(
+  : OK 
+    CHAR O EMIT
+    CHAR K EMIT
+    NL
+  ;
+  OK
+)END";

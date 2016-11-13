@@ -740,11 +740,21 @@ __end_func _forth_key
 /* Outputs a byte to serial. */
 /* ( k -- ) */
 __defnative "EMIT",,emit
-    __begin_c_call
     __popreg r0
-    bl usb_serial_putchar
-    __end_c_call
+    bl _forth_emit
 __end_defnative emit
+
+/*
+ * Subroutine version of EMIT.
+ * Input: r0 = char
+ * Output: --
+ */
+__new_func _forth_emit
+    push {r12, lr}
+    bl usb_serial_putchar
+    pop {r12, lr}
+    bx lr
+__end_func _forth_emit
 
 /*
  * Waits for a "word" from serial. A word starts with any non-whitespace
@@ -1103,6 +1113,35 @@ __defnative "0BRANCH",,brancheq
     lsleq r0, #2 // r1 *= 4
     addeq r12, r0 // so offset zero just goes to next word
 __end_defnative brancheq
+
+/* ( -- c ) */
+__defnative "CHAR",,char
+    bl _forth_word // r0, r1 <- buff_addr, len
+    ldrb r0, [r0]
+    __pushreg r0
+__end_defnative char
+
+/* ( -- 10 ) */
+__defnative "'\\n'",,char_newline
+    mov r0, #10
+    __pushreg r0
+__end_defnative char_newline
+
+__defnative "NL",,emit_newline
+    mov r0, #10
+    bl _forth_emit
+__end_defnative emit_newline
+
+/* ( -- 32 ) */
+__defnative "BL",,char_space
+    mov r0, ' '
+    __pushreg r0
+__end_defnative char_space
+
+__defnative "SPACE",,emit_space
+    mov r0, ' '
+    bl _forth_emit
+__end_defnative emit_space
 
 /* Compile a definition. */
 __defword ":",,compile
